@@ -1,0 +1,11 @@
+[package]
+name = "sipcore"
+version = "0.0.0"
+authors = ["Anatolii Kurotych <akurotych@gmail.com>"]
+edition = "2018"
+description = "Rust framework for creating SIP applications"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
