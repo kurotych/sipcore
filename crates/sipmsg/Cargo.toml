@@ -5,8 +5,12 @@ authors = ["Anatolii Kurotych <akurotych@gmail.com>"]
 edition = "2018"
 description = "SIP message parser"
 license = "MIT"
+keywords = ["sip", "parser", "no_std"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["std"]
+std = ["nom/std"]
 
-[dependencies]
-nom = "^5"
+[dependencies.nom]
+version = "^5"
+default-features = false
