@@ -24,11 +24,11 @@ const UPD: &'static [u8] = &['U' as u8, 'P' as u8, 'D' as u8]; // UPDATE
 
 /// Fast determinates message type and minimal validate for further transmission to suitable parser.
 /// Does not validate full first line, just first 3 bytes.
-pub fn get_message_type(s: &[u8]) -> MessageType {
-    if s.len() < 3 {
+pub fn get_message_type(mt: &[u8]) -> MessageType {
+    if mt.len() < 3 {
         MessageType::Unknown
     } else {
-        match &s[0..3] {
+        match &mt[0..3] {
             SIP => MessageType::Response,
             ACK => MessageType::Request,
             BYE => MessageType::Request,
