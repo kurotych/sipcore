@@ -1,9 +1,9 @@
 use nom;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::take_while1;
+use nom::character::complete;
 use nom::character::is_alphabetic;
 use nom::sequence::tuple;
-use nom::character::complete;
 
 use core::str;
 use core::u8;
@@ -21,15 +21,16 @@ impl Request {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct SipVersion(pub u8, pub u8);
 
-// INVITE sip:user@example.com SIP/2.0
-pub struct RequestLine {
+/// Ex: INVITE sip:user@example.com SIP/2.0
+/// The Request line and u8 buffer shoud have the same life time
+pub struct RequestLine<'buf> {
     pub method: Method,
+    pub uri: &'buf str,
     pub sip_version: SipVersion,
 }
 
-impl RequestLine {
-    pub fn parse(rl: &[u8]) -> nom::IResult<&[u8], RequestLine> {
-        // TODO URI
+impl<'buf> RequestLine<'buf> {
+    pub fn parse(rl: &'buf [u8]) -> nom::IResult<&[u8], RequestLine> {
         let method = take_while1(is_alphabetic);
         let uri = take_while1(|c| c != b' ' as u8);
         let (input, (method, _, uri, _, _, major_version, _, minor_version, _)) = tuple((
@@ -50,7 +51,14 @@ impl RequestLine {
         );
 
         match parse_method(method) {
-            Some(m) => Ok((input, RequestLine { method: m, sip_version: sip_version })),
+            Some(m) => Ok((
+                input,
+                RequestLine {
+                    method: m,
+                    uri: str::from_utf8(uri).unwrap(),
+                    sip_version: sip_version,
+                },
+            )),
             None => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
                 rl,
                 nom::error::ErrorKind::TakeWhileMN,
@@ -145,15 +153,16 @@ impl Method {
 
 #[cfg(test)]
 mod tests {
-    use crate::request::SipVersion;
     use crate::request::Method;
     use crate::request::RequestLine;
+    use crate::request::SipVersion;
 
-    fn parse_rl_test(rl: &str, expected: Method) {
+    fn parse_rl_test(rl: &str, expected_method: Method, expected_uri: &str, expected_sip_version: SipVersion) {
         match RequestLine::parse(rl.as_bytes()) {
             Ok((_b, rl)) => {
-                assert_eq!(rl.method, expected);
-                assert_eq!(rl.sip_version, SipVersion(2,0));
+                assert_eq!(rl.method, expected_method);
+                assert_eq!(rl.sip_version, expected_sip_version);
+                assert_eq!(rl.uri, expected_uri);
             }
             Err(_e) => panic!(),
         }
@@ -161,10 +170,23 @@ mod tests {
 
     #[test]
     fn get_method_type() {
-        parse_rl_test("OPTIONS sip:user@example.com SIP/2.0\r\n", Method::OPTIONS);
+        parse_rl_test(
+            "OPTIONS sip:user@example.com SIP/2.0\r\n",
+            Method::OPTIONS,
+            "sip:user@example.com",
+            SipVersion(2, 0),
+        );
         parse_rl_test(
             "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0\r\n",
             Method::INVITE,
+            "sip:vivekg@chair-dnrc.example.com;unknownparam",
+            SipVersion(2, 0),
+        );
+        parse_rl_test(
+            "REGISTER sip:[2001:db8::10] SIP/3.1\r\n",
+            Method::REGISTER,
+            "sip:[2001:db8::10]",
+            SipVersion(3, 1),
         );
     }
 
