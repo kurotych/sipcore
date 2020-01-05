@@ -1,19 +1,32 @@
-use nom;
-use nom::bytes::complete::tag;
-use nom::bytes::complete::take_while1;
-use nom::character::complete;
-use nom::character::is_alphabetic;
-use nom::sequence::tuple;
+use nom::{
+    bytes::complete::{tag, take_while1},
+    character::{complete, is_alphabetic},
+    sequence::tuple,
+};
 
-use core::str;
-use core::u8;
+use core::{str, u8};
 
-pub struct Request {}
+pub struct Request<'a> {
+    // The request line
+    pub rl: Option<RequestLine<'a>>,
+    //The request headers.
+    // pub headers: &'a [Header<'a>],
+}
 
-impl Request {
-    pub fn new() -> Request {
-        Request {}
-    }
+impl<'a> Request<'a> {
+    // fn new() -> Request<'a> {
+    //     Request {
+    //         // headers: []{Header{na}},
+    //         rl : None,
+    //     }
+    // }
+
+    // pub fn parse(buf_input: &'buf [u8]) -> nom::IResult<&[u8], Request> {
+    //     let new_request = Request::new();
+    //     new_request.request_buffer = Some(buf_input);
+    //     let (_, rl) = RequestLine::parse(buf_input)?;
+    //     Ok((buf_input, new_request))
+    // }
 }
 
 /// SIP-Version
@@ -23,14 +36,14 @@ pub struct SipVersion(pub u8, pub u8);
 
 /// Ex: INVITE sip:user@example.com SIP/2.0
 /// The Request line and u8 buffer shoud have the same life time
-pub struct RequestLine<'buf> {
+pub struct RequestLine<'a> {
     pub method: Method,
-    pub uri: &'buf str,
+    pub uri: &'a str,
     pub sip_version: SipVersion,
 }
 
-impl<'buf> RequestLine<'buf> {
-    pub fn parse(rl: &'buf [u8]) -> nom::IResult<&[u8], RequestLine> {
+impl<'a> RequestLine<'a> {
+    pub fn parse(rl: &[u8]) -> nom::IResult<&[u8], RequestLine> {
         let method = take_while1(is_alphabetic);
         let uri = take_while1(|c| c != b' ' as u8);
         let (input, (method, _, uri, _, _, major_version, _, minor_version, _)) = tuple((
@@ -50,7 +63,7 @@ impl<'buf> RequestLine<'buf> {
             u8::from_str_radix(str::from_utf8(minor_version).unwrap(), 10).unwrap(),
         );
 
-        match parse_method(method) {
+        match RequestLine::parse_method(method) {
             Some(m) => Ok((
                 input,
                 RequestLine {
@@ -61,36 +74,18 @@ impl<'buf> RequestLine<'buf> {
             )),
             None => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
                 rl,
-                nom::error::ErrorKind::TakeWhileMN,
+                nom::error::ErrorKind::IsA,
             ))),
         }
     }
-}
 
-fn parse_method(method: &[u8]) -> Option<Method> {
-    match str::from_utf8(method) {
-        Ok(s) => Method::from_str(s),
-        Err(_) => None,
+    fn parse_method(method: &[u8]) -> Option<Method> {
+        match str::from_utf8(method) {
+            Ok(s) => Method::from_str(s),
+            Err(_) => None,
+        }
     }
 }
-
-// fn parse_method(rl: &[u8]) -> nom::IResult<&[u8], Method> {
-//     let (rl, method) = take_while_m_n(3, MAX_METHOD_LENGTH, is_alphabetic)(rl)?;
-
-//     match str::from_utf8(method) {
-//         Ok(s) => match Method::from_str(s) {
-//             Some(s) => Ok((rl, s)),
-//             None => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-//                 rl,
-//                 nom::error::ErrorKind::TakeWhileMN,
-//             ))),
-//         },
-//         Err(_e) => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-//             rl,
-//             nom::error::ErrorKind::TakeWhileMN,
-//         ))),
-//     }
-// }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Method {
@@ -157,7 +152,12 @@ mod tests {
     use crate::request::RequestLine;
     use crate::request::SipVersion;
 
-    fn parse_rl_test(rl: &str, expected_method: Method, expected_uri: &str, expected_sip_version: SipVersion) {
+    fn parse_rl_test(
+        rl: &str,
+        expected_method: Method,
+        expected_uri: &str,
+        expected_sip_version: SipVersion,
+    ) {
         match RequestLine::parse(rl.as_bytes()) {
             Ok((_b, rl)) => {
                 assert_eq!(rl.method, expected_method);
