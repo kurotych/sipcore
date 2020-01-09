@@ -33,7 +33,7 @@ pub fn parse_headers(input: &[u8]) -> nom::IResult<&[u8], Vec<Header>> {
             }
             Err(e) => return Err(e),
         }
-        if inp2 == CRLF {
+        if inp2.len() > 1 && &inp2[0..2] == CRLF {
             // end of headers and start of body part
             break;
         }
@@ -140,7 +140,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn parse_headers_test() {
         let parse_headers_result = crate::parse_headers(
@@ -149,7 +148,7 @@ mod tests {
              Max-Forwards: 70\r\n\
              Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
              CSeq: 60 OPTIONS\r\n\
-             Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\n"
+             Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
                 .as_bytes(),
         );
 
@@ -178,7 +177,7 @@ mod tests {
                 assert_eq!(hdrs[5].name, "Via");
                 assert_eq!(hdrs[5].value, "SIP/2.0/UDP funky.example.com");
                 assert_eq!(hdrs[5].parameters.unwrap(), "branch=z9hG4bKkdjuw");
-                assert_eq!(input, crate::header::CRLF); //
+                assert_eq!(input, "\r\nsomebody".as_bytes()); //
             }
             Err(_e) => panic!(),
         }
