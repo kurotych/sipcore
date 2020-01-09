@@ -9,6 +9,7 @@ use core::str;
 
 const CRLF: &[u8] = &[0x0d, 0x0a]; // /r/n
 
+#[derive(PartialEq, Debug)]
 /// https://tools.ietf.org/html/rfc3261#section-7.3
 pub struct Header<'a> {
     /// Sip header name
@@ -61,6 +62,17 @@ impl<'a> Header<'a> {
             take_until("\r\n"),
             take(2usize), // skip /r/n
         ))(input)?;
+
+        if input.len() > 0 && (input[0] == 32 || input[0] == 9) {
+            // is WSP?
+            // TODO mark
+            // Long header fields not supported yet.
+            // https://tools.ietf.org/html/rfc2822#section-2.2.3
+            return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
+                input,
+                nom::error::ErrorKind::Space,
+            )));
+        }
 
         match is_not(";")(header_field) {
             Ok((params, header_value)) => {
@@ -116,6 +128,18 @@ mod tests {
             Err(_e) => panic!(),
         }
     }
+
+    #[test]
+    fn parse_header_long_folded() {
+        assert_eq!(
+            crate::Header::parse("Max-Forwards: 70\r\n continue header\r\n".as_bytes()),
+            Err(nom::Err::Error((
+                " continue header\r\n".as_bytes(),
+                nom::error::ErrorKind::Space
+            )))
+        );
+    }
+
 
     #[test]
     fn parse_headers_test() {
