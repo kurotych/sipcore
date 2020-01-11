@@ -43,7 +43,7 @@ fn parse_header_long_folded() {
 }
 
 #[test]
-fn parse_headers_test() {
+fn parse_headers() {
     let parse_headers_result = sipmsg::parse_headers(
         "To: sip:user@example.com\r\n\
          From: caller<sip:caller@example.com>;tag=323\r\n\
