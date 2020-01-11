@@ -1,3 +1,6 @@
+mod common;
+use common::*;
+
 use sipmsg::{
     request::{Method, RequestLine},
     SipVersion,
@@ -17,17 +20,6 @@ fn parse_rl_test(
         }
         Err(_e) => panic!(),
     }
-}
-
-fn check_header_value(
-    result_header: &sipmsg::Header,
-    exp_h_name: &str,
-    exp_h_value: &str,
-    exp_h_parameters: Option<&str>,
-) {
-    assert_eq!(result_header.name, exp_h_name);
-    assert_eq!(result_header.value, exp_h_value);
-    assert_eq!(result_header.parameters, exp_h_parameters);
 }
 
 #[test]

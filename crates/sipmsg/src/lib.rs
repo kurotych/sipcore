@@ -15,3 +15,8 @@ pub use message::SipVersion;
 pub mod request;
 pub use request::RequestLine;
 pub use request::Request;
+
+pub mod response;
+pub use response::Response;
+pub use response::StatusCode;
+pub use response::StatusLine;

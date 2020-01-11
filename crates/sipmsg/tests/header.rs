@@ -79,7 +79,7 @@ fn parse_headers() {
             assert_eq!(hdrs[5].name, "Via");
             assert_eq!(hdrs[5].value, "SIP/2.0/UDP funky.example.com");
             assert_eq!(hdrs[5].parameters.unwrap(), "branch=z9hG4bKkdjuw");
-            assert_eq!(input, "\r\nsomebody".as_bytes()); //
+            assert_eq!(input, "\r\nsomebody".as_bytes());
         }
         Err(_e) => panic!(),
     }
