@@ -5,6 +5,8 @@ use nom::{
 };
 
 use crate::header::*;
+use crate::message::*;
+
 use alloc::vec::Vec;
 
 use core::{str, u8};
@@ -37,11 +39,6 @@ impl<'a> Request<'a> {
         Ok((buf_input, Request::new(rl, headers, Some(body))))
     }
 }
-
-/// SIP-Version
-/// ex. `SIP/2.0 -> SipVersion(2, 0)`
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub struct SipVersion(pub u8, pub u8);
 
 /// Ex: INVITE sip:user@example.com SIP/2.0
 /// The Request line and u8 buffer shoud have the same life time

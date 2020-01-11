@@ -1,3 +1,8 @@
+/// SIP-Version
+/// ex. `SIP/2.0 -> SipVersion(2, 0)`
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub struct SipVersion(pub u8, pub u8);
+
 #[derive(Debug, PartialEq)]
 pub enum MessageType {
     Request,
@@ -46,19 +51,5 @@ pub fn get_message_type(mt: &[u8]) -> MessageType {
             UPD => MessageType::Request,
             _ => MessageType::Unknown,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::message::get_message_type;
-    use crate::message::MessageType;
-    #[test]
-    fn get_message_type_test() {
-        assert_eq!(get_message_type("SIP".as_bytes()), MessageType::Response);
-        assert_eq!(get_message_type("INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0".as_bytes()), MessageType::Request);
-        assert_eq!(get_message_type("OPTIONS sip:user@example.com SIP/2.0".as_bytes()), MessageType::Request);
-        assert_eq!(get_message_type("MESSAGE sip:kumiko@example.org SIP/2.0".as_bytes()), MessageType::Request);
-        assert_eq!(get_message_type("NEWMETHOD sip:user@example.com SIP/2.0".as_bytes()), MessageType::Unknown);
     }
 }
