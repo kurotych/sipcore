@@ -105,7 +105,7 @@ pub enum StatusCode {
     Forbidden = 403,
     NotFound = 404,
     MethodNotAllowed = 405,
-    NotAcceptable = 406,
+    NotAcceptableResourceContent = 406,
     ProxyAuthenticationRequired = 407,
     RequestTimeout = 408,
     Gone = 410,
@@ -141,7 +141,7 @@ pub enum StatusCode {
     BusyEverywhere = 600,
     Decline = 603,
     DoesNotExistAnywhere = 604,
-    NotAcceptableG = 606,
+    NotAcceptable = 606,
 
     // Unknown
     Unknown = 999,
@@ -222,7 +222,7 @@ impl StatusCode {
             BS_403 => StatusCode::Forbidden,
             BS_404 => StatusCode::NotFound,
             BS_405 => StatusCode::MethodNotAllowed,
-            BS_406 => StatusCode::NotAcceptable,
+            BS_406 => StatusCode::NotAcceptableResourceContent,
             BS_407 => StatusCode::ProxyAuthenticationRequired,
             BS_408 => StatusCode::RequestTimeout,
             BS_410 => StatusCode::Gone,
@@ -254,7 +254,7 @@ impl StatusCode {
             BS_600 => StatusCode::BusyEverywhere,
             BS_603 => StatusCode::Decline,
             BS_604 => StatusCode::DoesNotExistAnywhere,
-            BS_606 => StatusCode::NotAcceptableG,
+            BS_606 => StatusCode::NotAcceptable,
             _ => StatusCode::Unknown,
         }
     }
@@ -278,7 +278,7 @@ impl StatusCode {
             &StatusCode::Forbidden => "Forbidden",
             &StatusCode::NotFound => "Not Found",
             &StatusCode::MethodNotAllowed => "Method Not Allowed",
-            &StatusCode::NotAcceptable => "Not Acceptable",
+            &StatusCode::NotAcceptableResourceContent => "Not Acceptable",
             &StatusCode::ProxyAuthenticationRequired => "Proxy Authentication Required",
             &StatusCode::RequestTimeout => "Request Timeout",
             &StatusCode::Gone => "Gone",
@@ -310,7 +310,7 @@ impl StatusCode {
             &StatusCode::BusyEverywhere => "Busy Everywhere",
             &StatusCode::Decline => "Decline",
             &StatusCode::DoesNotExistAnywhere => "Does Not Exist Anywhere",
-            &StatusCode::NotAcceptableG => "Not Acceptable",
+            &StatusCode::NotAcceptable => "Not Acceptable",
             &StatusCode::Unknown => "Unknown",
         }
     }
