@@ -57,44 +57,59 @@ fn parse_response() {
                 &response.headers[0],
                 "Via",
                 "SIP/2.0/UDP 192.168.178.69:60686",
-                Some("branch=z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc;received=192.168.178.69;rport=60686"),
+            );
+            assert_eq!(
+                response.headers[0]
+                    .parameters
+                    .as_ref()
+                    .unwrap()
+                    .get(&"branch"),
+                Some(&"z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc")
             );
 
-            check_header_value(
-                &response.headers[1],
-                "From",
-                "<sip:12@192.168.178.26>",
-                Some("tag=XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b"),
+            assert_eq!(
+                response.headers[0]
+                    .parameters
+                    .as_ref()
+                    .unwrap()
+                    .get(&"received"),
+                Some(&"192.168.178.69")
             );
 
-            check_header_value(
-                &response.headers[2],
-                "To",
-                "<sip:12@192.168.178.26>",
-                Some("tag=as68275e50"),
+            assert_eq!(
+                response.headers[0]
+                    .parameters
+                    .as_ref()
+                    .unwrap()
+                    .get(&"rport"),
+                Some(&"60686")
             );
+
+            check_header_value(&response.headers[1], "From", "<sip:12@192.168.178.26>");
+            assert_eq!(response.headers[1].parameters.as_ref().unwrap().get(&"tag"), Some(&"XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b"));
+
+            check_header_value(&response.headers[2], "To", "<sip:12@192.168.178.26>");
+            assert_eq!(response.headers[2].parameters.as_ref().unwrap().get(&"tag"), Some(&"as68275e50"));
 
             check_header_value(
                 &response.headers[3],
                 "Call-ID",
                 "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1",
-                None,
             );
 
-            check_header_value(&response.headers[4], "CSeq", "62833 REGISTER", None);
+            check_header_value(&response.headers[4], "CSeq", "62833 REGISTER");
 
-            check_header_value(&response.headers[5], "Server", "FPBX-2.11.0(11.6.0)", None);
+            check_header_value(&response.headers[5], "Server", "FPBX-2.11.0(11.6.0)");
 
             check_header_value(
                 &response.headers[6],
                 "Allow",
                 "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH",
-                None,
             );
 
-            check_header_value(&response.headers[7], "Supported", "replaces, timer", None);
+            check_header_value(&response.headers[7], "Supported", "replaces, timer");
 
-            check_header_value(&response.headers[8], "Content-Length", "0", None);
+            check_header_value(&response.headers[8], "Content-Length", "0");
         }
         Err(_e) => panic!(),
     }

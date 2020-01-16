@@ -45,23 +45,24 @@ fn parse_request() {
                 &parsed_req.headers[0],
                 "Via",
                 "SIP/2.0/UDP pc33.atlanta.com",
-                Some("branch=z9hG4bKkjshdyff"),
             );
+            assert_eq!(parsed_req.headers[0].parameters.as_ref().unwrap().get(&"branch"), Some(&"z9hG4bKkjshdyff"));
+
             check_header_value(
                 &parsed_req.headers[1],
                 "To",
                 "Bob <sip:bob@biloxi.com>",
-                None,
             );
             check_header_value(
                 &parsed_req.headers[2],
                 "From",
                 "Alice <sip:alice@atlanta.com>",
-                Some("tag=88sja8x"),
             );
-            check_header_value(&parsed_req.headers[3], "Max-Forwards", "70", None);
-            check_header_value(&parsed_req.headers[4], "Call-ID", "987asjd97y7atg", None);
-            check_header_value(&parsed_req.headers[5], "CSeq", "986759 INVITE", None);
+            assert_eq!(parsed_req.headers[2].parameters.as_ref().unwrap().get(&"tag"), Some(&"88sja8x"));
+
+            check_header_value(&parsed_req.headers[3], "Max-Forwards", "70");
+            check_header_value(&parsed_req.headers[4], "Call-ID", "987asjd97y7atg");
+            check_header_value(&parsed_req.headers[5], "CSeq", "986759 INVITE");
 
             assert_eq!(parsed_req.body.unwrap(), "body_stuff".as_bytes())
         }

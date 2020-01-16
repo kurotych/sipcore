@@ -20,11 +20,11 @@ pub struct Header<'a> {
 
     // TODO make better representation type
     /// Sip parameters
-    pub parameters: Option<&'a str>,
+    pub parameters: Option<BTreeMap<&'a str, &'a str>>,
 }
 
 // O(n) RCP - Random code programming ;)
-// The string must terminted by "\r\n" or ">". Retuns pointer to char after terminated char.
+// Retuns pointer to char after terminated char.
 pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str>> {
     if input.is_empty() {
         return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
@@ -115,6 +115,8 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                     }
                     result.insert(name, value);
                 }
+                name = "";
+                value = "";
                 idx += 1;
                 break;
             }
@@ -134,6 +136,8 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                             }
                             result.insert(name, value);
                         }
+                        name = "";
+                        value = "";
                         idx += 2;
                         break;
                     } else {
@@ -153,6 +157,17 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
         }
         idx += 1;
     }
+
+    // This part for support params line without terminated characters \r\n or >
+    if !name.is_empty() {
+        if start_idx != idx{
+            unsafe {
+                value = str::from_utf8_unchecked(&input[start_idx..idx]);
+            }
+        }
+        result.insert(name, value);
+    }
+
     Ok((&input[idx..], result))
 }
 
@@ -187,7 +202,7 @@ impl<'a> Header<'a> {
     // This function O(n + h * 2) make it O(n + h)
     // where h - header_field, n - header name
     // first full iteration is 'tuple' second in 'is_not'
-    pub fn parse(input: &[u8]) -> nom::IResult<&[u8], Header> {
+    pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Header> {
         let (input, (name, _, _, _, header_field, _)) = tuple((
             take_while1(is_alphabetic_or_hyphen),
             complete::space0,
@@ -210,11 +225,14 @@ impl<'a> Header<'a> {
 
         match is_not(";")(header_field) {
             Ok((params, header_value)) => {
-                let mut parameters: Option<&str> = None;
+                let mut result_parameters: Option<BTreeMap<&str, &str>> = None;
                 if params.len() != 0 {
                     let (params, _) = take(1usize)(params)?; // skip first ;
-                    unsafe {
-                        parameters = Some(str::from_utf8_unchecked(params));
+                    match parse_parameters(params) {
+                        Ok((_, parameters)) => {
+                            result_parameters = core::prelude::v1::Some(parameters);
+                        },
+                        Err(e) => return Err(e)
                     }
                 }
                 return Ok((
@@ -222,7 +240,7 @@ impl<'a> Header<'a> {
                     Header {
                         name: unsafe { str::from_utf8_unchecked(name) },
                         value: unsafe { str::from_utf8_unchecked(header_value) },
-                        parameters: parameters,
+                        parameters: result_parameters,
                     },
                 ));
             }
@@ -315,6 +333,19 @@ mod tests {
         }
 
         match parse_parameters(" aw ;d =es;sam;mark= a; wam = kram; q = 0.3\r\n".as_bytes()) {
+            Ok((i, value)) => {
+                assert_eq!(value.get(&"aw"), Some(&""));
+                assert_eq!(value.get(&"d"), Some(&"es"));
+                assert_eq!(value.get(&"sam"), Some(&""));
+                assert_eq!(value.get(&"mark"), Some(&"a"));
+                assert_eq!(value.get(&"wam"), Some(&"kram"));
+                assert_eq!(value.get(&"q"), Some(&"0.3"));
+                assert_eq!(i.len(), 0)
+            }
+            Err(_) => panic!(),
+        }
+
+        match parse_parameters(" aw ;d =es;sam;mark= a; wam = kram; q = 0.3".as_bytes()) {
             Ok((i, value)) => {
                 assert_eq!(value.get(&"aw"), Some(&""));
                 assert_eq!(value.get(&"d"), Some(&"es"));

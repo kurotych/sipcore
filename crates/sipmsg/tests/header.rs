@@ -15,7 +15,7 @@ fn parse_header() {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Name");
             assert_eq!(hdr.value, "Value");
-            assert_eq!(hdr.parameters.unwrap(), "parameter=false");
+            assert_eq!(hdr.parameters.unwrap().get(&"parameter"), Some(&"false"));
             assert_eq!(input.len(), 0);
         }
         Err(_e) => panic!(),
@@ -62,7 +62,7 @@ fn parse_headers() {
 
             assert_eq!(hdrs[1].name, "From");
             assert_eq!(hdrs[1].value, "caller<sip:caller@example.com>");
-            assert_eq!(hdrs[1].parameters.unwrap(), "tag=323");
+            assert_eq!(hdrs[1].parameters.as_ref().unwrap().get(&"tag"), Some(&"323"));
 
             assert_eq!(hdrs[2].name, "Max-Forwards");
             assert_eq!(hdrs[2].value, "70");
@@ -78,7 +78,7 @@ fn parse_headers() {
 
             assert_eq!(hdrs[5].name, "Via");
             assert_eq!(hdrs[5].value, "SIP/2.0/UDP funky.example.com");
-            assert_eq!(hdrs[5].parameters.unwrap(), "branch=z9hG4bKkdjuw");
+            assert_eq!(hdrs[5].parameters.as_ref().unwrap().get(&"branch"), Some(&"z9hG4bKkdjuw"));
             assert_eq!(input, "\r\nsomebody".as_bytes());
         }
         Err(_e) => panic!(),
