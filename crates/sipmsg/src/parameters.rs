@@ -30,19 +30,20 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
         };
     };
 
+    macro_rules! buf_to_string {
+        () => {
+            unsafe { str::from_utf8_unchecked(&input[start_idx..idx]) }
+        };
+    };
+
     let mut state = ParamState::Name;
     while idx < input.len() {
         match input[idx] {
             b';' => {
                 if state == ParamState::Value {
-                    // parameter without value
-                    unsafe {
-                        value = str::from_utf8_unchecked(&input[start_idx..idx]);
-                    }
+                    value = buf_to_string!();
                 } else {
-                    unsafe {
-                        name = str::from_utf8_unchecked(&input[start_idx..idx]);
-                    }
+                    name = buf_to_string!();
                 }
                 insert_param!();
                 if idx == input.len() - 1 {
@@ -57,23 +58,17 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
             b' ' => {
                 if start_idx != idx {
                     if state != ParamState::Value {
-                        unsafe {
-                            name = str::from_utf8_unchecked(&input[start_idx..idx]);
-                        }
+                        name = buf_to_string!();
                         state = ParamState::Value;
                     } else {
-                        unsafe {
-                            value = str::from_utf8_unchecked(&input[start_idx..idx]);
-                        }
+                        value = buf_to_string!();
                     }
                 }
                 start_idx = idx + 1;
             }
             b'=' => {
-                unsafe {
-                    if state != ParamState::Value {
-                        name = str::from_utf8_unchecked(&input[start_idx..idx]);
-                    }
+                if state != ParamState::Value {
+                    name = buf_to_string!();
                 }
                 if idx == input.len() - 1 {
                     // That is "param=""
@@ -87,14 +82,10 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
             }
             b'>' => {
                 if state == ParamState::Name {
-                    unsafe {
-                        name = str::from_utf8_unchecked(&input[start_idx..idx]);
-                    }
+                    name = buf_to_string!();
                 } else {
                     if value.is_empty() {
-                        unsafe {
-                            value = str::from_utf8_unchecked(&input[start_idx..idx]);
-                        }
+                        value = buf_to_string!();
                     }
                 }
                 insert_param!();
@@ -105,14 +96,10 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                 if idx < input.len() - 1 {
                     if input[idx + 1] == b'\n' {
                         if state == ParamState::Name {
-                            unsafe {
-                                name = str::from_utf8_unchecked(&input[start_idx..idx]);
-                            }
+                            name = buf_to_string!();
                         } else {
                             if value.is_empty() {
-                                unsafe {
-                                    value = str::from_utf8_unchecked(&input[start_idx..idx]);
-                                }
+                                value = buf_to_string!();
                             }
                         }
                         insert_param!();
@@ -138,13 +125,9 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
 
     if start_idx != idx || !name.is_empty() {
         if state == ParamState::Name {
-            unsafe {
-                name = str::from_utf8_unchecked(&input[start_idx..idx]);
-            }
+            name = buf_to_string!();
         } else {
-            unsafe {
-                value = str::from_utf8_unchecked(&input[start_idx..idx]);
-            }
+            value = buf_to_string!();
         }
         result.insert(name, value);
     }
