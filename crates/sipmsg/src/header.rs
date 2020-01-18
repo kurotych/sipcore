@@ -158,9 +158,12 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
         idx += 1;
     }
 
-    // This part for support params line without terminated characters \r\n or >
-    if !name.is_empty() {
-        if start_idx != idx{
+    if start_idx != idx || !name.is_empty() {
+        if state == ParamState::Name {
+            unsafe {
+                name = str::from_utf8_unchecked(&input[start_idx..idx]);
+            }
+        } else {
             unsafe {
                 value = str::from_utf8_unchecked(&input[start_idx..idx]);
             }
@@ -340,6 +343,15 @@ mod tests {
                 assert_eq!(value.get(&"mark"), Some(&"a"));
                 assert_eq!(value.get(&"wam"), Some(&"kram"));
                 assert_eq!(value.get(&"q"), Some(&"0.3"));
+                assert_eq!(i.len(), 0)
+            }
+            Err(_) => panic!(),
+        }
+
+        match parse_parameters(" pr= fl; param2  ".as_bytes()) {
+            Ok((i, value)) => {
+                assert_eq!(value.get(&"pr"), Some(&"fl"));
+                assert_eq!(value.get(&"param2"), Some(&""));
                 assert_eq!(i.len(), 0)
             }
             Err(_) => panic!(),

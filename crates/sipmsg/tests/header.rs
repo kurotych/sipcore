@@ -11,11 +11,12 @@ fn parse_header() {
         Err(_e) => panic!(),
     }
 
-    match sipmsg::Header::parse("Name: Value;parameter=false\r\n".as_bytes()) {
+    match sipmsg::Header::parse("Name: Value;parameter=false;param2\r\n".as_bytes()) {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Name");
             assert_eq!(hdr.value, "Value");
-            assert_eq!(hdr.parameters.unwrap().get(&"parameter"), Some(&"false"));
+            assert_eq!(hdr.parameters.as_ref().unwrap().get(&"parameter"), Some(&"false"));
+            assert_eq!(hdr.parameters.as_ref().unwrap().get(&"param2"), Some(&""));
             assert_eq!(input.len(), 0);
         }
         Err(_e) => panic!(),
