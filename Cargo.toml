@@ -1,6 +1,6 @@
 [package]
 name = "sipcore"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Anatolii Kurotych <akurotych@gmail.com>"]
 edition = "2018"
 description = "Rust framework for creating SIP applications"
@@ -10,7 +10,7 @@ repository = "https://github.com/armatusmiles/sipcore"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
+sipmsg = { version = "0.1.0", path = "crates/sipmsg" }
 
 [workspace]
 members = [
