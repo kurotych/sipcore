@@ -15,8 +15,8 @@ fn parse_header() {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Name");
             assert_eq!(hdr.value, "Value");
-            assert_eq!(hdr.parameters.as_ref().unwrap().get(&"parameter"), Some(&"false"));
-            assert_eq!(hdr.parameters.as_ref().unwrap().get(&"param2"), Some(&""));
+            assert_eq!(hdr.params().unwrap().get(&"parameter"), Some(&"false"));
+            assert_eq!(hdr.params().unwrap().get(&"param2"), Some(&""));
             assert_eq!(input.len(), 0);
         }
         Err(_e) => panic!(),
@@ -63,23 +63,26 @@ fn parse_headers() {
 
             assert_eq!(hdrs[1].name, "From");
             assert_eq!(hdrs[1].value, "caller<sip:caller@example.com>");
-            assert_eq!(hdrs[1].parameters.as_ref().unwrap().get(&"tag"), Some(&"323"));
+            assert_eq!(hdrs[1].params().unwrap().get(&"tag"), Some(&"323"));
 
             assert_eq!(hdrs[2].name, "Max-Forwards");
             assert_eq!(hdrs[2].value, "70");
-            assert_eq!(hdrs[2].parameters, None);
+            assert_eq!(hdrs[2].params(), None);
 
             assert_eq!(hdrs[3].name, "Call-ID");
             assert_eq!(hdrs[3].value, "lwsdisp.1234abcd@funky.example.com");
-            assert_eq!(hdrs[3].parameters, None);
+            assert_eq!(hdrs[3].params(), None);
 
             assert_eq!(hdrs[4].name, "CSeq");
             assert_eq!(hdrs[4].value, "60 OPTIONS");
-            assert_eq!(hdrs[4].parameters, None);
+            assert_eq!(hdrs[4].params(), None);
 
             assert_eq!(hdrs[5].name, "Via");
             assert_eq!(hdrs[5].value, "SIP/2.0/UDP funky.example.com");
-            assert_eq!(hdrs[5].parameters.as_ref().unwrap().get(&"branch"), Some(&"z9hG4bKkdjuw"));
+            assert_eq!(
+                hdrs[5].params().unwrap().get(&"branch"),
+                Some(&"z9hG4bKkdjuw")
+            );
             assert_eq!(input, "\r\nsomebody".as_bytes());
         }
         Err(_e) => panic!(),

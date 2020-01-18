@@ -59,37 +59,31 @@ fn parse_response() {
                 "SIP/2.0/UDP 192.168.178.69:60686",
             );
             assert_eq!(
-                response.headers[0]
-                    .parameters
-                    .as_ref()
-                    .unwrap()
-                    .get(&"branch"),
+                response.headers[0].params().unwrap().get(&"branch"),
                 Some(&"z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc")
             );
 
             assert_eq!(
-                response.headers[0]
-                    .parameters
-                    .as_ref()
-                    .unwrap()
-                    .get(&"received"),
+                response.headers[0].params().unwrap().get(&"received"),
                 Some(&"192.168.178.69")
             );
 
             assert_eq!(
-                response.headers[0]
-                    .parameters
-                    .as_ref()
-                    .unwrap()
-                    .get(&"rport"),
+                response.headers[0].params().unwrap().get(&"rport"),
                 Some(&"60686")
             );
 
             check_header_value(&response.headers[1], "From", "<sip:12@192.168.178.26>");
-            assert_eq!(response.headers[1].parameters.as_ref().unwrap().get(&"tag"), Some(&"XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b"));
+            assert_eq!(
+                response.headers[1].params().unwrap().get(&"tag"),
+                Some(&"XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b")
+            );
 
             check_header_value(&response.headers[2], "To", "<sip:12@192.168.178.26>");
-            assert_eq!(response.headers[2].parameters.as_ref().unwrap().get(&"tag"), Some(&"as68275e50"));
+            assert_eq!(
+                response.headers[2].params().unwrap().get(&"tag"),
+                Some(&"as68275e50")
+            );
 
             check_header_value(
                 &response.headers[3],

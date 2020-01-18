@@ -20,7 +20,7 @@ pub struct Header<'a> {
 
     // TODO make better representation type
     /// Sip parameters
-    pub parameters: Option<BTreeMap<&'a str, &'a str>>,
+    parameters: Option<BTreeMap<&'a str, &'a str>>,
 }
 
 // O(n) RCP - Random code programming ;)
@@ -202,6 +202,10 @@ pub fn is_alphabetic_or_hyphen(chr: u8) -> bool {
 }
 
 impl<'a> Header<'a> {
+    pub fn params(&self) -> Option<&BTreeMap<&'a str, &'a str>> {
+        self.parameters.as_ref()
+    }
+
     // This function O(n + h * 2) make it O(n + h)
     // where h - header_field, n - header name
     // first full iteration is 'tuple' second in 'is_not'
@@ -234,8 +238,8 @@ impl<'a> Header<'a> {
                     match parse_parameters(params) {
                         Ok((_, parameters)) => {
                             result_parameters = core::prelude::v1::Some(parameters);
-                        },
-                        Err(e) => return Err(e)
+                        }
+                        Err(e) => return Err(e),
                     }
                 }
                 return Ok((
