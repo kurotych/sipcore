@@ -270,7 +270,7 @@ mod tests {
             Err(_) => panic!(),
         }
 
-        // like in record route:)
+        // parse parameters in Record-Route
         match parse_parameters(" aw ;d =es;sam;mark= a; wam = kram; q = 0.3>;a=b".as_bytes()) {
             Ok((i, value)) => {
                 assert_eq!(value.get(&"aw"), Some(&""));
