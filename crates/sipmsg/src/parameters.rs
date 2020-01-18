@@ -22,6 +22,14 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
     let mut name: &str = "";
     let mut value: &str = "";
 
+    macro_rules! insert_param {
+        ( ) => {
+            result.insert(name, value);
+            name = "";
+            value = "";
+        };
+    };
+
     let mut state = ParamState::Name;
     while idx < input.len() {
         match input[idx] {
@@ -36,9 +44,7 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                         name = str::from_utf8_unchecked(&input[start_idx..idx]);
                     }
                 }
-                result.insert(name, value);
-                name = "";
-                value = "";
+                insert_param!();
                 if idx == input.len() - 1 {
                     return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
                         &input[idx..],
@@ -84,17 +90,14 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                     unsafe {
                         name = str::from_utf8_unchecked(&input[start_idx..idx]);
                     }
-                    result.insert(name, "");
                 } else {
                     if value.is_empty() {
                         unsafe {
                             value = str::from_utf8_unchecked(&input[start_idx..idx]);
                         }
                     }
-                    result.insert(name, value);
                 }
-                name = "";
-                value = "";
+                insert_param!();
                 idx += 1;
                 break;
             }
@@ -105,17 +108,14 @@ pub fn parse_parameters(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str
                             unsafe {
                                 name = str::from_utf8_unchecked(&input[start_idx..idx]);
                             }
-                            result.insert(name, "");
                         } else {
                             if value.is_empty() {
                                 unsafe {
                                     value = str::from_utf8_unchecked(&input[start_idx..idx]);
                                 }
                             }
-                            result.insert(name, value);
                         }
-                        name = "";
-                        value = "";
+                        insert_param!();
                         idx += 2;
                         break;
                     } else {
