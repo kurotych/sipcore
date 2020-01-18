@@ -11,12 +11,13 @@ use alloc::vec::Vec;
 
 use core::{str, u8};
 
+/// [rfc3261 section-7.1](https://tools.ietf.org/html/rfc3261#section-7.1)
 pub struct Request<'a> {
-    // The request line
+    /// The request line. Example: `OPTIONS sip:user@example.com SIP/2.0`
     pub rl: RequestLine<'a>,
     /// The request headers.
     pub headers: Vec<Header<'a>>,
-    /// Body
+    /// The body of message
     pub body: Option<&'a [u8]>,
 }
 
@@ -39,7 +40,7 @@ impl<'a> Request<'a> {
     }
 }
 
-/// Ex: INVITE sip:user@example.com SIP/2.0
+/// Ex: `INVITE sip:user@example.com SIP/2.0`
 /// The Request line and u8 buffer shoud have the same life time
 pub struct RequestLine<'a> {
     pub method: Method,

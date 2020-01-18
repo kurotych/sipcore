@@ -12,6 +12,7 @@ use nom::{
 use alloc::vec::Vec;
 
 pub struct Response<'a> {
+    /// Status line. Ex: `SIP/2.0 401 Unauthorized`
     pub sl: StatusLine<'a>,
 
     /// The response headers.
@@ -20,6 +21,7 @@ pub struct Response<'a> {
     pub body: Option<&'a [u8]>,
 }
 
+/// Ex: `SIP/2.0 401 Unauthorized`
 pub struct StatusLine<'a> {
     pub sip_version: SipVersion,
     pub status_code: StatusCode,
@@ -59,6 +61,7 @@ impl<'a> StatusLine<'a> {
     }
 }
 
+/// [rfc3261 section-7.2](https://tools.ietf.org/html/rfc3261#section-7.2)
 impl<'a> Response<'a> {
     fn new(sl: StatusLine<'a>, headers: Vec<Header<'a>>, body: Option<&'a [u8]>) -> Response<'a> {
         Response {

@@ -11,7 +11,7 @@ pub enum MessageType {
 }
 
 const SIP: &'static [u8] = &['S' as u8, 'I' as u8, 'P' as u8]; // SIP
-// First 3 letters of Request Method
+                                                               // First 3 letters of Request Method
 const ACK: &'static [u8] = &['A' as u8, 'C' as u8, 'K' as u8]; // ACK
 const BYE: &'static [u8] = &['B' as u8, 'Y' as u8, 'E' as u8]; // BYE
 const REG: &'static [u8] = &['R' as u8, 'E' as u8, 'G' as u8]; // REGISTER
@@ -29,6 +29,14 @@ const UPD: &'static [u8] = &['U' as u8, 'P' as u8, 'D' as u8]; // UPDATE
 
 /// Fast determinates message type and minimal validate for further transmission to suitable parser.
 /// Does not validate full first line, just first 3 bytes.
+/// ```rust
+/// assert_eq!(
+///     sipmsg::get_message_type(
+///         "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0".as_bytes()
+///     ),
+///     sipmsg::MessageType::Request
+/// );
+/// ```
 pub fn get_message_type(mt: &[u8]) -> MessageType {
     if mt.len() < 3 {
         MessageType::Unknown
