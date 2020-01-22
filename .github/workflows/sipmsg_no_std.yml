@@ -1,0 +1,17 @@
+name: sipmsg_no_std
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: cargo build --no-default-features --verbose
+      working-directory: ./crates/sipmsg
+    - name: Run tests
+      run: cargo test --no-default-features --verbose
+      working-directory: ./crates/sipmsg
