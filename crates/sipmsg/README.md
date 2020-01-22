@@ -1,7 +1,7 @@
-# sipmsg
+# sipmsg [![crates.io](https://img.shields.io/crates/v/sipmsg.svg?maxAge=2592000)](https://crates.io/crates/sipmsg)
 Library for parsing/editing/constructing SIP requests and responses.  
 This is the very first version where only simple parsing is support.
 
-[![crates.io](https://img.shields.io/crates/v/sipmsg.svg?maxAge=2592000)](https://crates.io/crates/sipmsg)
+![Build and test](https://github.com/armatusmiles/sipcore/workflows/sipmsg/badge.svg)   ![Build and test](https://github.com/armatusmiles/sipcore/workflows/sipmsg_no_std/badge.svg)
 
 [Documentation](https://docs.rs/sipmsg)
