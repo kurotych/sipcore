@@ -1,6 +1,7 @@
 # sipcore  
 [![crates.io](https://img.shields.io/crates/v/sipcore.svg?maxAge=2592000)](https://crates.io/crates/sipcore) 
-![Build and test](https://github.com/armatusmiles/sipcore/workflows/sipcore/badge.svg)  
+![Build and test](https://github.com/armatusmiles/sipcore/workflows/sipcore/badge.svg)
+[![codecov](https://codecov.io/gh/armatusmiles/sipcore/branch/master/graph/badge.svg)](https://codecov.io/gh/armatusmiles/sipcore)  
 Rust framework for creating SIP applications  
 
 
