@@ -204,3 +204,11 @@ pub fn is_word_char(c: u8) -> bool {
 pub fn is_quoted_pair(i: &[u8]) -> bool {
     i[0] == b'\\' && (i[1] <= 0x09 || i[1] >= 0x0B && i[1] <= 0x0C || i[1] >= 0x0E && i[1] <= 0x7F)
 }
+
+#[inline]
+pub fn is_token_char(c: u8) -> bool {
+    is_alphanum(c) || c == b'-' || c == b'.' ||
+    c == b'!' || c == b'%' || c == b'*' ||
+    c == b'_' || c == b'+' || c == b'`' ||
+    c == b'\'' || c == b'~'
+}
