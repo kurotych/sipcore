@@ -1,4 +1,5 @@
 use crate::parameters::*;
+use crate::bnfcore::*;
 
 use nom::{
     bytes::complete::{is_not, take, take_until, take_while1},
@@ -72,14 +73,6 @@ pub fn parse_headers(input: &[u8]) -> nom::IResult<&[u8], Vec<Header>> {
     Ok((inp2, headers))
 }
 
-// https://tools.ietf.org/html/rfc2822#section-2.2
-// A field name MUST be composed of printable US-ASCII characters (i.e.,
-// characters that have values between 33 and 126, inclusive), except colon.
-pub fn is_alphabetic_or_hyphen(chr: u8) -> bool {
-    // 58 == ':' (colon)
-    chr != 58 && chr >= 33 && chr <= 126
-}
-
 impl<'a> Header<'a> {
     pub fn params(&self) -> Option<&BTreeMap<&'a str, &'a str>> {
         self.parameters.as_ref()
@@ -88,9 +81,11 @@ impl<'a> Header<'a> {
     // This function O(n + h * 2) make it O(n + h)
     // where h - header_field, n - header name
     // first full iteration is 'tuple' second in 'is_not'
+    /// According to bnf representation from RFC:
+    /// extension-header  =  header-name HCOLON header-value
     pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Header> {
         let (input, (name, _, _, _, header_field, _)) = tuple((
-            take_while1(is_alphabetic_or_hyphen),
+            take_while1(is_token_char),
             complete::space0,
             complete::char(':'),
             complete::space0,
