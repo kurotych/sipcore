@@ -1,2 +1,6 @@
 ignore:
   - "./crates/sipmsg/tests"
+coverage:
+  status:
+    project: off
+    patch: off

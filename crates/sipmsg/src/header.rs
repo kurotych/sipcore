@@ -1,5 +1,5 @@
-use crate::parameters::*;
 use crate::bnfcore::*;
+use crate::parameters::*;
 
 use nom::{
     bytes::complete::{is_not, take, take_until, take_while1},
@@ -116,11 +116,23 @@ impl<'a> Header<'a> {
                         Err(e) => return Err(e),
                     }
                 }
+                // safely convert header value to utf8 string
+                let utf8_header_value: &str;
+                match str::from_utf8(header_value) {
+                    Ok(utf8_val) => utf8_header_value = utf8_val,
+                    Err(_) => {
+                        return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
+                            input,
+                            nom::error::ErrorKind::Verify,
+                        )))
+                    }
+                }
+
                 return Ok((
                     input,
                     Header {
                         name: unsafe { str::from_utf8_unchecked(name) },
-                        value: unsafe { str::from_utf8_unchecked(header_value) },
+                        value: utf8_header_value,
                         parameters: result_parameters,
                     },
                 ));

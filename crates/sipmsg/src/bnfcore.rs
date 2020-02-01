@@ -207,8 +207,21 @@ pub fn is_quoted_pair(i: &[u8]) -> bool {
 
 #[inline]
 pub fn is_token_char(c: u8) -> bool {
-    is_alphanum(c) || c == b'-' || c == b'.' ||
-    c == b'!' || c == b'%' || c == b'*' ||
-    c == b'_' || c == b'+' || c == b'`' ||
-    c == b'\'' || c == b'~'
+    is_alphanum(c)
+        || c == b'-'
+        || c == b'.'
+        || c == b'!'
+        || c == b'%'
+        || c == b'*'
+        || c == b'_'
+        || c == b'+'
+        || c == b'`'
+        || c == b'\''
+        || c == b'~'
+}
+
+/// UTF8-CONT =  %x80-BF
+#[inline]
+pub fn is_utf8_cont(c: u8) -> bool {
+    c >= 0x80 && c <= 0xBF
 }
