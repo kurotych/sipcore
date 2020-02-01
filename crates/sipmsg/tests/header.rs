@@ -1,4 +1,4 @@
-use sipmsg;
+use sipmsg::traits::NomParser;
 
 #[test]
 fn parse_header() {

@@ -64,3 +64,4 @@ pub use response::StatusCode;
 pub use response::StatusLine;
 
 pub mod bnfcore;
+pub mod traits;
