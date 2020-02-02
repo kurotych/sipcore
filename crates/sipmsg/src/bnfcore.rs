@@ -242,5 +242,9 @@ pub fn is_user_unreserved_char(c: u8) -> bool {
         || c == b'/'
 }
 
-// // password  =  *( unreserved / escaped / "&" / "=" / "+" / "$" / "," )
-// pub fn nom_password()
+/// password         =  *( unreserved / escaped /
+///                    "&" / "=" / "+" / "$" / "," )
+#[inline]
+pub fn is_password_char(c: u8) -> bool {
+    is_unreserved(c) || c == b'&' || c == b'=' || c == b'+' || c == b'$' || c == b','
+}

@@ -1,11 +1,13 @@
 /// Helper functions for parsing with nom Interface
+use crate::errorparse::SipParseError;
 use nom;
 
 use crate::bnfcore::is_escaped;
 
-type IsFun = fn(c: u8) -> bool;
-
-pub fn take_while_with_escaped(input: &[u8], is_fun: IsFun) -> nom::IResult<&[u8], &[u8]> {
+pub fn take_while_with_escaped(
+    input: &[u8],
+    is_fun: fn(c: u8) -> bool,
+) -> nom::IResult<&[u8], &[u8], SipParseError> {
     let mut idx = 0;
     while idx < input.len() {
         if is_fun(input[idx]) {
@@ -15,10 +17,10 @@ pub fn take_while_with_escaped(input: &[u8], is_fun: IsFun) -> nom::IResult<&[u8
             idx += 3;
             continue;
         }
-        return Ok((&input[idx..], &input[..idx]));
+        break;
     }
 
-    Ok((&b""[..], &input))
+    Ok((&input[idx..], &input[..idx]))
 }
 
 #[cfg(test)]

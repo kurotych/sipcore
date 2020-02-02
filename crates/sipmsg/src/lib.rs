@@ -67,4 +67,5 @@ pub mod traits;
 
 pub mod parserhelpers;
 pub mod parameters;
+pub mod userinfo;
 pub mod errorparse;
