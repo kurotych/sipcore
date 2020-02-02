@@ -65,5 +65,6 @@ pub use response::StatusLine;
 pub mod bnfcore;
 pub mod traits;
 
-mod parserhelpers;
-mod parameters;
+pub mod parserhelpers;
+pub mod parameters;
+pub mod errorparse;
