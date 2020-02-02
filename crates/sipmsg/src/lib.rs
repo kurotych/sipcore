@@ -47,7 +47,6 @@ extern crate nom;
 pub mod header;
 pub use header::parse_headers;
 pub use header::Header;
-mod parameters;
 
 pub mod message;
 pub use message::get_message_type;
@@ -65,3 +64,6 @@ pub use response::StatusLine;
 
 pub mod bnfcore;
 pub mod traits;
+
+mod parserhelpers;
+mod parameters;

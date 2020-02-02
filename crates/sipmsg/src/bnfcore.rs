@@ -137,6 +137,9 @@ pub fn is_mark(c: u8) -> bool {
 
 #[inline]
 pub fn is_escaped(i: &[u8]) -> bool {
+    if i.len() < 3 {
+        return false;
+    }
     i[0] == b'%' && is_hexdig(i[1]) && is_hexdig(i[2])
 }
 
@@ -225,3 +228,19 @@ pub fn is_token_char(c: u8) -> bool {
 pub fn is_utf8_cont(c: u8) -> bool {
     c >= 0x80 && c <= 0xBF
 }
+
+/// user-unreserved  =  "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
+#[inline]
+pub fn is_user_unreserved_char(c: u8) -> bool {
+    c == b'&'
+        || c == b'='
+        || c == b'+'
+        || c == b'$'
+        || c == b','
+        || c == b';'
+        || c == b'?'
+        || c == b'/'
+}
+
+// // password  =  *( unreserved / escaped / "&" / "=" / "+" / "$" / "," )
+// pub fn nom_password()

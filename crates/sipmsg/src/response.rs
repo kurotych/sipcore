@@ -5,7 +5,7 @@ use crate::message::SipVersion;
 use core::str;
 use nom::{
     bytes::complete::{tag, take, take_until},
-    character::{complete},
+    character::complete,
     sequence::tuple,
 };
 
