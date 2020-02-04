@@ -1,5 +1,6 @@
 use nom::error::{ErrorKind, ParseError};
 use core::convert::From;
+use core::str;
 
 #[derive(Debug)]
 pub struct SipParseError<'a> {
@@ -37,6 +38,23 @@ impl<'a> SipParseError<'a> {
         SipParseError {
             code : code,
             message : message
+        }
+    }
+}
+
+
+impl<'a> ParseError<&'a [u8]> for SipParseError<'a> {
+    fn from_error_kind(error: &'a [u8], kind: ErrorKind) -> Self {
+        SipParseError {
+            code: kind as u32,
+            message: Some(unsafe { str::from_utf8_unchecked(error) } )
+        }
+    }
+
+    fn append(error: &'a [u8], kind: ErrorKind, _other: SipParseError) -> Self {
+        SipParseError {
+            code: kind as u32,
+            message: Some(unsafe { str::from_utf8_unchecked(error) } )
         }
     }
 }
