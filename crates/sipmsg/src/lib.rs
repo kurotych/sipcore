@@ -9,6 +9,8 @@
 //! ## Example
 //! ```rust
 //!
+//! use sipmsg::*;
+//!
 //! let invite_msg_buf = "INVITE sip:bob@biloxi.com SIP/2.0\r\n\
 //! Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bKkjshdyff\r\n\
 //! To: Bob <sip:bob@biloxi.com>\r\n\
@@ -20,8 +22,8 @@
 //!
 //! // First parameter not realized yet.
 //! // It should consist be residue if Content-Length is less then actual body length.
-//! let (_, request) = sipmsg::Request::parse(invite_msg_buf).unwrap();
-//! assert_eq!(request.rl.method, sipmsg::request::Method::INVITE);
+//! let (_, request) = SipRequest::parse(invite_msg_buf).unwrap();
+//! assert_eq!(request.rl.method, SipRequestMethod::INVITE);
 //!
 //! // Via Header
 //! assert_eq!(request.headers[0].name, "Via");
@@ -44,28 +46,31 @@
 extern crate alloc;
 extern crate nom;
 
-pub mod header;
-pub use header::parse_headers;
-pub use header::Header;
-
-pub mod message;
-pub use message::get_message_type;
-pub use message::MessageType;
+mod message;
+pub use message::get_message_type as get_sip_message_type;
+pub use message::MessageType as SipMessageType;
 pub use message::SipVersion;
 
-pub mod request;
-pub use request::Request;
-pub use request::RequestLine;
-
-pub mod response;
-pub use response::Response;
-pub use response::StatusCode;
-pub use response::StatusLine;
-
 pub mod bnfcore;
-pub mod traits;
 
-pub mod parserhelpers;
-pub mod parameters;
-pub mod userinfo;
-pub mod errorparse;
+mod errorparse;
+mod parameters;
+mod parserhelpers;
+mod userinfo;
+
+mod header;
+pub use header::parse_headers as parse_sip_headers;
+pub use header::Header as SipHeader;
+
+mod request;
+pub use request::Method as SipRequestMethod;
+pub use request::Request as SipRequest;
+pub use request::RequestLine as SipRequestLine;
+
+mod response;
+pub use response::Response as SipResponse;
+pub use response::StatusCode as SipResponseStatusCode;
+pub use response::StatusLine as SipResponseStatusLine;
+
+mod traits;
+pub use traits::NomParser as SipMessageParser;

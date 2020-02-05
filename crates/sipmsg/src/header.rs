@@ -1,4 +1,5 @@
 use crate::bnfcore::*;
+use crate::errorparse::SipParseError;
 use crate::parameters::Parameters;
 use crate::traits::NomParser;
 
@@ -28,7 +29,7 @@ pub struct Header<'a> {
 }
 
 /// ```rust
-/// let parse_headers_result = sipmsg::parse_headers(
+/// let parse_headers_result = sipmsg::parse_sip_headers(
 ///     "To: sip:user@example.com\r\n\
 ///      From: caller<sip:caller@example.com>;tag=323\r\n\
 ///      Max-Forwards: 70\r\n\
@@ -55,7 +56,7 @@ pub struct Header<'a> {
 /// }
 /// ```
 
-pub fn parse_headers(input: &[u8]) -> nom::IResult<&[u8], Vec<Header>> {
+pub fn parse_headers(input: &[u8]) -> nom::IResult<&[u8], Vec<Header>, SipParseError> {
     let mut headers = Vec::with_capacity(15); // 15 just random number
     let mut inp2 = input;
     loop {
@@ -88,7 +89,7 @@ impl<'a> NomParser<'a> for Header<'a> {
     // first full iteration is 'tuple' second in 'is_not'
     /// According to bnf representation from RFC:
     /// extension-header  =  header-name HCOLON header-value
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
         let (input, (name, _, _, _, header_field, _)) = tuple((
             take_while1(is_token_char),
             complete::space0,

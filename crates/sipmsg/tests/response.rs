@@ -1,4 +1,4 @@
-use sipmsg;
+use sipmsg::*;
 
 mod common;
 use common::*;
@@ -6,31 +6,31 @@ use common::*;
 #[test]
 fn status_code_from_bytes_str() {
     assert_eq!(
-        sipmsg::StatusCode::from_bytes_str("100".as_bytes()),
-        sipmsg::StatusCode::Trying
+        SipResponseStatusCode::from_bytes_str("100".as_bytes()),
+        SipResponseStatusCode::Trying
     );
 
     assert_eq!(
-        sipmsg::StatusCode::from_bytes_str("181".as_bytes()),
-        sipmsg::StatusCode::CallIsBeingForwarded
+        SipResponseStatusCode::from_bytes_str("181".as_bytes()),
+        SipResponseStatusCode::CallIsBeingForwarded
     );
 }
 
 #[test]
 fn status_code_from_str() {
     assert_eq!(
-        sipmsg::StatusCode::from_str("500"),
-        sipmsg::StatusCode::ServerInternalError
+        SipResponseStatusCode::from_str("500"),
+        SipResponseStatusCode::ServerInternalError
     );
 }
 
 #[test]
 fn status_line() {
-    match sipmsg::StatusLine::parse(b"SIP/2.0 401 Unauthorized\r\n") {
+    match SipResponseStatusLine::parse(b"SIP/2.0 401 Unauthorized\r\n") {
         Ok((left, status_line)) => {
             assert_eq!(left.len(), 0);
             assert_eq!(status_line.sip_version, sipmsg::SipVersion(2, 0));
-            assert_eq!(status_line.status_code, sipmsg::StatusCode::Unauthorized);
+            assert_eq!(status_line.status_code, SipResponseStatusCode::Unauthorized);
             assert_eq!(status_line.reason_phrase, "Unauthorized");
         }
         Err(_e) => panic!(),
@@ -49,7 +49,7 @@ fn parse_response() {
     Allow: INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH\r\n\
     Supported: replaces, timer\r\n\
     Content-Length: 0\r\n\r\n";
-    match sipmsg::Response::parse(response_msg.as_bytes()) {
+    match SipResponse::parse(response_msg.as_bytes()) {
         Ok((_, response)) => {
             assert_eq!(response.headers.len(), 9);
 

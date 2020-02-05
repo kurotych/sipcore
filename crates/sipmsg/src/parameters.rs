@@ -1,3 +1,4 @@
+use crate::errorparse::SipParseError;
 use crate::traits::NomParser;
 use alloc::collections::btree_map::BTreeMap;
 use core::str;
@@ -9,7 +10,7 @@ pub struct Parameters;
 impl<'a> NomParser<'a> for Parameters {
     type ParseResult = BTreeMap<&'a str, &'a str>;
     // Retuns pointer to char after terminated char.
-    fn parse(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str>> {
+    fn parse(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str>, SipParseError> {
         if input.is_empty() {
             return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
                 input,

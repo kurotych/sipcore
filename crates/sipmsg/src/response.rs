@@ -1,6 +1,8 @@
+use crate::errorparse::SipParseError;
 use crate::header::parse_headers;
 use crate::header::Header;
 use crate::message::SipVersion;
+use crate::traits::NomParser;
 
 use core::str;
 use nom::{
@@ -28,8 +30,10 @@ pub struct StatusLine<'a> {
     pub reason_phrase: &'a str,
 }
 
-impl<'a> StatusLine<'a> {
-    pub fn parse(sl: &[u8]) -> nom::IResult<&[u8], StatusLine> {
+impl<'a> NomParser<'a> for StatusLine<'a> {
+    type ParseResult = StatusLine<'a>;
+
+    fn parse(sl: &[u8]) -> nom::IResult<&[u8], StatusLine, SipParseError> {
         let (input, (_, major_version, _, minor_version, _, status_code, _, reason_phrase, _)) =
             tuple((
                 tag("SIP/"),
@@ -70,8 +74,12 @@ impl<'a> Response<'a> {
             body: body,
         }
     }
+}
 
-    pub fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response> {
+impl<'a> NomParser<'a> for Response<'a> {
+    type ParseResult = Response<'a>;
+
+    fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response, SipParseError> {
         let (input, rl) = StatusLine::parse(buf_input)?;
 
         let (input, headers) = parse_headers(input)?;

@@ -1,18 +1,15 @@
 mod common;
 use common::*;
 
-use sipmsg::{
-    request::{Method, RequestLine},
-    SipVersion,
-};
+use sipmsg::*;
 
 fn parse_rl_test(
     rl: &str,
-    expected_method: Method,
+    expected_method: SipRequestMethod,
     expected_uri: &str,
     expected_sip_version: SipVersion,
 ) {
-    match RequestLine::parse(rl.as_bytes()) {
+    match SipRequestLine::parse(rl.as_bytes()) {
         Ok((_b, rl)) => {
             assert_eq!(rl.method, expected_method);
             assert_eq!(rl.sip_version, expected_sip_version);
@@ -33,9 +30,9 @@ fn parse_request() {
                           CSeq: 986759 INVITE\r\n\r\nbody_stuff"
         .as_bytes();
 
-    match sipmsg::Request::parse(invite_msg_buf) {
+    match SipRequest::parse(invite_msg_buf) {
         Ok((_, parsed_req)) => {
-            assert_eq!(parsed_req.rl.method, Method::INVITE);
+            assert_eq!(parsed_req.rl.method, SipRequestMethod::INVITE);
             assert_eq!(parsed_req.rl.sip_version, SipVersion(2, 0));
             assert_eq!(parsed_req.rl.uri, "sip:bob@biloxi.com");
 
@@ -76,19 +73,19 @@ fn parse_request() {
 fn get_method_type() {
     parse_rl_test(
         "OPTIONS sip:user@example.com SIP/2.0\r\n",
-        Method::OPTIONS,
+        SipRequestMethod::OPTIONS,
         "sip:user@example.com",
         SipVersion(2, 0),
     );
     parse_rl_test(
         "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0\r\n",
-        Method::INVITE,
+        SipRequestMethod::INVITE,
         "sip:vivekg@chair-dnrc.example.com;unknownparam",
         SipVersion(2, 0),
     );
     parse_rl_test(
         "REGISTER sip:[2001:db8::10] SIP/3.1\r\n",
-        Method::REGISTER,
+        SipRequestMethod::REGISTER,
         "sip:[2001:db8::10]",
         SipVersion(3, 1),
     );
@@ -96,7 +93,7 @@ fn get_method_type() {
 
 #[test]
 fn get_method_type_fail() {
-    match RequestLine::parse("OPTI2ONS sip:user@example.com SIP/2.0\r\n".as_bytes()) {
+    match SipRequestLine::parse("OPTI2ONS sip:user@example.com SIP/2.0\r\n".as_bytes()) {
         Ok((_, _)) => panic!(),
         Err(_e) => (),
     }

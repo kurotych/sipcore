@@ -1,8 +1,8 @@
-use sipmsg::traits::NomParser;
+use sipmsg::*;
 
 #[test]
 fn parse_header() {
-    match sipmsg::Header::parse("Subject:This is a test\r\n".as_bytes()) {
+    match SipHeader::parse("Subject:This is a test\r\n".as_bytes()) {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Subject");
             assert_eq!(hdr.value, "This is a test");
@@ -11,7 +11,7 @@ fn parse_header() {
         Err(_e) => panic!(),
     }
 
-    match sipmsg::Header::parse("Name: Value;parameter=false;param2\r\n".as_bytes()) {
+    match SipHeader::parse("Name: Value;parameter=false;param2\r\n".as_bytes()) {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Name");
             assert_eq!(hdr.value, "Value");
@@ -22,7 +22,7 @@ fn parse_header() {
         Err(_e) => panic!(),
     }
 
-    match sipmsg::Header::parse("Max-Forwards: 70\r\n".as_bytes()) {
+    match SipHeader::parse("Max-Forwards: 70\r\n".as_bytes()) {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Max-Forwards");
             assert_eq!(hdr.value, "70");
@@ -34,18 +34,15 @@ fn parse_header() {
 
 #[test]
 fn parse_header_long_folded() {
-    assert_eq!(
-        sipmsg::Header::parse("Max-Forwards: 70\r\n continue header\r\n".as_bytes()),
-        Err(nom::Err::Error((
-            " continue header\r\n".as_bytes(),
-            nom::error::ErrorKind::Space
-        )))
-    );
+    match SipHeader::parse("Max-Forwards: 70\r\n continue header\r\n".as_bytes()) {
+        Ok((_, _)) => panic!(),
+        Err(_) => {}
+    }
 }
 
 #[test]
 fn parse_headers() {
-    let parse_headers_result = sipmsg::parse_headers(
+    let parse_headers_result = sipmsg::parse_sip_headers(
         "To: sip:user@example.com\r\n\
          From: caller<sip:caller@example.com>;tag=323\r\n\
          Max-Forwards: 70\r\n\

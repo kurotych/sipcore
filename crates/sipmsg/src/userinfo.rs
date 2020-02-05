@@ -1,5 +1,5 @@
-use crate::errorparse::SipParseError;
 use crate::bnfcore::*;
+use crate::errorparse::SipParseError;
 use crate::parserhelpers::*;
 use core::str;
 
@@ -28,7 +28,7 @@ impl<'a> UserInfo<'a> {
         take_while_with_escaped(input, is_password_char)
     }
 
-    pub fn from_bytes(input: &'a [u8]) -> nom::IResult<&'a[u8], UserInfo, SipParseError> {
+    pub fn from_bytes(input: &'a [u8]) -> nom::IResult<&'a [u8], UserInfo, SipParseError> {
         if input.len() <= 1 {
             return Err(Error(SipParseError::new(1, None)));
         }
@@ -41,24 +41,31 @@ impl<'a> UserInfo<'a> {
         if input.len() == 0 {
             return Err(Error(SipParseError::new(3, None)));
         } else if input.len() == 1 && input[0] == b'@' {
-            return Ok((&b""[..], UserInfo {
-                value: unsafe { str::from_utf8_unchecked(user) },
-                password: None,
-            }));
-         } else {
-            if input[0] != b':' || input.len() == 2 { // input.len() == 2 it is ":@" ( emptypass )
-            return Err(Error(SipParseError::new(4, None)));
+            return Ok((
+                &b""[..],
+                UserInfo {
+                    value: unsafe { str::from_utf8_unchecked(user) },
+                    password: None,
+                },
+            ));
+        } else {
+            if input[0] != b':' || input.len() == 2 {
+                // input.len() == 2 it is ":@" ( emptypass )
+                return Err(Error(SipParseError::new(4, None)));
             }
 
             let (input, pswd) = UserInfo::take_password(&input[1..])?;
             if input.len() != 1 || input[0] != b'@' {
                 return Err(Error(SipParseError::new(5, None)));
             }
-            return Ok((&b""[..], UserInfo {
-                value: unsafe { str::from_utf8_unchecked(user) },
-                password: unsafe { Some(str::from_utf8_unchecked(pswd)) },
-            }));
-         }
+            return Ok((
+                &b""[..],
+                UserInfo {
+                    value: unsafe { str::from_utf8_unchecked(user) },
+                    password: unsafe { Some(str::from_utf8_unchecked(pswd)) },
+                },
+            ));
+        }
     }
 }
 
@@ -84,9 +91,11 @@ mod tests {
         }
     }
 
-    fn parse_should_fail(input: &str){
+    fn parse_should_fail(input: &str) {
         match UserInfo::from_bytes(input.as_bytes()) {
-            Ok((_, _)) => {panic!();}
+            Ok((_, _)) => {
+                panic!();
+            }
             Err(_) => {}
         }
     }

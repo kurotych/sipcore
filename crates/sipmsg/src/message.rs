@@ -31,10 +31,10 @@ const UPD: &'static [u8] = &['U' as u8, 'P' as u8, 'D' as u8]; // UPDATE
 /// Does not validate full first line, just first 3 bytes.
 /// ```rust
 /// assert_eq!(
-///     sipmsg::get_message_type(
+///     sipmsg::get_sip_message_type(
 ///         "INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0".as_bytes()
 ///     ),
-///     sipmsg::MessageType::Request
+///     sipmsg::SipMessageType::Request
 /// );
 /// ```
 pub fn get_message_type(mt: &[u8]) -> MessageType {
