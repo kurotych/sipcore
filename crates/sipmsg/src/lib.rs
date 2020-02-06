@@ -54,6 +54,7 @@ pub use message::SipVersion;
 pub mod bnfcore;
 
 mod errorparse;
+mod hostport;
 mod parameters;
 mod parserhelpers;
 mod userinfo;
