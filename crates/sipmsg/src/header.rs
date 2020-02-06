@@ -104,10 +104,7 @@ impl<'a> NomParser<'a> for Header<'a> {
             // TODO mark
             // Long header fields not supported yet.
             // https://tools.ietf.org/html/rfc2822#section-2.2.3
-            return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                input,
-                nom::error::ErrorKind::Space,
-            )));
+            return sip_parse_error!(1, "Long header fields not supported yet");
         }
 
         match is_not(";")(header_field) {
@@ -127,10 +124,7 @@ impl<'a> NomParser<'a> for Header<'a> {
                 match str::from_utf8(header_value) {
                     Ok(utf8_val) => utf8_header_value = utf8_val,
                     Err(_) => {
-                        return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                            input,
-                            nom::error::ErrorKind::Verify,
-                        )))
+                        return sip_parse_error!(2);
                     }
                 }
 

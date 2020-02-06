@@ -88,10 +88,7 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
                     sip_version: sip_version,
                 },
             )),
-            None => Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                rl,
-                nom::error::ErrorKind::IsA,
-            ))),
+            None => return sip_parse_error!(1, "Error cast from_utf8")
         }
     }
 }

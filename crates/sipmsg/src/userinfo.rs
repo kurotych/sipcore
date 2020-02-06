@@ -30,11 +30,11 @@ impl<'a> UserInfo<'a> {
 
     pub fn from_bytes(input: &'a [u8]) -> nom::IResult<&'a [u8], UserInfo, SipParseError> {
         if input.len() <= 1 {
-            return Err(Error(SipParseError::new(1, None)));
+            return sip_parse_error!(1);
         }
 
         if !is_userinfo_char(input[0]) {
-            return Err(Error(SipParseError::new(2, None)));
+            return sip_parse_error!(2);
         }
 
         let (input, user) = UserInfo::take_user(input)?;
@@ -51,7 +51,7 @@ impl<'a> UserInfo<'a> {
         } else {
             if input[0] != b':' || input.len() == 2 {
                 // input.len() == 2 it is ":@" ( emptypass )
-                return Err(Error(SipParseError::new(4, None)));
+                return sip_parse_error!(3, "Empty password");
             }
 
             let (input, pswd) = UserInfo::take_password(&input[1..])?;

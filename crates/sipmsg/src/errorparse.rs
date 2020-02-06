@@ -1,5 +1,6 @@
 use core::convert::From;
 use core::str;
+use nom;
 use nom::error::{ErrorKind, ParseError};
 
 #[derive(Debug)]
@@ -31,6 +32,21 @@ impl<'a> ParseError<&'a str> for SipParseError<'a> {
             message: Some(error),
         }
     }
+}
+
+macro_rules! sip_parse_error {
+    // error with message
+    ($error_code:expr) => {
+        Err(nom::Err::Error(SipParseError::new($error_code, None)))
+    };
+
+    // error without message
+    ($error_code:expr, $message:expr) => {
+        Err(nom::Err::Error(SipParseError::new(
+            $error_code,
+            Some($message),
+        )))
+    };
 }
 
 impl<'a> SipParseError<'a> {

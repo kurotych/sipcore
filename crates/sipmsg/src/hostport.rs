@@ -4,7 +4,7 @@ use crate::errorparse::SipParseError;
 use crate::traits::NomParser;
 use core::str;
 
-use nom::{bytes::complete::take_while1, Err::Error};
+use nom::{bytes::complete::take_while1};
 
 // domainlabel      =  alphanum / alphanum *( alphanum / "-" ) alphanum
 // toplabel         =  ALPHA / ALPHA *( alphanum / "-" ) alphanum
@@ -16,7 +16,7 @@ pub struct HostPort<'a> {
     pub port: Option<u16>,
 }
 
-fn is_alphanum_or_hyphen(c: u8) -> bool {
+fn host_char_allowed(c: u8) -> bool {
     is_alphanum(c) || c == b'-' || c == b'.'
 }
 
@@ -24,8 +24,8 @@ impl<'a> NomParser<'a> for HostPort<'a> {
     type ParseResult = HostPort<'a>;
 
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], HostPort, SipParseError> {
-        let (rest, host) = take_while1(is_alphanum_or_hyphen)(input)?;
-
+        let (rest, host) = take_while1(host_char_allowed)(input)?;
+        
         if rest.len() == 0 || rest.len() > 2 && rest[0] != b':' {
             return Ok((
                 rest,
@@ -50,17 +50,11 @@ impl<'a> NomParser<'a> for HostPort<'a> {
                     ));
                 }
                 Err(_) => {
-                    return Err(Error(SipParseError::new(
-                        2,
-                        Some("Convert str to port is failed"),
-                    )));
+                    return sip_parse_error!(1);
                 }
             },
             Err(_) => {
-                return Err(Error(SipParseError::new(
-                    3,
-                    Some("Convert bytes to utf8 is failed"),
-                )));
+                return sip_parse_error!(2, "Convert bytes to utf8 is failed");
             }
         }
     }

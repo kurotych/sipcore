@@ -12,10 +12,7 @@ impl<'a> NomParser<'a> for Parameters {
     // Retuns pointer to char after terminated char.
     fn parse(input: &[u8]) -> nom::IResult<&[u8], BTreeMap<&str, &str>, SipParseError> {
         if input.is_empty() {
-            return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                input,
-                nom::error::ErrorKind::TakeWhile1,
-            )));
+            return sip_parse_error!(1, "Empty input");
         }
         let mut result = BTreeMap::new();
         #[derive(PartialEq)]
@@ -50,10 +47,7 @@ impl<'a> NomParser<'a> for Parameters {
                     }
                     insert_param!();
                     if idx == input.len() - 1 {
-                        return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                            &input[idx..],
-                            nom::error::ErrorKind::TakeWhile1,
-                        )));
+                        return sip_parse_error!(2);
                     }
                     start_idx = idx + 1;
                     state = ParamState::Name;
@@ -75,10 +69,7 @@ impl<'a> NomParser<'a> for Parameters {
                     }
                     if idx == input.len() - 1 {
                         // That is "param=""
-                        return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                            &input[idx..],
-                            nom::error::ErrorKind::TakeWhile1,
-                        )));
+                        return sip_parse_error!(3, "There is no value after '='");
                     }
                     start_idx = idx + 1;
                     state = ParamState::Value;
@@ -109,16 +100,10 @@ impl<'a> NomParser<'a> for Parameters {
                             idx += 2;
                             break;
                         } else {
-                            return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                                &input[idx..],
-                                nom::error::ErrorKind::TakeWhile1,
-                            )));
+                            return sip_parse_error!(4);
                         }
                     } else {
-                        return Err(nom::Err::Error(nom::error::ParseError::from_error_kind(
-                            &input[idx..],
-                            nom::error::ErrorKind::TakeWhile1,
-                        )));
+                        return sip_parse_error!(5);
                     }
                 }
                 _ => {}
