@@ -1,3 +1,5 @@
+// TODO remove this shit
+// And make parsing parameters according to RFC
 use crate::errorparse::SipParseError;
 use crate::traits::NomParser;
 use alloc::collections::btree_map::BTreeMap;
@@ -74,7 +76,7 @@ impl<'a> NomParser<'a> for Parameters {
                     start_idx = idx + 1;
                     state = ParamState::Value;
                 }
-                b'>' => {
+                b'>' | b'?' => {
                     if state == ParamState::Name {
                         name = buf_to_string!();
                     } else {
@@ -83,9 +85,12 @@ impl<'a> NomParser<'a> for Parameters {
                         }
                     }
                     insert_param!();
-                    idx += 1;
+                    if input[idx] == b'>' {
+                        idx += 1;
+                    }
                     break;
                 }
+
                 b'\r' => {
                     if idx < input.len() - 1 {
                         if input[idx + 1] == b'\n' {
@@ -188,6 +193,13 @@ mod tests {
             Err(_) => panic!(),
         }
 
+        match Parameters::parse("subject=project%20x\r\n".as_bytes()) {
+            Ok((i, value)) => {
+                assert_eq!(value.get(&"subject"), Some(&"project%20x"));
+                assert_eq!(i.len(), 0);
+            }
+            Err(_) => panic!(),
+        }
         match Parameters::parse(" aa = 4 \r\n".as_bytes()) {
             Ok((i, value)) => {
                 assert_eq!(value.get(&"aa"), Some(&"4"));
@@ -252,6 +264,15 @@ mod tests {
                 assert_eq!(value.get(&"wam"), Some(&"kram"));
                 assert_eq!(value.get(&"q"), Some(&"0.3"));
                 assert_eq!(i, ";a=b".as_bytes());
+            }
+            Err(_) => panic!(),
+        }
+
+        // parse parameters in Request-URI. After '?' it are headers
+        match Parameters::parse("method=REGISTER?to=alice%40atlanta.comb".as_bytes()) {
+            Ok((i, value)) => {
+                assert_eq!(value.get(&"method"), Some(&"REGISTER"));
+                assert_eq!(i, "?to=alice%40atlanta.comb".as_bytes());
             }
             Err(_) => panic!(),
         }

@@ -77,3 +77,5 @@ pub use response::StatusLine as SipResponseStatusLine;
 
 mod traits;
 pub use traits::NomParser as SipMessageParser;
+
+mod sipuri;
