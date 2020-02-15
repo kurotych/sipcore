@@ -4,7 +4,7 @@ use crate::errorparse::SipParseError;
 use crate::traits::NomParser;
 use core::str;
 
-use nom::{bytes::complete::take_while1};
+use nom::bytes::complete::take_while1;
 
 // domainlabel      =  alphanum / alphanum *( alphanum / "-" ) alphanum
 // toplabel         =  ALPHA / ALPHA *( alphanum / "-" ) alphanum
@@ -25,7 +25,6 @@ impl<'a> NomParser<'a> for HostPort<'a> {
 
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], HostPort, SipParseError> {
         let (rest, host) = take_while1(host_char_allowed)(input)?;
-        
         if rest.len() == 0 || rest.len() > 2 && rest[0] != b':' {
             return Ok((
                 rest,
