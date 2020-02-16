@@ -53,10 +53,22 @@ pub fn is_dquote(c: u8) -> bool {
     c == 0x22
 }
 
-/// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+/// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F" / "a" / "b" / "c" / "d" / "e" / "f"
 #[inline]
 pub fn is_hexdig(c: u8) -> bool {
-    is_digit(c) || c == b'A' || c == b'B' || c == b'C' || c == b'D' || c == b'E' || c == b'F'
+    is_digit(c)
+        || c == b'A'
+        || c == b'B'
+        || c == b'C'
+        || c == b'D'
+        || c == b'E'
+        || c == b'F'
+        || c == b'a'
+        || c == b'b'
+        || c == b'c'
+        || c == b'd'
+        || c == b'e'
+        || c == b'f'
 }
 
 /// HTAB = %x09
