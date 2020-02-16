@@ -1,10 +1,8 @@
-use crate::bnfcore::is_alphanum;
-use crate::bnfcore::is_digit;
+use crate::bnfcore::*;
 use crate::errorparse::SipParseError;
 use crate::traits::NomParser;
 use core::str;
-
-use nom::bytes::complete::take_while1;
+use nom::bytes::complete::{take, take_until, take_while1};
 
 // domainlabel      =  alphanum / alphanum *( alphanum / "-" ) alphanum
 // toplabel         =  ALPHA / ALPHA *( alphanum / "-" ) alphanum
@@ -20,12 +18,29 @@ fn host_char_allowed(c: u8) -> bool {
     is_alphanum(c) || c == b'-' || c == b'.'
 }
 
+impl<'a> HostPort<'a> {
+    fn take_ipv6_host(input: &'a [u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+        let (input, _) = take(1usize)(input)?; // skip '['
+        let (input, ipv6_host) = take_until("]")(input)?;
+        let (input, _) = take(1usize)(input)?; // skip ']'
+        Ok((input, ipv6_host))
+    }
+}
+
 impl<'a> NomParser<'a> for HostPort<'a> {
     type ParseResult = HostPort<'a>;
 
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], HostPort, SipParseError> {
-        let (rest, host) = take_while1(host_char_allowed)(input)?;
-        if rest.len() == 0 || rest.len() > 2 && rest[0] != b':' {
+        if input.is_empty() {
+            return sip_parse_error!(1);
+        }
+
+        let (rest, host) = if input[0] != b'[' {
+            take_while1(host_char_allowed)(input)?
+        } else {
+            HostPort::take_ipv6_host(input)?
+        };
+        if rest.len() == 0 || (rest.len() > 2 && rest[0] != b':') {
             return Ok((
                 rest,
                 HostPort {
@@ -49,11 +64,11 @@ impl<'a> NomParser<'a> for HostPort<'a> {
                     ));
                 }
                 Err(_) => {
-                    return sip_parse_error!(1);
+                    return sip_parse_error!(2);
                 }
             },
             Err(_) => {
-                return sip_parse_error!(2, "Convert bytes to utf8 is failed");
+                return sip_parse_error!(3, "Convert bytes to utf8 is failed");
             }
         }
     }
@@ -80,6 +95,8 @@ mod tests {
         host_port_test_case("127.0.0.1", "127.0.0.1", None, "");
         host_port_test_case("127.0.0.1:8080", "127.0.0.1", Some(8080), "");
         host_port_test_case("google.com", "google.com", None, "");
+        host_port_test_case("[2001:db8::10]", "2001:db8::10", None, "");
+        host_port_test_case("[2001:db8::10]:8080", "2001:db8::10", Some(8080), "");
     }
 
     #[test]
@@ -102,5 +119,12 @@ mod tests {
             Some(80),
             "?subject=project%20x&priority=urgent",
         );
+        host_port_test_case(
+            "[2001:db8::10]:8080;transport=tcp",
+            "2001:db8::10",
+            Some(8080),
+            ";transport=tcp",
+        );
+
     }
 }
