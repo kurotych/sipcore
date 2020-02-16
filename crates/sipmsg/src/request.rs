@@ -10,6 +10,7 @@ use nom::{
 
 use crate::header::*;
 use crate::message::*;
+use crate::sipuri::*;
 
 use alloc::vec::Vec;
 
@@ -52,7 +53,7 @@ impl<'a> NomParser<'a> for Request<'a> {
 /// The Request line and u8 buffer shoud have the same life time
 pub struct RequestLine<'a> {
     pub method: Method,
-    pub uri: &'a str,
+    pub uri: SipUri<'a>,
     pub sip_version: SipVersion,
 }
 
@@ -74,6 +75,8 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
             complete::crlf,
         ))(rl)?;
 
+        let (_, sip_uri) = SipUri::parse(uri)?;
+
         let sip_version = SipVersion(
             u8::from_str_radix(str::from_utf8(major_version).unwrap(), 10).unwrap(),
             u8::from_str_radix(str::from_utf8(minor_version).unwrap(), 10).unwrap(),
@@ -84,7 +87,7 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
                 input,
                 RequestLine {
                     method: m,
-                    uri: str::from_utf8(uri).unwrap(),
+                    uri: sip_uri,
                     sip_version: sip_version,
                 },
             )),

@@ -11,7 +11,8 @@
 //!
 //! use sipmsg::*;
 //!
-//! let invite_msg_buf = "INVITE sip:bob@biloxi.com SIP/2.0\r\n\
+//! let invite_msg_buf = "\
+//! INVITE sip:bob@biloxi.com;user=phone?to=alice%40atlanta.com&priority=urgent SIP/2.0\r\n\
 //! Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bKkjshdyff\r\n\
 //! To: Bob <sip:bob@biloxi.com>\r\n\
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
@@ -24,6 +25,15 @@
 //! // It should consist be residue if Content-Length is less then actual body length.
 //! let (_, request) = SipRequest::parse(invite_msg_buf).unwrap();
 //! assert_eq!(request.rl.method, SipRequestMethod::INVITE);
+//! assert_eq!(request.rl.sip_version, SipVersion(2, 0));
+//!
+//! // RURI
+//! assert_eq!(request.rl.uri.scheme, SipRequestUriScheme::SIP);
+//! assert_eq!(request.rl.uri.user_info().unwrap().value, "bob");
+//! assert_eq!(request.rl.uri.hostport.host, "biloxi.com");
+//! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some(&"phone"));
+//! assert_eq!(request.rl.uri.headers().unwrap().get(&"to"), Some(&"alice%40atlanta.com"));
+//! assert_eq!(request.rl.uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
 //!
 //! // Via Header
 //! assert_eq!(request.headers[0].name, "Via");
@@ -79,3 +89,5 @@ mod traits;
 pub use traits::NomParser as SipMessageParser;
 
 mod sipuri;
+pub use sipuri::RequestUriScheme as SipRequestUriScheme;
+pub use sipuri::SipUri;
