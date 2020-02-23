@@ -13,13 +13,15 @@ use alloc::collections::btree_map::BTreeMap;
 use alloc::vec::Vec;
 use core::str;
 
+use unicase::Ascii;
+
 const CRLF: &[u8] = &[0x0d, 0x0a]; // /r/n
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)
 pub struct Header<'a> {
     /// Sip header name
-    pub name: &'a str,
+    pub name: Ascii<&'a str>,
     /// Sip header value
     pub value: &'a str,
 
@@ -131,7 +133,7 @@ impl<'a> NomParser<'a> for Header<'a> {
                 return Ok((
                     input,
                     Header {
-                        name: unsafe { str::from_utf8_unchecked(name) },
+                        name: unsafe { Ascii::new(str::from_utf8_unchecked(name)) },
                         value: utf8_header_value,
                         parameters: result_parameters,
                     },
