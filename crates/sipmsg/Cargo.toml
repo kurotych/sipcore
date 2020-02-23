@@ -16,3 +16,7 @@ std = ["nom/std"]
 [dependencies.nom]
 version = "^5"
 default-features = false
+
+[dependencies.unicase]
+version ="^2.6"
+default-features = false
