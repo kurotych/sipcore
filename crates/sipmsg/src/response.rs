@@ -1,6 +1,5 @@
 use crate::errorparse::SipParseError;
-use crate::header::parse_headers;
-use crate::header::Header;
+use crate::headers::Headers;
 use crate::message::SipVersion;
 use crate::traits::NomParser;
 
@@ -11,14 +10,12 @@ use nom::{
     sequence::tuple,
 };
 
-use alloc::vec::Vec;
-
 pub struct Response<'a> {
     /// Status line. Ex: `SIP/2.0 401 Unauthorized`
     pub sl: StatusLine<'a>,
 
     /// The response headers.
-    pub headers: Vec<Header<'a>>,
+    pub headers: Headers<'a>,
     /// Body
     pub body: Option<&'a [u8]>,
 }
@@ -67,7 +64,7 @@ impl<'a> NomParser<'a> for StatusLine<'a> {
 
 /// [rfc3261 section-7.2](https://tools.ietf.org/html/rfc3261#section-7.2)
 impl<'a> Response<'a> {
-    fn new(sl: StatusLine<'a>, headers: Vec<Header<'a>>, body: Option<&'a [u8]>) -> Response<'a> {
+    fn new(sl: StatusLine<'a>, headers: Headers<'a>, body: Option<&'a [u8]>) -> Response<'a> {
         Response {
             sl: sl,
             headers: headers,
@@ -82,7 +79,7 @@ impl<'a> NomParser<'a> for Response<'a> {
     fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response, SipParseError> {
         let (input, rl) = StatusLine::parse(buf_input)?;
 
-        let (input, headers) = parse_headers(input)?;
+        let (input, headers) = Headers::parse(input)?;
         // TODO check header Content-Length and fix buf_input return
         let (body, _) = tag("\r\n")(input)?;
 

@@ -1,8 +1,5 @@
 use sipmsg::*;
 
-mod common;
-use common::*;
-
 #[test]
 fn status_code_from_bytes_str() {
     assert_eq!(
@@ -51,59 +48,80 @@ fn parse_response() {
     Content-Length: 0\r\n\r\n";
     match SipResponse::parse(response_msg.as_bytes()) {
         Ok((_, response)) => {
+            assert_eq!(response.sl.sip_version, SipVersion(2,0));
+            assert_eq!(response.sl.status_code, SipResponseStatusCode::Unauthorized);
+            assert_eq!(response.sl.reason_phrase, "Unauthorized");
             assert_eq!(response.headers.len(), 9);
 
-            check_header_value(
-                &response.headers[0],
-                "Via",
-                "SIP/2.0/UDP 192.168.178.69:60686",
+            assert_eq!(
+                response.headers.get_s("via").unwrap().value,
+                "SIP/2.0/UDP 192.168.178.69:60686"
             );
             assert_eq!(
-                response.headers[0].params().unwrap().get(&"branch"),
+                response.headers.get_s("via").unwrap().params().unwrap().get(&"branch"),
                 Some(&"z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc")
             );
 
             assert_eq!(
-                response.headers[0].params().unwrap().get(&"received"),
+                response.headers.get_s("via").unwrap().params().unwrap().get(&"received"),
                 Some(&"192.168.178.69")
             );
 
             assert_eq!(
-                response.headers[0].params().unwrap().get(&"rport"),
+                response.headers.get_s("via").unwrap().params().unwrap().get(&"rport"),
                 Some(&"60686")
             );
 
-            check_header_value(&response.headers[1], "From", "<sip:12@192.168.178.26>");
+
             assert_eq!(
-                response.headers[1].params().unwrap().get(&"tag"),
+                response.headers.get_s("From").unwrap().value,
+                "<sip:12@192.168.178.26>"
+            );
+
+            assert_eq!(
+                response.headers.get_s("from").unwrap().params().unwrap().get(&"tag"),
                 Some(&"XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b")
             );
 
-            check_header_value(&response.headers[2], "To", "<sip:12@192.168.178.26>");
             assert_eq!(
-                response.headers[2].params().unwrap().get(&"tag"),
+                response.headers.get_s("to").unwrap().value,
+                "<sip:12@192.168.178.26>"
+            );
+
+            assert_eq!(
+                response.headers.get_s("to").unwrap().params().unwrap().get(&"tag"),
                 Some(&"as68275e50")
             );
 
-            check_header_value(
-                &response.headers[3],
-                "Call-ID",
-                "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1",
+            assert_eq!(
+                response.headers.get_s("call-id").unwrap().value,
+                "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1"
             );
 
-            check_header_value(&response.headers[4], "CSeq", "62833 REGISTER");
-
-            check_header_value(&response.headers[5], "Server", "FPBX-2.11.0(11.6.0)");
-
-            check_header_value(
-                &response.headers[6],
-                "Allow",
-                "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH",
+            assert_eq!(
+                response.headers.get_s("cseq").unwrap().value,
+                "62833 REGISTER"
             );
 
-            check_header_value(&response.headers[7], "Supported", "replaces, timer");
+            assert_eq!(
+                response.headers.get_s("server").unwrap().value,
+                "FPBX-2.11.0(11.6.0)"
+            );
 
-            check_header_value(&response.headers[8], "Content-Length", "0");
+            assert_eq!(
+                response.headers.get_s("allow").unwrap().value,
+                "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH"
+            );
+
+            assert_eq!(
+                response.headers.get_s("supported").unwrap().value,
+                "replaces, timer"
+            );
+            assert_eq!(
+                response.headers.get_s("Content-Length").unwrap().value,
+                "0"
+            );
+
         }
         Err(_e) => panic!(),
     }

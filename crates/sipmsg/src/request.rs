@@ -8,11 +8,9 @@ use nom::{
     sequence::tuple,
 };
 
-use crate::header::*;
+use crate::headers::*;
 use crate::message::*;
 use crate::sipuri::*;
-
-use alloc::vec::Vec;
 
 use core::{str, u8};
 
@@ -21,13 +19,13 @@ pub struct Request<'a> {
     /// The request line. Example: `OPTIONS sip:user@example.com SIP/2.0`
     pub rl: RequestLine<'a>,
     /// The request headers.
-    pub headers: Vec<Header<'a>>,
+    pub headers: Headers<'a>,
     /// The body of message
     pub body: Option<&'a [u8]>,
 }
 
 impl<'a> Request<'a> {
-    fn new(rl: RequestLine<'a>, headers: Vec<Header<'a>>, body: Option<&'a [u8]>) -> Request<'a> {
+    fn new(rl: RequestLine<'a>, headers: Headers<'a>, body: Option<&'a [u8]>) -> Request<'a> {
         Request {
             rl: rl,
             headers: headers,
@@ -42,7 +40,7 @@ impl<'a> NomParser<'a> for Request<'a> {
     fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Request, SipParseError> {
         let (input, rl) = RequestLine::parse(buf_input)?;
 
-        let (input, headers) = parse_headers(input)?;
+        let (input, headers) = Headers::parse(input)?;
         // TODO check header Content-Length and fix buf_input return
         let (body, _) = tag("\r\n")(input)?;
         Ok((buf_input, Request::new(rl, headers, Some(body))))
@@ -91,7 +89,7 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
                     sip_version: sip_version,
                 },
             )),
-            None => return sip_parse_error!(1, "Error cast from_utf8")
+            None => return sip_parse_error!(1, "Error cast from_utf8"),
         }
     }
 }
