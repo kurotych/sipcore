@@ -14,6 +14,7 @@
 //! let invite_msg_buf = "\
 //! INVITE sip:bob@biloxi.com;user=phone?to=alice%40atlanta.com&priority=urgent SIP/2.0\r\n\
 //! Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bKkjshdyff\r\n\
+//! Via: SIP/2.0/UDP 192.168.1.111\r\n\
 //! To: Bob <sip:bob@biloxi.com>\r\n\
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
 //! Max-Forwards: 70\r\n\
@@ -36,16 +37,18 @@
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
 //!
 //! // Via Header
-//! assert_eq!(request.headers[0].name, "Via");
-//! assert_eq!(request.headers[0].value, "SIP/2.0/UDP pc33.atlanta.com");
-//!
+//! let via_headers = request.headers.get("via").unwrap(); // case insensitive
+//! assert_eq!(via_headers[1].value, "SIP/2.0/UDP pc33.atlanta.com");
+//! assert_eq!(via_headers[1].params().unwrap().get(&"branch"),  Some(&"z9hG4bKkjshdyff"));
+//! assert_eq!(via_headers[0].value, "SIP/2.0/UDP 192.168.1.111");
+//! 
 //! assert_eq!(
-//!     request.headers[0].params().unwrap().get(&"branch"),
+//!     via_headers[1].params().unwrap().get(&"branch"),
 //!     Some(&"z9hG4bKkjshdyff")
 //! );
 //!
 //! assert_eq!(
-//!     request.headers[0].params().unwrap().get(&"notExistParam"),
+//!     via_headers[1].params().unwrap().get(&"notExistParam"),
 //!     None
 //! );
 //!
@@ -72,7 +75,6 @@ mod parserhelpers;
 mod userinfo;
 
 mod header;
-pub use header::parse_headers as parse_sip_headers;
 pub use header::Header as SipHeader;
 
 mod request;
@@ -91,3 +93,6 @@ pub use traits::NomParser as SipMessageParser;
 mod sipuri;
 pub use sipuri::RequestUriScheme as SipRequestUriScheme;
 pub use sipuri::SipUri;
+
+mod headers;
+pub use headers::Headers as SipHeaders;

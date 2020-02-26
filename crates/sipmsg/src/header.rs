@@ -10,12 +10,9 @@ use nom::{
 };
 
 use alloc::collections::btree_map::BTreeMap;
-use alloc::vec::Vec;
 use core::str;
 
 use unicase::Ascii;
-
-const CRLF: &[u8] = &[0x0d, 0x0a]; // /r/n
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)
@@ -28,53 +25,6 @@ pub struct Header<'a> {
     // TODO make better representation type
     /// Sip parameters
     parameters: Option<BTreeMap<&'a str, &'a str>>,
-}
-
-/// ```rust
-/// let parse_headers_result = sipmsg::parse_sip_headers(
-///     "To: sip:user@example.com\r\n\
-///      From: caller<sip:caller@example.com>;tag=323\r\n\
-///      Max-Forwards: 70\r\n\
-///      Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
-///      CSeq: 60 OPTIONS\r\n\
-///      Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
-///         .as_bytes(),
-/// );
-///
-///
-/// match parse_headers_result {
-///     Ok((input, hdrs)) => {
-///         assert_eq!(hdrs.len(), 6);
-///         assert_eq!(hdrs[0].name, "To");
-///         assert_eq!(hdrs[0].value, "sip:user@example.com");
-///
-///         assert_eq!(hdrs[1].name, "From");
-///         assert_eq!(hdrs[1].value, "caller<sip:caller@example.com>");
-///         assert_eq!(hdrs[1].params().unwrap().get(&"tag"), Some(&"323"));
-///
-///         assert_eq!(input, "\r\nsomebody".as_bytes());
-///     }
-///     Err(_e) => panic!(),
-/// }
-/// ```
-
-pub fn parse_headers(input: &[u8]) -> nom::IResult<&[u8], Vec<Header>, SipParseError> {
-    let mut headers = Vec::with_capacity(15); // 15 just random number
-    let mut inp2 = input;
-    loop {
-        match Header::parse(inp2) {
-            Ok((inp, header)) => {
-                headers.push(header);
-                inp2 = inp;
-            }
-            Err(e) => return Err(e),
-        }
-        if inp2.len() > 1 && &inp2[0..2] == CRLF {
-            // end of headers and start of body part
-            break;
-        }
-    }
-    Ok((inp2, headers))
 }
 
 impl<'a> Header<'a> {

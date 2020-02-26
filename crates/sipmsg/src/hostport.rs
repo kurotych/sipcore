@@ -125,6 +125,5 @@ mod tests {
             Some(8080),
             ";transport=tcp",
         );
-
     }
 }

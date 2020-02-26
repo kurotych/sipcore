@@ -1,5 +1,3 @@
-mod common;
-use common::*;
 
 use sipmsg::*;
 
@@ -8,7 +6,7 @@ fn parse_request() {
     let invite_msg_buf = "INVITE sip:bob@biloxi.com SIP/2.0\r\n\
                           Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bKkjshdyff\r\n\
                           To: Bob <sip:bob@biloxi.com>\r\n\
-                          From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
+                          From: Alice <sip:alice@atlanta.com>;tag=88sja8x;onemore\r\n\
                           Max-Forwards: 70\r\n\
                           Call-ID: 987asjd97y7atg\r\n\
                           CSeq: 986759 INVITE\r\n\r\nbody_stuff"
@@ -23,31 +21,63 @@ fn parse_request() {
             assert_eq!(parsed_req.rl.sip_version, SipVersion(2, 0));
 
             assert_eq!(parsed_req.headers.len(), 6);
-
-            check_header_value(
-                &parsed_req.headers[0],
-                "Via",
-                "SIP/2.0/UDP pc33.atlanta.com",
+            assert_eq!(
+                parsed_req.headers.get_s("via").unwrap().value,
+                "SIP/2.0/UDP pc33.atlanta.com"
             );
             assert_eq!(
-                parsed_req.headers[0].params().unwrap().get(&"branch"),
+                parsed_req
+                    .headers
+                    .get_s("via")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"branch"),
                 Some(&"z9hG4bKkjshdyff")
             );
-
-            check_header_value(&parsed_req.headers[1], "To", "Bob <sip:bob@biloxi.com>");
-            check_header_value(
-                &parsed_req.headers[2],
-                "From",
-                "Alice <sip:alice@atlanta.com>",
+            assert_eq!(
+                parsed_req.headers.get_s("to").unwrap().value,
+                "Bob <sip:bob@biloxi.com>"
             );
             assert_eq!(
-                parsed_req.headers[2].params().unwrap().get(&"tag"),
+                parsed_req.headers.get_s("from").unwrap().value,
+                "Alice <sip:alice@atlanta.com>"
+            );
+            assert_eq!(
+                parsed_req
+                    .headers
+                    .get_s("from")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"tag"),
                 Some(&"88sja8x")
             );
+            assert_eq!(
+                parsed_req
+                    .headers
+                    .get_s("from")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"onemore"),
+                Some(&"")
+            );
 
-            check_header_value(&parsed_req.headers[3], "Max-Forwards", "70");
-            check_header_value(&parsed_req.headers[4], "Call-ID", "987asjd97y7atg");
-            check_header_value(&parsed_req.headers[5], "CSeq", "986759 INVITE");
+            assert_eq!(
+                parsed_req.headers.get_s("max-forwards").unwrap().value,
+                "70"
+            );
+
+            assert_eq!(
+                parsed_req.headers.get_s("call-id").unwrap().value,
+                "987asjd97y7atg"
+            );
+
+            assert_eq!(
+                parsed_req.headers.get_s("CSeq").unwrap().value,
+                "986759 INVITE"
+            );
 
             assert_eq!(parsed_req.body.unwrap(), "body_stuff".as_bytes())
         }
