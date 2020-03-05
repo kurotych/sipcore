@@ -4,7 +4,7 @@ use crate::parameters::Parameters;
 use crate::traits::NomParser;
 
 use nom::{
-    bytes::complete::{is_not, take, take_until, take_while1},
+    bytes::complete::{is_not, take, take_while1},
     character::complete,
     sequence::tuple,
 };
