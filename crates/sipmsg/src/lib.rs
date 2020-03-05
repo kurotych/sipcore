@@ -41,7 +41,7 @@
 //! assert_eq!(via_headers[1].value, "SIP/2.0/UDP pc33.atlanta.com");
 //! assert_eq!(via_headers[1].params().unwrap().get(&"branch"),  Some(&"z9hG4bKkjshdyff"));
 //! assert_eq!(via_headers[0].value, "SIP/2.0/UDP 192.168.1.111");
-//! 
+//!
 //! assert_eq!(
 //!     via_headers[1].params().unwrap().get(&"branch"),
 //!     Some(&"z9hG4bKkjshdyff")

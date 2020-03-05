@@ -33,9 +33,13 @@ fn parse_header() {
 }
 
 #[test]
-fn parse_header_long_folded() {
-    match SipHeader::parse("Max-Forwards: 70\r\n continue header\r\n".as_bytes()) {
-        Ok((_, _)) => panic!(),
-        Err(_) => {}
+fn parse_long_header_field() {
+    match SipHeader::parse("Subject: I know you're there, \r\n pick up the phone\r\n and talk to me!\r\n".as_bytes()) {
+        Ok((input, hdr)) => {
+            assert_eq!(hdr.name, "Subject");
+            assert_eq!(hdr.value, "I know you're there, \r\n pick up the phone\r\n and talk to me!");
+            assert_eq!(input.len(), 0);
+        }
+        Err(_e) => panic!(),
     }
 }

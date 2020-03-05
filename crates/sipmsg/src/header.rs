@@ -31,6 +31,19 @@ impl<'a> Header<'a> {
     pub fn params(&self) -> Option<&BTreeMap<&'a str, &'a str>> {
         self.parameters.as_ref()
     }
+
+    fn take_header_field(input: &'a [u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+        let mut idx = 0;
+        while idx < input.len() - 1 {
+            if is_crlf(&input[idx..]) {
+                if idx + 2 == input.len() || input[idx + 2] != b' ' {
+                    return Ok((&input[idx + 2..], &input[..idx]));
+                }
+            }
+            idx += 1;
+        }
+        return sip_parse_error!(1, "Header field parse error");
+    }
 }
 
 impl<'a> NomParser<'a> for Header<'a> {
@@ -42,22 +55,14 @@ impl<'a> NomParser<'a> for Header<'a> {
     /// According to bnf representation from RFC:
     /// extension-header  =  header-name HCOLON header-value
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-        let (input, (name, _, _, _, header_field, _)) = tuple((
+        let (input, (name, _, _, _)) = tuple((
             take_while1(is_token_char),
             complete::space0,
             complete::char(':'),
             complete::space0,
-            take_until("\r\n"),
-            take(2usize), // skip /r/n
         ))(input)?;
 
-        if input.len() > 0 && (input[0] == 32 || input[0] == 9) {
-            // is WSP?
-            // TODO mark
-            // Long header fields not supported yet.
-            // https://tools.ietf.org/html/rfc2822#section-2.2.3
-            return sip_parse_error!(1, "Long header fields not supported yet");
-        }
+        let (input, header_field) = Header::take_header_field(input)?;
 
         match is_not(";")(header_field) {
             Ok((params, header_value)) => {
