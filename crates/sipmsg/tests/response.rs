@@ -48,7 +48,7 @@ fn parse_response() {
     Content-Length: 0\r\n\r\n";
     match SipResponse::parse(response_msg.as_bytes()) {
         Ok((_, response)) => {
-            assert_eq!(response.sl.sip_version, SipVersion(2,0));
+            assert_eq!(response.sl.sip_version, SipVersion(2, 0));
             assert_eq!(response.sl.status_code, SipResponseStatusCode::Unauthorized);
             assert_eq!(response.sl.reason_phrase, "Unauthorized");
             assert_eq!(response.headers.len(), 9);
@@ -58,20 +58,37 @@ fn parse_response() {
                 "SIP/2.0/UDP 192.168.178.69:60686"
             );
             assert_eq!(
-                response.headers.get_s("via").unwrap().params().unwrap().get(&"branch"),
+                response
+                    .headers
+                    .get_s("via")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"branch"),
                 Some(&"z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc")
             );
 
             assert_eq!(
-                response.headers.get_s("via").unwrap().params().unwrap().get(&"received"),
+                response
+                    .headers
+                    .get_s("via")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"received"),
                 Some(&"192.168.178.69")
             );
 
             assert_eq!(
-                response.headers.get_s("via").unwrap().params().unwrap().get(&"rport"),
+                response
+                    .headers
+                    .get_s("via")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"rport"),
                 Some(&"60686")
             );
-
 
             assert_eq!(
                 response.headers.get_s("From").unwrap().value,
@@ -79,7 +96,13 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_s("from").unwrap().params().unwrap().get(&"tag"),
+                response
+                    .headers
+                    .get_s("from")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"tag"),
                 Some(&"XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b")
             );
 
@@ -89,7 +112,13 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_s("to").unwrap().params().unwrap().get(&"tag"),
+                response
+                    .headers
+                    .get_s("to")
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"tag"),
                 Some(&"as68275e50")
             );
 
@@ -117,11 +146,7 @@ fn parse_response() {
                 response.headers.get_s("supported").unwrap().value,
                 "replaces, timer"
             );
-            assert_eq!(
-                response.headers.get_s("Content-Length").unwrap().value,
-                "0"
-            );
-
+            assert_eq!(response.headers.get_s("Content-Length").unwrap().value, "0");
         }
         Err(_e) => panic!(),
     }
