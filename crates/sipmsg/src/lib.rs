@@ -74,9 +74,6 @@ mod parameters;
 mod parserhelpers;
 mod userinfo;
 
-mod header;
-pub use header::Header as SipHeader;
-
 mod request;
 pub use request::Method as SipRequestMethod;
 pub use request::Request as SipRequest;
