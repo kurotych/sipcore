@@ -18,7 +18,7 @@ impl<'a> Headers<'a> {
     }
 
     /// get single value
-    /// Returns some value if Header by key present only one time
+    /// Returns some value if header by key should be present only one time
     pub fn get_s(&self, key: &'a str) -> Option<&Header<'a>> {
         match self.headers.get(&Ascii::new(key)) {
             Some(s) => {
