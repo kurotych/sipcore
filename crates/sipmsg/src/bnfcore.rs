@@ -32,6 +32,9 @@ pub fn is_cr(c: u8) -> bool {
 /// Internet standard newline
 #[inline]
 pub fn is_crlf(i: &[u8]) -> bool {
+    if i.len() < 2 {
+        return false;
+    }
     is_cr(i[0]) && is_lf(i[1])
 }
 

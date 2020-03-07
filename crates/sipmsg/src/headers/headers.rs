@@ -1,3 +1,4 @@
+use crate::bnfcore::is_crlf;
 /// Contained of SIP message headers
 use crate::errorparse::SipParseError;
 use crate::header::Header;
@@ -5,8 +6,6 @@ use crate::traits::NomParser;
 use alloc::collections::btree_map::BTreeMap;
 use alloc::collections::VecDeque;
 use unicase::Ascii;
-
-const CRLF: &[u8] = &[0x0d, 0x0a]; // /r/n
 
 pub struct Headers<'a> {
     headers: BTreeMap<Ascii<&'a str>, VecDeque<Header<'a>>>,
@@ -57,13 +56,60 @@ impl<'a> NomParser<'a> for Headers<'a> {
                 }
                 Err(e) => return Err(e),
             }
-            if inp2.len() > 1 && &inp2[0..2] == CRLF {
+            if is_crlf(inp2) {
                 // end of headers and start of body part
                 break;
             }
         }
         Ok((inp2, Headers { headers: headers }))
     }
+}
+
+/// Headers that defined in rfc3261
+pub enum SipRFCHeader {
+    Accept,
+    AcceptEncoding,
+    AlertInfo,
+    Allow,
+    AuthenticationInfo,
+    Authorization,
+    CallID,
+    CallInfo,
+    Contact,
+    ContentDisposition,
+    ContentEncoding,
+    ContentLanguage,
+    ContentLength,
+    ContentType,
+    CSeq,
+    Date,
+    ErrorInfo,
+    Expires,
+    From,
+    InReplyTo,
+    MaxForwards,
+    MimeVersion,
+    MinExpires,
+    Organization,
+    Priority,
+    ProxyAuthenticate,
+    ProxyAuthorization,
+    ProxyRequire,
+    RecordRoute,
+    ReplyTo,
+    Require,
+    RetryAfter,
+    Route,
+    Server,
+    Subject,
+    Supported,
+    Timestamp,
+    To,
+    Unsupported,
+    UserAgent,
+    Via,
+    Warning,
+    WWWAuthenticate
 }
 
 #[cfg(test)]
