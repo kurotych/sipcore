@@ -95,4 +95,4 @@ pub use sipuri::RequestUriScheme as SipRequestUriScheme;
 pub use sipuri::SipUri;
 
 mod headers;
-pub use headers::Headers as SipHeaders;
+pub use headers::*;

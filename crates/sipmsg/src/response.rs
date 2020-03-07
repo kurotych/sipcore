@@ -1,5 +1,5 @@
 use crate::errorparse::SipParseError;
-use crate::headers::Headers;
+use crate::headers::*;
 use crate::message::SipVersion;
 use crate::traits::NomParser;
 
@@ -15,7 +15,7 @@ pub struct Response<'a> {
     pub sl: StatusLine<'a>,
 
     /// The response headers.
-    pub headers: Headers<'a>,
+    pub headers: SipHeaders<'a>,
     /// Body
     pub body: Option<&'a [u8]>,
 }
@@ -64,7 +64,7 @@ impl<'a> NomParser<'a> for StatusLine<'a> {
 
 /// [rfc3261 section-7.2](https://tools.ietf.org/html/rfc3261#section-7.2)
 impl<'a> Response<'a> {
-    fn new(sl: StatusLine<'a>, headers: Headers<'a>, body: Option<&'a [u8]>) -> Response<'a> {
+    fn new(sl: StatusLine<'a>, headers: SipHeaders<'a>, body: Option<&'a [u8]>) -> Response<'a> {
         Response {
             sl: sl,
             headers: headers,
@@ -79,7 +79,7 @@ impl<'a> NomParser<'a> for Response<'a> {
     fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response, SipParseError> {
         let (input, rl) = StatusLine::parse(buf_input)?;
 
-        let (input, headers) = Headers::parse(input)?;
+        let (input, headers) = SipHeaders::parse(input)?;
         // TODO check header Content-Length and fix buf_input return
         let (body, _) = tag("\r\n")(input)?;
 
