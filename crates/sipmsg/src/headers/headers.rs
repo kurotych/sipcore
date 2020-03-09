@@ -65,53 +65,6 @@ impl<'a> NomParser<'a> for Headers<'a> {
     }
 }
 
-/// Headers that defined in rfc3261
-pub enum SipRFCHeader {
-    Accept,
-    AcceptEncoding,
-    AlertInfo,
-    Allow,
-    AuthenticationInfo,
-    Authorization,
-    CallID,
-    CallInfo,
-    Contact,
-    ContentDisposition,
-    ContentEncoding,
-    ContentLanguage,
-    ContentLength,
-    ContentType,
-    CSeq,
-    Date,
-    ErrorInfo,
-    Expires,
-    From,
-    InReplyTo,
-    MaxForwards,
-    MimeVersion,
-    MinExpires,
-    Organization,
-    Priority,
-    ProxyAuthenticate,
-    ProxyAuthorization,
-    ProxyRequire,
-    RecordRoute,
-    ReplyTo,
-    Require,
-    RetryAfter,
-    Route,
-    Server,
-    Subject,
-    Supported,
-    Timestamp,
-    To,
-    Unsupported,
-    UserAgent,
-    Via,
-    Warning,
-    WWWAuthenticate,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
