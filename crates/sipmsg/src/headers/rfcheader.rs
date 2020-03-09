@@ -54,7 +54,6 @@ impl SipRFCHeader {
     pub fn from_str(s: &str) -> Option<SipRFCHeader> {
         let s = Ascii::new(s);
         macro_rules! match_str {
-            // error with message
             ($input_str:expr, $enum_result:expr) => {
                 if s == $input_str {
                     return Some($enum_result);
@@ -118,13 +117,62 @@ impl SipRFCHeader {
         match_str!("WWW-Authenticate", SipRFCHeader::WWWAuthenticate);
         None
     }
+
+    pub fn as_str(&self) -> &str {
+        match self {
+            &SipRFCHeader::Accept => "Accept",
+            &SipRFCHeader::AcceptEncoding => "Accept-Encoding",
+            &SipRFCHeader::AcceptLanguage => "Accept-Language",
+            &SipRFCHeader::AlertInfo => "Alert-Info",
+            &SipRFCHeader::Allow => "Allow",
+            &SipRFCHeader::AuthenticationInfo => "Authentication-Info",
+            &SipRFCHeader::Authorization => "Authorization",
+            &SipRFCHeader::CallID => "Call-ID",
+            &SipRFCHeader::CallInfo => "Call-Info",
+            &SipRFCHeader::Contact => "Contact",
+            &SipRFCHeader::ContentDisposition => "Content-Disposition",
+            &SipRFCHeader::ContentEncoding => "Content-Encoding",
+            &SipRFCHeader::ContentLanguage => "Content-Language",
+            &SipRFCHeader::ContentLength => "Content-Length",
+            &SipRFCHeader::ContentType => "Content-Type",
+            &SipRFCHeader::CSeq => "CSeq",
+            &SipRFCHeader::Date => "Date",
+            &SipRFCHeader::ErrorInfo => "Error-Info",
+            &SipRFCHeader::Expires => "Expires",
+            &SipRFCHeader::From => "From",
+            &SipRFCHeader::InReplyTo => "In-Reply-To",
+            &SipRFCHeader::MaxForwards => "Max-Forwards",
+            &SipRFCHeader::MimeVersion => "MIME-Version",
+            &SipRFCHeader::MinExpires => "Min-Expires",
+            &SipRFCHeader::Organization => "Organization",
+            &SipRFCHeader::Priority => "Priority",
+            &SipRFCHeader::ProxyAuthenticate => "Proxy-Authenticate",
+            &SipRFCHeader::ProxyAuthorization => "Proxy-Authorization",
+            &SipRFCHeader::ProxyRequire => "Proxy-Require",
+            &SipRFCHeader::RecordRoute => "Record-Route",
+            &SipRFCHeader::ReplyTo => "Reply-To",
+            &SipRFCHeader::Require => "Require",
+            &SipRFCHeader::RetryAfter => "Retry-After",
+            &SipRFCHeader::Route => "Route",
+            &SipRFCHeader::Server => "Server",
+            &SipRFCHeader::Subject => "Subject",
+            &SipRFCHeader::Supported => "Supported",
+            &SipRFCHeader::Timestamp => "Timestamp",
+            &SipRFCHeader::To => "To",
+            &SipRFCHeader::Unsupported => "Unsupported",
+            &SipRFCHeader::UserAgent => "User-Agent",
+            &SipRFCHeader::Via => "Via",
+            &SipRFCHeader::Warning => "Warning",
+            &SipRFCHeader::WWWAuthenticate => "WWW-Authenticate",
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn t() {
+    fn from_str_test() {
         assert_eq!(SipRFCHeader::from_str("V").unwrap(), SipRFCHeader::Via);
         assert_eq!(
             SipRFCHeader::from_str("accept").unwrap(),
@@ -141,5 +189,11 @@ mod tests {
         );
 
         assert_eq!(SipRFCHeader::from_str("1"), None);
+    }
+
+    #[test]
+    fn as_str_test() {
+        let s = SipRFCHeader::Via;
+        assert_eq!(s.as_str(), "Via");
     }
 }
