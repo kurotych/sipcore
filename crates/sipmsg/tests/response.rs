@@ -54,13 +54,13 @@ fn parse_response() {
             assert_eq!(response.headers.len(), 9);
 
             assert_eq!(
-                response.headers.get_s("via").unwrap().value,
+                response.headers.get_rfc_s(SipRFCHeader::Via).unwrap().value,
                 "SIP/2.0/UDP 192.168.178.69:60686"
             );
             assert_eq!(
                 response
                     .headers
-                    .get_s("via")
+                    .get_rfc_s(SipRFCHeader::Via)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -71,7 +71,7 @@ fn parse_response() {
             assert_eq!(
                 response
                     .headers
-                    .get_s("via")
+                    .get_rfc_s(SipRFCHeader::Via)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -82,7 +82,7 @@ fn parse_response() {
             assert_eq!(
                 response
                     .headers
-                    .get_s("via")
+                    .get_rfc_s(SipRFCHeader::Via)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -91,14 +91,18 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_s("From").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::From)
+                    .unwrap()
+                    .value,
                 "<sip:12@192.168.178.26>"
             );
 
             assert_eq!(
                 response
                     .headers
-                    .get_s("from")
+                    .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -107,14 +111,14 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_s("to").unwrap().value,
+                response.headers.get_rfc_s(SipRFCHeader::To).unwrap().value,
                 "<sip:12@192.168.178.26>"
             );
 
             assert_eq!(
                 response
                     .headers
-                    .get_s("to")
+                    .get_rfc_s(SipRFCHeader::To)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -123,30 +127,57 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_s("call-id").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::CallID)
+                    .unwrap()
+                    .value,
                 "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1"
             );
 
             assert_eq!(
-                response.headers.get_s("cseq").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::CSeq)
+                    .unwrap()
+                    .value,
                 "62833 REGISTER"
             );
 
             assert_eq!(
-                response.headers.get_s("server").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Server)
+                    .unwrap()
+                    .value,
                 "FPBX-2.11.0(11.6.0)"
             );
 
             assert_eq!(
-                response.headers.get_s("allow").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Allow)
+                    .unwrap()
+                    .value,
                 "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH"
             );
 
             assert_eq!(
-                response.headers.get_s("supported").unwrap().value,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Supported)
+                    .unwrap()
+                    .value,
                 "replaces, timer"
             );
-            assert_eq!(response.headers.get_s("Content-Length").unwrap().value, "0");
+            assert_eq!(
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::ContentLength)
+                    .unwrap()
+                    .value,
+                "0"
+            );
         }
         Err(_e) => panic!(),
     }
