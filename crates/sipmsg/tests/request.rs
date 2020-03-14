@@ -1,4 +1,3 @@
-
 use sipmsg::*;
 
 #[test]
@@ -22,13 +21,17 @@ fn parse_request() {
 
             assert_eq!(parsed_req.headers.len(), 6);
             assert_eq!(
-                parsed_req.headers.get_s("via").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Via)
+                    .unwrap()
+                    .value,
                 "SIP/2.0/UDP pc33.atlanta.com"
             );
             assert_eq!(
                 parsed_req
                     .headers
-                    .get_s("via")
+                    .get_rfc_s(SipRFCHeader::Via)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -36,17 +39,25 @@ fn parse_request() {
                 Some(&"z9hG4bKkjshdyff")
             );
             assert_eq!(
-                parsed_req.headers.get_s("to").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::To)
+                    .unwrap()
+                    .value,
                 "Bob <sip:bob@biloxi.com>"
             );
             assert_eq!(
-                parsed_req.headers.get_s("from").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::From)
+                    .unwrap()
+                    .value,
                 "Alice <sip:alice@atlanta.com>"
             );
             assert_eq!(
                 parsed_req
                     .headers
-                    .get_s("from")
+                    .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -56,7 +67,7 @@ fn parse_request() {
             assert_eq!(
                 parsed_req
                     .headers
-                    .get_s("from")
+                    .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
                     .params()
                     .unwrap()
@@ -65,17 +76,29 @@ fn parse_request() {
             );
 
             assert_eq!(
-                parsed_req.headers.get_s("max-forwards").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::MaxForwards)
+                    .unwrap()
+                    .value,
                 "70"
             );
 
             assert_eq!(
-                parsed_req.headers.get_s("call-id").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::CallID)
+                    .unwrap()
+                    .value,
                 "987asjd97y7atg"
             );
 
             assert_eq!(
-                parsed_req.headers.get_s("CSeq").unwrap().value,
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::CSeq)
+                    .unwrap()
+                    .value,
                 "986759 INVITE"
             );
 

@@ -1,7 +1,7 @@
 use unicase::Ascii;
 
 /// Headers that defined in rfc3261
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, PartialOrd, Ord, Eq)]
 pub enum SipRFCHeader {
     Accept,
     AcceptEncoding,
