@@ -86,6 +86,7 @@ pub use response::StatusLine as SipResponseStatusLine;
 
 mod traits;
 pub use traits::NomParser as SipMessageParser;
+pub use traits::SipMessageHeaderParser;
 
 mod sipuri;
 pub use sipuri::RequestUriScheme as SipRequestUriScheme;
