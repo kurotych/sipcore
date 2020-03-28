@@ -175,6 +175,7 @@ mod tests {
              Max-Forwards: 70\r\n\
              Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
              CSeq: 60 OPTIONS\r\n\
+             Extention-Header: Value\r\n\
              Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
                 .as_bytes(),
         );
@@ -188,6 +189,10 @@ mod tests {
                 assert_eq!(
                     hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value,
                     "<sip:[2001:db8::1]>"
+                );
+                assert_eq!(
+                    hdrs.get_ext("extention-header").unwrap()[0].value,
+                    "Value"
                 );
                 assert_eq!(hdrs.get_rfc(SipRFCHeader::Route).unwrap().len(), 2);
             }
