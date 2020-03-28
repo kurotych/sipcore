@@ -1,18 +1,14 @@
 use crate::bnfcore::*;
 use crate::errorparse::SipParseError;
 use crate::parameters::Parameters;
-use crate::traits::NomParser;
+use crate::traits::{ NomParser, SipMessageHeaderParser};
 
-use nom::{
-    bytes::complete::{is_not, take, take_while1},
-    character::complete,
-    sequence::tuple,
-};
-
+use nom::bytes::complete::{is_not, take};
 use alloc::collections::btree_map::BTreeMap;
 use core::str;
-
 use unicase::Ascii;
+
+pub type HeaderPerameters<'a> = BTreeMap<&'a str, &'a str>;
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)
@@ -22,13 +18,24 @@ pub struct Header<'a> {
     /// Sip header value
     pub value: &'a str,
 
-    // TODO make better representation type
     /// Sip parameters
-    parameters: Option<BTreeMap<&'a str, &'a str>>,
+    parameters: Option<HeaderPerameters<'a>>,
 }
 
 impl<'a> Header<'a> {
-    pub fn params(&self) -> Option<&BTreeMap<&'a str, &'a str>> {
+    pub fn new(
+        name: &'a str,
+        value: &'a str,
+        parameters: Option<HeaderPerameters<'a>>,
+    ) -> Header<'a> {
+        Header {
+            name: { Ascii::new(name) },
+            value: value,
+            parameters: parameters,
+        }
+    }
+
+    pub fn params(&self) -> Option<&HeaderPerameters<'a>> {
         self.parameters.as_ref()
     }
 
@@ -46,22 +53,18 @@ impl<'a> Header<'a> {
     }
 }
 
-impl<'a> NomParser<'a> for Header<'a> {
-    type ParseResult = Header<'a>;
+// TODO
+// impl<'a> NomParser<'a> for Header<'a> {
+//     type ParseResult = Header<'a>;
+//     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
 
-    // This function O(n + h * 2) make it O(n + h)
-    // where h - header_field, n - header name
-    // first full iteration is 'tuple' second in 'is_not'
-    /// According to bnf representation from RFC:
-    /// extension-header  =  header-name HCOLON header-value
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-        let (input, (name, _, _, _)) = tuple((
-            take_while1(is_token_char),
-            complete::space0,
-            complete::char(':'),
-            complete::space0,
-        ))(input)?;
+//     }
+// }
 
+impl<'a> SipMessageHeaderParser<'a> for Header<'a> {
+    fn value_params_parse(
+        input: &'a [u8],
+    ) -> nom::IResult<&[u8], (&'a str, Option<BTreeMap<&'a str, &'a str>>), SipParseError> {
         let (input, header_field) = Header::take_header_field(input)?;
 
         match is_not(";")(header_field) {
@@ -85,14 +88,7 @@ impl<'a> NomParser<'a> for Header<'a> {
                     }
                 }
 
-                return Ok((
-                    input,
-                    Header {
-                        name: unsafe { Ascii::new(str::from_utf8_unchecked(name)) },
-                        value: utf8_header_value,
-                        parameters: result_parameters,
-                    },
-                ));
+                return Ok((input, (utf8_header_value, result_parameters)));
             }
             Err(e) => return Err(e),
         }
