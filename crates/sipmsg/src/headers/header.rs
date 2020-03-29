@@ -1,11 +1,15 @@
 use crate::bnfcore::*;
 use crate::errorparse::SipParseError;
 use crate::parameters::Parameters;
-use crate::traits::{ NomParser, SipMessageHeaderParser};
+use crate::traits::{NomParser, SipMessageHeaderParser};
 
-use nom::bytes::complete::{is_not, take};
 use alloc::collections::btree_map::BTreeMap;
 use core::str;
+use nom::{
+    bytes::complete::{is_not, take, take_while1},
+    character::complete,
+    sequence::tuple,
+};
 use unicase::Ascii;
 
 pub type HeaderPerameters<'a> = BTreeMap<&'a str, &'a str>;
@@ -51,18 +55,32 @@ impl<'a> Header<'a> {
         }
         return sip_parse_error!(1, "Header field parse error");
     }
+
+    pub fn take_header_name(input: &'a [u8]) -> nom::IResult<&[u8], &'a str, SipParseError> {
+        let (input_rest, (header_name, _, _, _)) = tuple((
+            take_while1(is_token_char),
+            complete::space0,
+            complete::char(':'),
+            complete::space0,
+        ))(input)?;
+        match str::from_utf8(header_name) {
+            Ok(hdr_str) => Ok((input_rest, hdr_str)),
+            Err(_) => sip_parse_error!(1, "Bad header name"),
+        }
+    }
 }
 
-// TODO
-// impl<'a> NomParser<'a> for Header<'a> {
-//     type ParseResult = Header<'a>;
-//     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-
-//     }
-// }
+impl<'a> NomParser<'a> for Header<'a> {
+    type ParseResult = Header<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+        let (input, header_name) = Header::take_header_name(input)?;
+        let (input, (value, parameters)) = Header::parse_value(input)?;
+        Ok((input, Header::new(header_name, value, parameters)))
+    }
+}
 
 impl<'a> SipMessageHeaderParser<'a> for Header<'a> {
-    fn value_params_parse(
+    fn parse_value(
         input: &'a [u8],
     ) -> nom::IResult<&[u8], (&'a str, Option<BTreeMap<&'a str, &'a str>>), SipParseError> {
         let (input, header_field) = Header::take_header_field(input)?;
