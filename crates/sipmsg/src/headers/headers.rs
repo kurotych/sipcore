@@ -1,7 +1,7 @@
 use crate::bnfcore::is_crlf;
 use crate::errorparse::SipParseError;
-use crate::headers::{SipHeader,SipRFCHeader};
-use crate::traits::{ NomParser, SipMessageHeaderParser};
+use crate::headers::{SipHeader, SipHeaderParameters, SipRFCHeader};
+use crate::traits::{NomParser, SipMessageHeaderParser};
 
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
@@ -12,8 +12,8 @@ type HeaderParser<'a> = fn(
 ) -> nom::IResult<
     &[u8],
     (
-        &'a str,                            /*value*/
-        Option<BTreeMap<&'a str, &'a str>>, /*parameters*/
+        &'a str, /*value*/
+        Option<SipHeaderParameters>,
     ),
     SipParseError,
 >;
