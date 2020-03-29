@@ -1,17 +1,10 @@
 use crate::bnfcore::is_crlf;
-use crate::bnfcore::is_token_char;
 use crate::errorparse::SipParseError;
-use crate::headers::SipHeader;
-use crate::headers::SipRFCHeader;
-use crate::traits::NomParser;
-/// Contained of SIP message headers
-use crate::traits::SipMessageHeaderParser;
-use alloc::collections::btree_map::BTreeMap;
-use alloc::collections::VecDeque;
+use crate::headers::{SipHeader,SipRFCHeader};
+use crate::traits::{ NomParser, SipMessageHeaderParser};
+
+use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
-use nom::bytes::complete::take_while1;
-use nom::character::complete;
-use nom::sequence::tuple;
 use unicase::Ascii;
 
 type HeaderParser<'a> = fn(
@@ -87,22 +80,9 @@ impl<'a> Headers<'a> {
         match SipRFCHeader::from_str(&header_name) {
             Some(rfc_header) => match rfc_header {
                 // For implement new parser add row RfCHeader => (Some(rfc_header), RFCHeaderType::parse)
-                _ => (Some(rfc_header), SipHeader::value_params_parse),
+                _ => (Some(rfc_header), SipHeader::parse_value),
             },
-            None => (None, SipHeader::value_params_parse),
-        }
-    }
-
-    pub fn take_header_name(input: &'a [u8]) -> nom::IResult<&[u8], &'a str, SipParseError> {
-        let (input_rest, (header_name, _, _, _)) = tuple((
-            take_while1(is_token_char),
-            complete::space0,
-            complete::char(':'),
-            complete::space0,
-        ))(input)?; // todo take name
-        match str::from_utf8(header_name) {
-            Ok(hdr_str) => Ok((input_rest, hdr_str)),
-            Err(_) => sip_parse_error!(1, "Bad header name"),
+            None => (None, SipHeader::parse_value),
         }
     }
 }
@@ -117,7 +97,7 @@ impl<'a> NomParser<'a> for Headers<'a> {
 
         loop {
             // TODO COMMA
-            let (input, header_name) = Headers::take_header_name(inp2)?;
+            let (input, header_name) = SipHeader::take_header_name(inp2)?;
             let (rfc_header, parser) = Headers::find_parser(&header_name);
             let (input, (value, parameters)) = parser(input)?;
             let sh = SipHeader::new(header_name, value, parameters);
@@ -190,10 +170,7 @@ mod tests {
                     hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value,
                     "<sip:[2001:db8::1]>"
                 );
-                assert_eq!(
-                    hdrs.get_ext("extention-header").unwrap()[0].value,
-                    "Value"
-                );
+                assert_eq!(hdrs.get_ext("extention-header").unwrap()[0].value, "Value");
                 assert_eq!(hdrs.get_rfc(SipRFCHeader::Route).unwrap().len(), 2);
             }
             Err(_) => panic!(),
