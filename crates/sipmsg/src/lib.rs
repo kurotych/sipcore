@@ -19,6 +19,7 @@
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
 //! Max-Forwards: 70\r\n\
 //! Call-ID: 987asjd97y7atg\r\n\
+//! Extention-Header: extention header value;param=123\r\n\
 //! CSeq: 986759 INVITE\r\n\r\nbody_stuff"
 //! .as_bytes();
 //!
@@ -52,6 +53,12 @@
 //!     None
 //! );
 //!
+//! // Extention Header
+//! let extention_header = request.headers.get_ext_s("extention-header").unwrap();
+//! assert_eq!(extention_header.name, "extention-header");
+//! assert_eq!(extention_header.value, "extention header value");
+//! assert_eq!(extention_header.params().unwrap().get(&"param"),  Some(&"123"));
+//! 
 //! // Body
 //! assert_eq!(request.body.unwrap(), "body_stuff".as_bytes());
 //! ```
