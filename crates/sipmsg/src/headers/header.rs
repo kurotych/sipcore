@@ -1,15 +1,17 @@
-use crate::bnfcore::*;
-use crate::errorparse::SipParseError;
-use crate::parameters::Parameters;
-use crate::traits::{NomParser, SipMessageHeaderParser};
-
-use alloc::collections::btree_map::BTreeMap;
-use core::str;
+use crate::{
+    bnfcore::*,
+    errorparse::SipParseError,
+    headers::Parameters,
+    traits::{NomParser, SipMessageHeaderParser},
+};
 use nom::{
     bytes::complete::{is_not, take, take_while1},
     character::complete,
     sequence::tuple,
 };
+
+use alloc::collections::btree_map::BTreeMap;
+use core::str;
 use unicase::Ascii;
 
 pub type HeaderParameters<'a> = BTreeMap<&'a str, &'a str>;

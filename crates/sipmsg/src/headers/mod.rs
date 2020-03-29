@@ -7,3 +7,6 @@ pub use header::HeaderParameters as SipHeaderParameters;
 
 mod rfcheader;
 pub use rfcheader::SipRFCHeader;
+
+mod parameters;
+pub use parameters::Parameters;

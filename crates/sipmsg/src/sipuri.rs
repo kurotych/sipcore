@@ -1,14 +1,14 @@
-use crate::bnfcore::is_unreserved;
-use crate::errorparse::SipParseError;
-use crate::hostport::HostPort;
-use crate::parameters::Parameters;
-use crate::parserhelpers::take_while_with_escaped;
-use crate::traits::NomParser;
-use crate::userinfo::UserInfo;
+use crate::{
+    bnfcore::is_unreserved,
+    errorparse::SipParseError,
+    headers::Parameters,
+    parserhelpers::take_while_with_escaped,
+    traits::NomParser,
+    userinfo::UserInfo,
+    hostport::HostPort
+};
 use alloc::collections::btree_map::BTreeMap;
-use nom::bytes::complete::take;
-use nom::bytes::complete::take_till;
-use nom::bytes::complete::take_until;
+use nom::bytes::complete::{ take, take_till, take_until};
 
 use core::str;
 
