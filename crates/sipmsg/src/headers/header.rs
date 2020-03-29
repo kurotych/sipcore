@@ -12,7 +12,7 @@ use nom::{
 };
 use unicase::Ascii;
 
-pub type HeaderPerameters<'a> = BTreeMap<&'a str, &'a str>;
+pub type HeaderParameters<'a> = BTreeMap<&'a str, &'a str>;
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)
@@ -23,14 +23,14 @@ pub struct Header<'a> {
     pub value: &'a str,
 
     /// Sip parameters
-    parameters: Option<HeaderPerameters<'a>>,
+    parameters: Option<HeaderParameters<'a>>,
 }
 
 impl<'a> Header<'a> {
     pub fn new(
         name: &'a str,
         value: &'a str,
-        parameters: Option<HeaderPerameters<'a>>,
+        parameters: Option<HeaderParameters<'a>>,
     ) -> Header<'a> {
         Header {
             name: { Ascii::new(name) },
@@ -39,7 +39,7 @@ impl<'a> Header<'a> {
         }
     }
 
-    pub fn params(&self) -> Option<&HeaderPerameters<'a>> {
+    pub fn params(&self) -> Option<&HeaderParameters<'a>> {
         self.parameters.as_ref()
     }
 

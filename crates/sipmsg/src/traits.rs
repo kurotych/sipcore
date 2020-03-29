@@ -1,5 +1,5 @@
 use crate::errorparse::SipParseError;
-use alloc::collections::BTreeMap;
+use crate::headers::SipHeaderParameters;
 use nom;
 
 pub trait NomParser<'a> {
@@ -11,5 +11,5 @@ pub trait SipMessageHeaderParser<'a> {
     // It should returns COMMA in first parameter if it header with multiple value
     fn parse_value(
         input: &'a [u8],
-    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<BTreeMap<&'a str, &'a str>>), SipParseError>;
+    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<SipHeaderParameters>), SipParseError>;
 }
