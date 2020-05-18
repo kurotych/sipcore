@@ -47,7 +47,7 @@ pub fn is_ctl(c: u8) -> bool {
 /// DIGIT = %x30-39
 #[inline]
 pub fn is_digit(c: u8) -> bool {
-    (c >= 0x30 && c <= 0x39)
+    c >= 0x30 && c <= 0x39
 }
 
 /// DQUOTE =  %x22
