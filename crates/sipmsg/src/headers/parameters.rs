@@ -1,6 +1,6 @@
 // TODO remove this shit
 // And make parsing parameters according to RFC
-use crate::errorparse::SipParseError;
+use crate::common::errorparse::SipParseError;
 use crate::traits::NomParser;
 use alloc::collections::btree_map::BTreeMap;
 use core::str;

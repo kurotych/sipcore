@@ -66,15 +66,16 @@
 extern crate alloc;
 extern crate nom;
 
+#[macro_use]
+pub mod common;
+pub use common::errorparse;
+
 mod message;
 pub use message::get_message_type as get_sip_message_type;
 pub use message::MessageType as SipMessageType;
 pub use message::SipVersion;
 
 pub mod bnfcore;
-
-#[macro_use]
-mod errorparse;
 
 mod hostport;
 mod parserhelpers;

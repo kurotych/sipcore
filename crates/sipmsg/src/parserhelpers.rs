@@ -1,5 +1,5 @@
 /// Helper functions for parsing with nom Interface
-use crate::errorparse::SipParseError;
+use crate::common::errorparse::SipParseError;
 use nom;
 
 use crate::bnfcore::is_escaped;

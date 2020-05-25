@@ -34,6 +34,7 @@ impl<'a> ParseError<&'a str> for SipParseError<'a> {
     }
 }
 
+#[macro_export]
 macro_rules! sip_parse_error {
     // error with message
     ($error_code:expr) => {
@@ -60,16 +61,34 @@ impl<'a> SipParseError<'a> {
 
 impl<'a> ParseError<&'a [u8]> for SipParseError<'a> {
     fn from_error_kind(error: &'a [u8], kind: ErrorKind) -> Self {
+        let error_str: &str;
+        match str::from_utf8(error) {
+            Ok(err_str) => {
+                error_str = err_str;
+            }
+            Err(_) => {
+                error_str = "Internal error of parser. Can't cast error string to to utf8";
+            }
+        }
         SipParseError {
             code: kind as u32,
-            message: Some(unsafe { str::from_utf8_unchecked(error) }),
+            message: Some(error_str),
         }
     }
 
     fn append(error: &'a [u8], kind: ErrorKind, _other: SipParseError) -> Self {
+        let error_str: &str;
+        match str::from_utf8(error) {
+            Ok(err_str) => {
+                error_str = err_str;
+            }
+            Err(_) => {
+                error_str = "Internal error of parser. Can't cast error string to to utf8";
+            }
+        }
         SipParseError {
             code: kind as u32,
-            message: Some(unsafe { str::from_utf8_unchecked(error) }),
+            message: Some(error_str),
         }
     }
 }

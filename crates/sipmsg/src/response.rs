@@ -1,4 +1,4 @@
-use crate::errorparse::SipParseError;
+use crate::common::{errorparse::SipParseError, helpers::from_utf8_nom};
 use crate::headers::*;
 use crate::message::SipVersion;
 use crate::traits::NomParser;
@@ -50,13 +50,13 @@ impl<'a> NomParser<'a> for StatusLine<'a> {
         );
 
         let status_code = StatusCode::from_bytes_str(status_code);
-
+        let (_, reason_phrase_str) = from_utf8_nom(reason_phrase)?;
         Ok((
             input,
             StatusLine {
                 sip_version: sip_version,
                 status_code: status_code,
-                reason_phrase: unsafe { str::from_utf8_unchecked(reason_phrase) },
+                reason_phrase: reason_phrase_str,
             },
         ))
     }

@@ -1,5 +1,5 @@
 use crate::bnfcore::*;
-use crate::errorparse::SipParseError;
+use crate::common::{errorparse::SipParseError, helpers::from_utf8_nom};
 use crate::parserhelpers::*;
 use core::str;
 
@@ -36,8 +36,9 @@ impl<'a> UserInfo<'a> {
 
         let (input, user) = UserInfo::take_user(input)?;
         if input.len() == 0 || (input.len() == 1 && input[0] == b'@') {
+            let (_, user_str) = from_utf8_nom(user)?;
             return Ok(UserInfo {
-                value: unsafe { str::from_utf8_unchecked(user) },
+                value: user_str,
                 password: None,
             });
         } else {
@@ -47,9 +48,11 @@ impl<'a> UserInfo<'a> {
             }
 
             let (_, pswd) = UserInfo::take_password(&input[1..])?;
+            let (_, user_str) = from_utf8_nom(user)?;
+            let (_, pswd_str) = from_utf8_nom(pswd)?;
             return Ok(UserInfo {
-                value: unsafe { str::from_utf8_unchecked(user) },
-                password: unsafe { Some(str::from_utf8_unchecked(pswd)) },
+                value: user_str,
+                password: Some(pswd_str),
             });
         }
     }

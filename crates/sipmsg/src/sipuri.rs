@@ -1,14 +1,10 @@
+use crate::common::helpers::from_utf8_nom;
 use crate::{
-    bnfcore::is_unreserved,
-    errorparse::SipParseError,
-    headers::Parameters,
-    parserhelpers::take_while_with_escaped,
-    traits::NomParser,
-    userinfo::UserInfo,
-    hostport::HostPort
+    bnfcore::is_unreserved, errorparse::SipParseError, headers::Parameters, hostport::HostPort,
+    parserhelpers::take_while_with_escaped, traits::NomParser, userinfo::UserInfo,
 };
 use alloc::collections::btree_map::BTreeMap;
-use nom::bytes::complete::{ take, take_till, take_until};
+use nom::bytes::complete::{take, take_till, take_until};
 
 use core::str;
 
@@ -52,10 +48,11 @@ impl<'a> SipUriHeader<'a> {
     fn parse_header(input: &[u8]) -> nom::IResult<&[u8], SipUriHeader, SipParseError> {
         let (input, hname) = take_while_with_escaped(input, is_hnv_char)?;
         if input.len() == 0 || input[0] != b'=' {
+            let (_, hname_str) = from_utf8_nom(hname)?;
             return Ok((
                 input,
                 SipUriHeader {
-                    name: unsafe { str::from_utf8_unchecked(hname) },
+                    name: hname_str,
                     value: "",
                 },
             ));
@@ -64,11 +61,13 @@ impl<'a> SipUriHeader<'a> {
         let (input, _) = take(1usize)(input)?; // skip =
 
         let (input, hvalue) = take_while_with_escaped(input, is_hnv_char)?;
+        let (_, hname_str) = from_utf8_nom(hname)?;
+        let (_, hvalue_str) = from_utf8_nom(hvalue)?;
         Ok((
             input,
             SipUriHeader {
-                name: unsafe { str::from_utf8_unchecked(hname) },
-                value: unsafe { str::from_utf8_unchecked(hvalue) },
+                name: hname_str,
+                value: hvalue_str,
             },
         ))
     }

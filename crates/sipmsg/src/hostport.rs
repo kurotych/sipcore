@@ -1,5 +1,5 @@
 use crate::bnfcore::*;
-use crate::errorparse::SipParseError;
+use crate::common::{errorparse::SipParseError, helpers::from_utf8_nom};
 use crate::traits::NomParser;
 use core::str;
 use nom::bytes::complete::{take, take_until, take_while1};
@@ -41,10 +41,11 @@ impl<'a> NomParser<'a> for HostPort<'a> {
             HostPort::take_ipv6_host(input)?
         };
         if rest.len() == 0 || (rest.len() > 2 && rest[0] != b':') {
+            let (_, host_str) = from_utf8_nom(host)?;
             return Ok((
                 rest,
                 HostPort {
-                    host: unsafe { str::from_utf8_unchecked(host) },
+                    host: host_str,
                     port: None,
                 },
             ));
@@ -55,10 +56,11 @@ impl<'a> NomParser<'a> for HostPort<'a> {
         match str::from_utf8(port_str) {
             Ok(port_str) => match u16::from_str_radix(port_str, 10) {
                 Ok(port) => {
+                    let (_, host_str) = from_utf8_nom(host)?;
                     return Ok((
                         rest,
                         HostPort {
-                            host: unsafe { str::from_utf8_unchecked(host) },
+                            host: host_str,
                             port: Some(port),
                         },
                     ));

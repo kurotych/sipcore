@@ -1,4 +1,4 @@
-use crate::errorparse::SipParseError;
+use crate::common::errorparse::SipParseError;
 
 pub use crate::traits::NomParser;
 
