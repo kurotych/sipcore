@@ -1,8 +1,9 @@
 use crate::{
-    bnfcore::*,
-    errorparse::SipParseError,
-    headers::Parameters,
-    traits::{NomParser, SipMessageHeaderParser},
+    common::{bnfcore::*, errorparse::SipParseError, traits::NomParser},
+    headers::{
+        traits::{HeaderParameters, SipMessageHeaderParser},
+        Parameters,
+    },
 };
 use nom::{
     bytes::complete::{is_not, take, take_while1},
@@ -13,8 +14,6 @@ use nom::{
 use alloc::collections::btree_map::BTreeMap;
 use core::str;
 use unicase::Ascii;
-
-pub type HeaderParameters<'a> = BTreeMap<&'a str, &'a str>;
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)

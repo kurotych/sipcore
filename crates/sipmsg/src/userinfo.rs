@@ -1,6 +1,8 @@
-use crate::bnfcore::*;
-use crate::common::{errorparse::SipParseError, helpers::from_utf8_nom};
-use crate::parserhelpers::*;
+use crate::common::{
+    bnfcore::*,
+    errorparse::SipParseError,
+    nom_wrappers::{from_utf8_nom, take_while_with_escaped},
+};
 use core::str;
 
 /// userinfo =  ( user / telephone-subscriber ) [ ":" password ] "@"

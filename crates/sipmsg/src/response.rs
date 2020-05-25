@@ -1,7 +1,6 @@
-use crate::common::{errorparse::SipParseError, helpers::from_utf8_nom};
+use crate::common::{errorparse::SipParseError, nom_wrappers::from_utf8_nom, traits::NomParser};
 use crate::headers::*;
 use crate::message::SipVersion;
-use crate::traits::NomParser;
 
 use core::str;
 use nom::{

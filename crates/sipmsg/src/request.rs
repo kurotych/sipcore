@@ -1,7 +1,4 @@
-use crate::common::errorparse::SipParseError;
-
-pub use crate::traits::NomParser;
-
+use crate::common::{errorparse::SipParseError, sipuri::*, traits::NomParser};
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{complete, is_alphabetic},
@@ -10,7 +7,6 @@ use nom::{
 
 use crate::headers::*;
 use crate::message::*;
-use crate::sipuri::*;
 
 use core::{str, u8};
 

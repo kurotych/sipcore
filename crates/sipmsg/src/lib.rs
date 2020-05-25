@@ -58,7 +58,7 @@
 //! assert_eq!(extention_header.name, "extention-header");
 //! assert_eq!(extention_header.value, "extention header value");
 //! assert_eq!(extention_header.params().unwrap().get(&"param"),  Some(&"123"));
-//! 
+//!
 //! // Body
 //! assert_eq!(request.body.unwrap(), "body_stuff".as_bytes());
 //! ```
@@ -69,16 +69,14 @@ extern crate nom;
 #[macro_use]
 pub mod common;
 pub use common::errorparse;
+pub use common::sipuri::RequestUriScheme as SipRequestUriScheme;
+pub use common::traits::NomParser;
 
 mod message;
 pub use message::get_message_type as get_sip_message_type;
 pub use message::MessageType as SipMessageType;
 pub use message::SipVersion;
 
-pub mod bnfcore;
-
-mod hostport;
-mod parserhelpers;
 mod userinfo;
 
 mod request;
@@ -90,14 +88,6 @@ mod response;
 pub use response::Response as SipResponse;
 pub use response::StatusCode as SipResponseStatusCode;
 pub use response::StatusLine as SipResponseStatusLine;
-
-mod traits;
-pub use traits::NomParser as SipMessageParser;
-pub use traits::SipMessageHeaderParser;
-
-mod sipuri;
-pub use sipuri::RequestUriScheme as SipRequestUriScheme;
-pub use sipuri::SipUri;
 
 mod headers;
 pub use headers::*;

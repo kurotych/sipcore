@@ -1,7 +1,6 @@
 // TODO remove this shit
 // And make parsing parameters according to RFC
-use crate::common::errorparse::SipParseError;
-use crate::traits::NomParser;
+use crate::common::{errorparse::SipParseError, traits::NomParser};
 use alloc::collections::btree_map::BTreeMap;
 use core::str;
 
@@ -130,7 +129,7 @@ impl<'a> NomParser<'a> for Parameters {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::traits::NomParser;
+    use crate::common::traits::NomParser;
 
     #[test]
     fn test_valid_parse_parameters() {

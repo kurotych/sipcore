@@ -1,7 +1,7 @@
-use crate::bnfcore::is_crlf;
-use crate::common::errorparse::SipParseError;
-use crate::headers::{SipHeader, SipHeaderParameters, SipRFCHeader};
-use crate::traits::{NomParser, SipMessageHeaderParser};
+use crate:: {
+    common::{bnfcore::is_crlf, errorparse::SipParseError, traits::NomParser},
+    headers::{traits::SipMessageHeaderParser, HeaderParameters, SipHeader, SipRFCHeader}
+};
 
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
@@ -10,7 +10,7 @@ use unicase::Ascii;
 type HeaderParser<'a> =
     fn(
         input: &'a [u8],
-    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<SipHeaderParameters>), SipParseError>;
+    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<HeaderParameters>), SipParseError>;
 
 pub struct Headers<'a> {
     ext_headers: Option<BTreeMap<Ascii<&'a str>, VecDeque<SipHeader<'a>>>>,
