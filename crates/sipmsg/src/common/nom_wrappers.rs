@@ -1,7 +1,11 @@
 use crate::common::bnfcore::is_escaped;
 use crate::errorparse::SipParseError;
 use core::str::from_utf8;
-use nom;
+use nom::{
+    bytes::complete::take_while1,
+    character::complete,
+    sequence::tuple
+};
 
 pub fn take_while_with_escaped(
     input: &[u8],
@@ -22,6 +26,17 @@ pub fn take_while_with_escaped(
     Ok((&input[idx..], &input[..idx]))
 }
 
+/// trim start and end spaces
+/// assert_eq(take_while_trim_spaces(" ab c", is_char), Ok(("ab", "c")));
+pub fn take_while_trim_spaces(
+    input: &[u8],
+    cond_fun: fn(c: u8) -> bool,
+) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    let (input, (_, result, _)) =
+        tuple((complete::space0, take_while1(cond_fun), complete::space0))(input)?;
+    Ok((input, result))
+}
+
 pub fn from_utf8_nom(v: &[u8]) -> nom::IResult<&str, &str, SipParseError> {
     match from_utf8(v) {
         Ok(res_str) => Ok(("", res_str)),
@@ -32,7 +47,33 @@ pub fn from_utf8_nom(v: &[u8]) -> nom::IResult<&str, &str, SipParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::common::bnfcore::*;
+
+
+    fn test_take_while_trim_spaces_case(test_string: &str, expected_result: &str, expected_rest : &str) {
+        match take_while_trim_spaces(test_string.as_bytes(), is_token_char) {
+            Ok((input, result)) => {
+                assert_eq!(input, expected_rest.as_bytes());
+                assert_eq!(result, expected_result.as_bytes());
+            },
+            Err(_) => panic!()
+        }
+    }
+
+    #[test]
+    fn test_take_while_trim_spaces() {
+        test_take_while_trim_spaces_case(" qqq s", "qqq", "s");
+        test_take_while_trim_spaces_case("qqq s", "qqq", "s");
+        test_take_while_trim_spaces_case(" q ", "q", "");
+        test_take_while_trim_spaces_case("s", "s", "");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_take_while_trim_spaces_panic() {
+        test_take_while_trim_spaces_case("", "", "");
+    }
 
     #[test]
     fn take_while_with_escaped_test() {
