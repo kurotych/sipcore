@@ -4,7 +4,6 @@ use crate::common::{
     nom_wrappers::{from_utf8_nom, take_while_trim_spaces},
     traits::NomParser,
 };
-use nom::character::complete;
 use unicase::Ascii;
 
 pub struct GenericParam<'a> {
@@ -23,9 +22,6 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
         if param_name.is_empty() {
             return sip_parse_error!(1, "generic-param parse error");
         }
-
-        // skip spaces
-        let (input, _) = complete::space0(input)?;
 
         if input.is_empty() || input[0] != b'=' {
             let gp = GenericParam {
