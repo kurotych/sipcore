@@ -9,13 +9,8 @@ keywords = ["sip", "parser", "no_std"]
 repository = "https://github.com/armatusmiles/sipcore"
 categories = ["no-std"]
 
-[features]
-default = ["std"]
-std = ["nom/std"]
-
-[dependencies.nom]
-version = "^5"
-default-features = false
+[dependencies]
+nom = "6.0.0-alpha1"
 
 [dependencies.unicase]
 version ="^2.6"
