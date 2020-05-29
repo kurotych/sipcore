@@ -33,7 +33,7 @@
 //! assert_eq!(request.rl.uri.scheme, SipRequestUriScheme::SIP);
 //! assert_eq!(request.rl.uri.user_info().unwrap().value, "bob");
 //! assert_eq!(request.rl.uri.hostport.host, "biloxi.com");
-//! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some(&"phone"));
+//! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some((&SipAscii::new("user"), &Some("phone"))));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"to"), Some(&"alice%40atlanta.com"));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
 //!
@@ -91,3 +91,5 @@ pub use response::StatusLine as SipResponseStatusLine;
 
 mod headers;
 pub use headers::*;
+
+pub use unicase::Ascii as SipAscii;

@@ -1,4 +1,5 @@
 use sipmsg::*;
+use unicase::Ascii;
 
 #[test]
 fn parse_request() {
@@ -130,7 +131,7 @@ fn get_method_type() {
             assert_eq!(rl.sip_version, SipVersion(2, 0));
             assert_eq!(rl.uri.user_info().unwrap().value, "vivekg");
             assert_eq!(rl.uri.hostport.host, "chair-dnrc.example.com");
-            assert_eq!(rl.uri.params().unwrap().get(&"unknownparam"), Some(&""));
+            assert_eq!(rl.uri.params().unwrap().get(&"unknownparam"), Some((&Ascii::new("unknownparam"), &None)));
         }
         Err(_e) => panic!(),
     }
