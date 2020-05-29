@@ -15,8 +15,11 @@ fn parse_header() {
         Ok((input, hdr)) => {
             assert_eq!(hdr.name, "Name");
             assert_eq!(hdr.value, "Value");
-            assert_eq!(hdr.params().unwrap().get(&"parameter"), Some(&"false"));
-            assert_eq!(hdr.params().unwrap().get(&"param2"), Some(&""));
+            assert_eq!(
+                hdr.params().unwrap().get("parameter"),
+                Some((&SipAscii::new("parameter"), &Some("false")))
+            );
+            assert_eq!(hdr.params().unwrap().get(&"param2"), Some((&SipAscii::new("param2"), &None)));
             assert_eq!(input.len(), 0);
         }
         Err(_e) => panic!(),

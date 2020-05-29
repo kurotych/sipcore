@@ -1,17 +1,14 @@
 use crate::{
     common::{bnfcore::*, errorparse::SipParseError, traits::NomParser},
-    headers::{
-        traits::{HeaderParameters, SipMessageHeaderParser},
-        Parameters,
-    },
+    headers::{traits::SipMessageHeaderParser, GenericParams},
 };
+
 use nom::{
-    bytes::complete::{is_not, take, take_while1},
+    bytes::complete::{is_not, take_while1},
     character::complete,
     sequence::tuple,
 };
 
-use alloc::collections::btree_map::BTreeMap;
 use core::str;
 use unicase::Ascii;
 
@@ -24,15 +21,11 @@ pub struct Header<'a> {
     pub value: &'a str,
 
     /// Sip parameters
-    parameters: Option<HeaderParameters<'a>>,
+    parameters: Option<GenericParams<'a>>,
 }
 
 impl<'a> Header<'a> {
-    pub fn new(
-        name: &'a str,
-        value: &'a str,
-        parameters: Option<HeaderParameters<'a>>,
-    ) -> Header<'a> {
+    pub fn new(name: &'a str, value: &'a str, parameters: Option<GenericParams<'a>>) -> Header<'a> {
         Header {
             name: { Ascii::new(name) },
             value: value,
@@ -40,7 +33,7 @@ impl<'a> Header<'a> {
         }
     }
 
-    pub fn params(&self) -> Option<&HeaderParameters<'a>> {
+    pub fn params(&self) -> Option<&GenericParams<'a>> {
         self.parameters.as_ref()
     }
 
@@ -83,17 +76,16 @@ impl<'a> NomParser<'a> for Header<'a> {
 impl<'a> SipMessageHeaderParser<'a> for Header<'a> {
     fn parse_value(
         input: &'a [u8],
-    ) -> nom::IResult<&[u8], (&'a str, Option<BTreeMap<&'a str, &'a str>>), SipParseError> {
+    ) -> nom::IResult<&[u8], (&'a str, Option<GenericParams<'a>>), SipParseError> {
         let (input, header_field) = Header::take_header_field(input)?;
 
         match is_not(";")(header_field) {
             Ok((params, header_value)) => {
-                let mut result_parameters: Option<BTreeMap<&str, &str>> = None;
+                let mut result_parameters = None;
                 if params.len() != 0 {
-                    let (params, _) = take(1usize)(params)?; // skip first ;
-                    match Parameters::parse(params) {
+                    match GenericParams::parse(params) {
                         Ok((_, parameters)) => {
-                            result_parameters = core::prelude::v1::Some(parameters);
+                            result_parameters = Some(parameters);
                         }
                         Err(e) => return Err(e),
                     }

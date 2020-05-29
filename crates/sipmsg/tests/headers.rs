@@ -30,7 +30,7 @@ fn parse_headers() {
                     .params()
                     .unwrap()
                     .get(&"tag"),
-                Some(&"323")
+                Some((&SipAscii::new("tag"), &Some("323")))
             );
 
             assert_eq!(
@@ -61,7 +61,7 @@ fn parse_headers() {
                     .params()
                     .unwrap()
                     .get(&"param"),
-                Some(&"false")
+                Some((&SipAscii::new("param"), &Some("false")))
             );
 
             assert_eq!(
@@ -74,7 +74,7 @@ fn parse_headers() {
                     .params()
                     .unwrap()
                     .get(&"branch"),
-                Some(&"z9hG4bKkdjuw")
+                Some((&SipAscii::new("branch"), &Some("z9hG4bKkdjuw")))
             );
 
             assert_eq!(input, "\r\nsomebody".as_bytes());
