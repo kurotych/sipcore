@@ -83,6 +83,9 @@ impl<'a> NomParser<'a> for GenericParams<'a> {
 mod tests {
     use super::*;
 
+    fn assert_eq_gp(gparams: &GenericParams, key: &str, val: Option<&str>) {
+        assert_eq!(gparams.get(key), Some((&Ascii::new(key), &val)));
+    }
     #[test]
     fn patameters_contains_test() {
         match GenericParams::parse(";a=b\r\n".as_bytes()) {
@@ -100,7 +103,7 @@ mod tests {
     fn patameters_correct_parse_test() {
         match GenericParams::parse(";a=b\r\n".as_bytes()) {
             Ok((inp, gparams)) => {
-                assert_eq!(gparams.get("a"), Some((&Ascii::new("a"), &Some("b"))));
+                assert_eq_gp(&gparams, "a", Some("b"));
                 assert_eq!(inp.len(), 2)
             }
             Err(_) => panic!(),
@@ -108,11 +111,24 @@ mod tests {
 
         match GenericParams::parse(";a;n=q;c\r\n".as_bytes()) {
             Ok((inp, gparams)) => {
-                assert_eq!(gparams.get("a"), Some((&Ascii::new("a"), &None)));
-                assert_eq!(gparams.get("n"), Some((&Ascii::new("n"), &Some("q"))));
-                assert_eq!(gparams.get("c"), Some((&Ascii::new("c"), &None)));
+                assert_eq_gp(&gparams, "a", None);
+                assert_eq_gp(&gparams, "n", Some("q"));
+                assert_eq_gp(&gparams, "c", None);
                 assert_eq!(gparams.get("qq"), None);
                 assert_eq!(inp.len(), 2)
+            }
+            Err(_) => panic!(),
+        }
+
+        match GenericParams::parse("; aw ;d =es;sam;mark= a; wam = kram; q = 0.3\r\n".as_bytes()) {
+            Ok((i, gparams)) => {
+                assert_eq_gp(&gparams, "aw", None);
+                assert_eq_gp(&gparams, "d", Some("es"));
+                assert_eq_gp(&gparams, "sam", None);
+                assert_eq_gp(&gparams, "mark", Some("a"));
+                assert_eq_gp(&gparams, "wam", Some("kram"));
+                assert_eq_gp(&gparams, "q", Some("0.3"));
+                assert_eq!(i.len(), 2)
             }
             Err(_) => panic!(),
         }
@@ -133,6 +149,14 @@ mod tests {
             Err(_) => panic!(),
         }
     }
+
+    fn fail_parameter_test(input_str: &str) {
+        match GenericParam::parse(input_str.as_bytes()) {
+            Ok((_, _)) => panic!(),
+            Err(_) => {}
+        }
+    }
+
     #[test]
     fn parameter_correct_parse_test() {
         parameter_test("a", "a", None, 0);
@@ -147,12 +171,11 @@ mod tests {
         parameter_test(" aw = b \r\n", "aw", Some("b"), 2);
         parameter_test(" aw = b; \r\n", "aw", Some("b"), 4);
     }
+
     #[test]
-    #[should_panic]
     fn parameter_incorrect_parse_test() {
-        parameter_test("", "", None, 0);
-        parameter_test("a=", "", None, 0);
-        parameter_test("a=/", "", None, 0);
-        parameter_test("a/", "", None, 0);
+        fail_parameter_test("");
+        fail_parameter_test("a=");
+        fail_parameter_test("a=/");
     }
 }
