@@ -69,7 +69,6 @@ extern crate nom;
 #[macro_use]
 pub mod common;
 pub use common::errorparse;
-pub use common::sipuri::RequestUriScheme as SipRequestUriScheme;
 pub use common::traits::NomParser;
 
 mod message;
@@ -90,6 +89,7 @@ pub use response::StatusCode as SipResponseStatusCode;
 pub use response::StatusLine as SipResponseStatusLine;
 
 mod headers;
+pub use headers::sipuri::RequestUriScheme as SipRequestUriScheme;
 pub use headers::*;
 
 pub use unicase::Ascii as SipAscii;
