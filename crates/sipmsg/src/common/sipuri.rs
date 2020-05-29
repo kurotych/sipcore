@@ -2,7 +2,7 @@ use crate::common::nom_wrappers::from_utf8_nom;
 use crate::{
     common::bnfcore::is_unreserved, common::hostport::HostPort,
     common::nom_wrappers::take_while_with_escaped, common::traits::NomParser,
-    errorparse::SipParseError, headers::Parameters, userinfo::UserInfo,
+    errorparse::SipParseError, headers::GenericParams, userinfo::UserInfo,
 };
 use alloc::collections::btree_map::BTreeMap;
 use nom::bytes::complete::{take, take_till, take_until};
@@ -113,9 +113,9 @@ pub struct SipUri<'a> {
     pub scheme: RequestUriScheme,
     user_info: Option<UserInfo<'a>>,
     pub hostport: HostPort<'a>,
-    // Temporary use parsing from parameters.rs
+    // Temporary use parsing from generic-parameters.rs
     // TODO make according RFC
-    parameters: Option<BTreeMap<&'a str, &'a str>>,
+    parameters: Option<GenericParams<'a>>,
     headers: Option<BTreeMap<&'a str, &'a str>>,
 }
 
@@ -124,7 +124,7 @@ impl<'a> SipUri<'a> {
         self.user_info.as_ref()
     }
 
-    pub fn params(&self) -> Option<&BTreeMap<&'a str, &'a str>> {
+    pub fn params(&self) -> Option<&GenericParams<'a>> {
         self.parameters.as_ref()
     }
 
@@ -134,11 +134,11 @@ impl<'a> SipUri<'a> {
 
     fn try_parse_params(
         input: &'a [u8],
-    ) -> nom::IResult<&[u8], Option<BTreeMap<&'a str, &'a str>>, SipParseError> {
+    ) -> nom::IResult<&[u8], Option<GenericParams<'a>>, SipParseError> {
         if input[0] != b';' {
             return Ok((input, None));
         }
-        match Parameters::parse(&input[1..]) {
+        match GenericParams::parse(input) {
             Ok((input, params)) => {
                 return Ok((input, Some(params)));
             }
@@ -217,6 +217,7 @@ impl<'a> NomParser<'a> for SipUri<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use unicase::Ascii;
 
     #[test]
     fn test_sip_uri_parse() {
@@ -239,7 +240,10 @@ mod tests {
         assert_eq!(sip_uri.user_info().unwrap().password, Some("secretword"));
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
         assert_eq!(sip_uri.hostport.port, None);
-        assert_eq!(sip_uri.params().unwrap().get(&"transport"), Some(&"tcp"));
+        assert_eq!(
+            sip_uri.params().unwrap().get(&"transport"),
+            Some((&Ascii::new("transport"), &Some("tcp")))
+        );
 
         let (rest, sip_uri) =
             SipUri::parse("sip:+1-212-555-1212:1234@gateway.com;user=phone".as_bytes()).unwrap();
@@ -249,7 +253,10 @@ mod tests {
         assert_eq!(sip_uri.user_info().unwrap().password, Some("1234"));
         assert_eq!(sip_uri.hostport.host, "gateway.com");
         assert_eq!(sip_uri.hostport.port, None);
-        assert_eq!(sip_uri.params().unwrap().get(&"user"), Some(&"phone"));
+        assert_eq!(
+            sip_uri.params().unwrap().get(&"user"),
+            Some((&Ascii::new("user"), &Some("phone")))
+        );
 
         let (rest, sip_uri) = SipUri::parse("sips:1212@gateway.com".as_bytes()).unwrap();
         assert_eq!(rest.len(), 0);
@@ -292,7 +299,10 @@ mod tests {
             sip_uri.headers().unwrap().get(&"to"),
             Some(&"alice%40atlanta.com")
         );
-        assert_eq!(sip_uri.params().unwrap().get(&"method"), Some(&"REGISTER"));
+        assert_eq!(
+            sip_uri.params().unwrap().get(&"method"),
+            Some((&Ascii::new("method"), &Some("REGISTER")))
+        );
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
         match sip_uri.user_info() {
