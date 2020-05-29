@@ -40,9 +40,21 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
     }
 }
 
-type GenericParams<'a> = BTreeMap<Ascii<&'a str>, Option<&'a str>>;
+pub struct GenericParams<'a> {
+    params: BTreeMap<Ascii<&'a str>, Option<&'a str>>,
+}
 
-pub struct GenericParamsParser;
+impl<'a> GenericParams<'a> {
+    pub fn get(&self, key: &'a str) -> Option<(&Ascii<&'a str>, &Option<&'a str>)> {
+        let key = Ascii::new(key);
+        self.params.get_key_value(&key)
+    }
+
+    pub fn contains(&self, key: &'a str) -> bool {
+        let key = Ascii::new(key);
+        self.params.contains_key(&key)
+    }
+}
 
 fn many_params_parser(
     input: &[u8],
@@ -53,12 +65,17 @@ fn many_params_parser(
     GenericParam::parse(&input[1..])
 }
 
-impl<'a> NomParser<'a> for GenericParamsParser {
+impl<'a> NomParser<'a> for GenericParams<'a> {
     type ParseResult = GenericParams<'a>;
     // input should start from ';'
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
         let (input, vec_res) = many0(many_params_parser)(input)?;
-        Ok((input, vec_res.into_iter().collect()))
+        Ok((
+            input,
+            GenericParams {
+                params: vec_res.into_iter().collect(),
+            },
+        ))
     }
 }
 
@@ -67,22 +84,34 @@ mod tests {
     use super::*;
 
     #[test]
+    fn patameters_contains_test() {
+        match GenericParams::parse(";a=b\r\n".as_bytes()) {
+            Ok((inp, gparams)) => {
+                assert_eq!(gparams.contains("a"), true);
+                assert_eq!(gparams.contains("b"), false);
+                assert_eq!(gparams.contains("c"), false);
+                assert_eq!(inp.len(), 2)
+            }
+            Err(_) => panic!(),
+        }
+    }
+
+    #[test]
     fn patameters_correct_parse_test() {
-        match GenericParamsParser::parse(";a=b\r\n".as_bytes()) {
-            Ok((inp, value)) => {
-                assert_eq!(value.get(&Ascii::new("a")), Some(&Some("b")));
-                assert_eq!(value.get(&Ascii::new("b")), None);
+        match GenericParams::parse(";a=b\r\n".as_bytes()) {
+            Ok((inp, gparams)) => {
+                assert_eq!(gparams.get("a"), Some((&Ascii::new("a"), &Some("b"))));
                 assert_eq!(inp.len(), 2)
             }
             Err(_) => panic!(),
         }
 
-        match GenericParamsParser::parse(";a;n=q;c\r\n".as_bytes()) {
-            Ok((inp, value)) => {
-                assert_eq!(value.get(&Ascii::new("a")), Some(&None));
-                assert_eq!(value.get(&Ascii::new("n")), Some(&Some("q")));
-                assert_eq!(value.get(&Ascii::new("c")), Some(&None));
-                assert_eq!(value.get(&Ascii::new("qq")), None);
+        match GenericParams::parse(";a;n=q;c\r\n".as_bytes()) {
+            Ok((inp, gparams)) => {
+                assert_eq!(gparams.get("a"), Some((&Ascii::new("a"), &None)));
+                assert_eq!(gparams.get("n"), Some((&Ascii::new("n"), &Some("q"))));
+                assert_eq!(gparams.get("c"), Some((&Ascii::new("c"), &None)));
+                assert_eq!(gparams.get("qq"), None);
                 assert_eq!(inp.len(), 2)
             }
             Err(_) => panic!(),
