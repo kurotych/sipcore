@@ -15,3 +15,6 @@ pub use traits::HeaderParameters;
 
 pub mod generic_params;
 pub use generic_params::GenericParams;
+
+pub mod sipuri;
+pub use sipuri::SipUri;
