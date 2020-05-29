@@ -1,4 +1,4 @@
-use crate::common::{errorparse::SipParseError, sipuri::*, traits::NomParser};
+use crate::common::{errorparse::SipParseError, traits::NomParser};
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{complete, is_alphabetic},

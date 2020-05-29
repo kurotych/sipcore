@@ -19,7 +19,7 @@
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
 //! Max-Forwards: 70\r\n\
 //! Call-ID: 987asjd97y7atg\r\n\
-//! Extention-Header: extention header value;param=123\r\n\
+//! Extention-Header: extention header value;param=123;without_value\r\n\
 //! CSeq: 986759 INVITE\r\n\r\nbody_stuff"
 //! .as_bytes();
 //!
@@ -40,14 +40,15 @@
 //! // Via Header
 //! let via_headers = request.headers.get_rfc(SipRFCHeader::Via).unwrap();
 //! assert_eq!(via_headers[1].value, "SIP/2.0/UDP pc33.atlanta.com");
-//! assert_eq!(via_headers[1].params().unwrap().get(&"branch"),  Some(&"z9hG4bKkjshdyff"));
-//! assert_eq!(via_headers[0].value, "SIP/2.0/UDP 192.168.1.111");
-//!
 //! assert_eq!(
 //!     via_headers[1].params().unwrap().get(&"branch"),
-//!     Some(&"z9hG4bKkjshdyff")
+//!     Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
 //! );
-//!
+//! assert_eq!(via_headers[0].value, "SIP/2.0/UDP 192.168.1.111");
+//! assert_eq!(
+//!     via_headers[1].params().unwrap().get(&"branch"),
+//!     Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
+//! );
 //! assert_eq!(
 //!     via_headers[1].params().unwrap().get(&"notExistParam"),
 //!     None
@@ -57,7 +58,14 @@
 //! let extention_header = request.headers.get_ext_s("extention-header").unwrap();
 //! assert_eq!(extention_header.name, "extention-header");
 //! assert_eq!(extention_header.value, "extention header value");
-//! assert_eq!(extention_header.params().unwrap().get(&"param"),  Some(&"123"));
+//! assert_eq!(
+//!     extention_header.params().unwrap().get(&"param"),
+//!     Some((&SipAscii::new("param"), &Some("123")))
+//! );
+//! assert_eq!(
+//!     extention_header.params().unwrap().get(&"without_value"),
+//!     Some((&SipAscii::new("without_value"), &None))
+//! );
 //!
 //! // Body
 //! assert_eq!(request.body.unwrap(), "body_stuff".as_bytes());

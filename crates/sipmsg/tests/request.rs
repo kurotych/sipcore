@@ -37,7 +37,7 @@ fn parse_request() {
                     .params()
                     .unwrap()
                     .get(&"branch"),
-                Some(&"z9hG4bKkjshdyff")
+                Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
             );
             assert_eq!(
                 parsed_req
@@ -63,7 +63,7 @@ fn parse_request() {
                     .params()
                     .unwrap()
                     .get(&"tag"),
-                Some(&"88sja8x")
+                Some((&SipAscii::new("tag"), &Some("88sja8x")))
             );
             assert_eq!(
                 parsed_req
@@ -73,7 +73,7 @@ fn parse_request() {
                     .params()
                     .unwrap()
                     .get(&"onemore"),
-                Some(&"")
+                Some((&SipAscii::new("onemore"), &None))
             );
 
             assert_eq!(
@@ -131,7 +131,10 @@ fn get_method_type() {
             assert_eq!(rl.sip_version, SipVersion(2, 0));
             assert_eq!(rl.uri.user_info().unwrap().value, "vivekg");
             assert_eq!(rl.uri.hostport.host, "chair-dnrc.example.com");
-            assert_eq!(rl.uri.params().unwrap().get(&"unknownparam"), Some((&Ascii::new("unknownparam"), &None)));
+            assert_eq!(
+                rl.uri.params().unwrap().get(&"unknownparam"),
+                Some((&Ascii::new("unknownparam"), &None))
+            );
         }
         Err(_e) => panic!(),
     }

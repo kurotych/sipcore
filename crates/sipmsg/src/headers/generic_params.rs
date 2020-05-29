@@ -40,6 +40,7 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct GenericParams<'a> {
     params: BTreeMap<Ascii<&'a str>, Option<&'a str>>,
 }

@@ -1,11 +1,7 @@
 use crate::common::bnfcore::is_escaped;
 use crate::errorparse::SipParseError;
 use core::str::from_utf8;
-use nom::{
-    bytes::complete::take_while1,
-    character::complete,
-    sequence::tuple
-};
+use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
 
 pub fn take_while_with_escaped(
     input: &[u8],
@@ -50,14 +46,17 @@ mod tests {
 
     use crate::common::bnfcore::*;
 
-
-    fn test_take_while_trim_spaces_case(test_string: &str, expected_result: &str, expected_rest : &str) {
+    fn test_take_while_trim_spaces_case(
+        test_string: &str,
+        expected_result: &str,
+        expected_rest: &str,
+    ) {
         match take_while_trim_spaces(test_string.as_bytes(), is_token_char) {
             Ok((input, result)) => {
                 assert_eq!(input, expected_rest.as_bytes());
                 assert_eq!(result, expected_result.as_bytes());
-            },
-            Err(_) => panic!()
+            }
+            Err(_) => panic!(),
         }
     }
 
