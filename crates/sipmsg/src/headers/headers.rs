@@ -1,16 +1,11 @@
 use crate::{
     common::{bnfcore::is_crlf, errorparse::SipParseError, traits::NomParser},
-    headers::{traits::SipMessageHeaderParser, GenericParams, SipHeader, SipRFCHeader},
+    headers::{SipHeader, SipRFCHeader},
 };
 
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
 use unicase::Ascii;
-
-type HeaderParser<'a> =
-    fn(
-        input: &'a [u8],
-    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<GenericParams<'a>>), SipParseError>;
 
 pub struct Headers<'a> {
     ext_headers: Option<BTreeMap<Ascii<&'a str>, VecDeque<SipHeader<'a>>>>,
@@ -69,16 +64,6 @@ impl<'a> Headers<'a> {
             None => self.rfc_headers.len(),
         }
     }
-
-    pub fn find_parser(header_name: &'a str) -> (Option<SipRFCHeader>, HeaderParser<'a>) {
-        match SipRFCHeader::from_str(&header_name) {
-            Some(rfc_header) => match rfc_header {
-                // For implement new parser add row RfCHeader => (Some(rfc_header), RFCHeaderType::parse)
-                _ => (Some(rfc_header), SipHeader::parse_value),
-            },
-            None => (None, SipHeader::parse_value),
-        }
-    }
 }
 
 impl<'a> NomParser<'a> for Headers<'a> {
@@ -90,12 +75,8 @@ impl<'a> NomParser<'a> for Headers<'a> {
         let mut inp2 = input;
 
         loop {
-            // TODO COMMA
-            let (input, header_name) = SipHeader::take_header_name(inp2)?;
-            let (rfc_header, parser) = Headers::find_parser(&header_name);
-            let (input, (value, parameters)) = parser(input)?;
-            let sh = SipHeader::new(header_name, value, parameters);
-            match rfc_header {
+            let (input, (rfc_type, sh)) = SipHeader::parse(inp2)?;
+            match rfc_type {
                 Some(hdr) => {
                     // Add to rfc_headers
                     if rfc_headers.contains_key(&hdr) {
@@ -117,7 +98,9 @@ impl<'a> NomParser<'a> for Headers<'a> {
                     }
                 }
             }
+
             inp2 = input;
+            inp2 = &inp2[2..]; // skip crlf of header field
             if is_crlf(inp2) {
                 // end of headers and start of body part
                 break;

@@ -171,6 +171,7 @@ mod tests {
         parameter_test(" a  \r\n", "a", None, 2);
         parameter_test(" aw = b \r\n", "aw", Some("b"), 2);
         parameter_test(" aw = b; \r\n", "aw", Some("b"), 4);
+        parameter_test("q=0.001", "q", Some("0.001"), 0);
     }
 
     #[test]

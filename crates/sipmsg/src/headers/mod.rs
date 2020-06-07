@@ -14,3 +14,6 @@ pub use generic_params::GenericParams;
 
 pub mod sipuri;
 pub use sipuri::SipUri;
+
+mod extension_header;
+pub use extension_header::ExtensionHeader;

@@ -1,10 +1,9 @@
 use crate::common::errorparse::SipParseError;
-use crate::headers::GenericParams;
 use nom;
 
-pub trait SipMessageHeaderParser<'a> {
+pub type HeaderValueParserFn = fn(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError>;
+pub trait SipHeaderParser {
     // It should returns COMMA in first parameter if it header with multiple value
-    fn parse_value(
-        input: &'a [u8],
-    ) -> nom::IResult<&[u8], (&'a str /*value*/, Option<GenericParams<'a>>), SipParseError>;
+    // or SEMI if it contains perameters
+    fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError>;
 }
