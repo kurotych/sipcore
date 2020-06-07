@@ -9,6 +9,7 @@ fn parse_request() {
                           From: Alice <sip:alice@atlanta.com>;tag=88sja8x;onemore\r\n\
                           Max-Forwards: 70\r\n\
                           Call-ID: 987asjd97y7atg\r\n\
+                          Accept: application/h.245;q=0.1\r\n\
                           CSeq: 986759 INVITE\r\n\r\nbody_stuff"
         .as_bytes();
 
@@ -20,7 +21,7 @@ fn parse_request() {
             assert_eq!(parsed_req.rl.uri.hostport.host, "biloxi.com");
             assert_eq!(parsed_req.rl.sip_version, SipVersion(2, 0));
 
-            assert_eq!(parsed_req.headers.len(), 6);
+            assert_eq!(parsed_req.headers.len(), 7);
             assert_eq!(
                 parsed_req
                     .headers
@@ -101,6 +102,26 @@ fn parse_request() {
                     .unwrap()
                     .value,
                 "986759 INVITE"
+            );
+
+            assert_eq!(
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Accept)
+                    .unwrap()
+                    .value,
+                "application/h.245"
+            );
+
+            assert_eq!(
+                parsed_req
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Accept)
+                    .unwrap()
+                    .params()
+                    .unwrap()
+                    .get(&"q"),
+                Some((&SipAscii::new("q"), &Some("0.1")))
             );
 
             assert_eq!(parsed_req.body.unwrap(), "body_stuff".as_bytes())
