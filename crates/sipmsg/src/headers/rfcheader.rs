@@ -1,3 +1,4 @@
+use crate::headers::{AcceptHeader, ExtensionHeader, traits::{SipHeaderParser, HeaderValueParserFn}};
 use unicase::Ascii;
 
 /// Headers that defined in rfc3261
@@ -164,6 +165,14 @@ impl SipRFCHeader {
             &SipRFCHeader::Via => "Via",
             &SipRFCHeader::Warning => "Warning",
             &SipRFCHeader::WWWAuthenticate => "WWW-Authenticate",
+        }
+    }
+
+    pub fn get_parser(&self) -> HeaderValueParserFn {
+        match self {
+            &SipRFCHeader::Accept => AcceptHeader::take_value,
+            // TODO remove after implementation all parsers
+            _ => ExtensionHeader::take_value
         }
     }
 }

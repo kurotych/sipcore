@@ -1,10 +1,12 @@
-use crate::common::bnfcore::is_digit;
-use crate::common::bnfcore::is_token_char;
-use crate::common::errorparse::SipParseError;
-use crate::common::take_sws_token;
+use crate::common::{
+    bnfcore::{is_digit, is_token_char},
+    errorparse::SipParseError,
+    take_sws_token,
+};
 use crate::headers::traits::SipHeaderParser;
 use nom::bytes::complete::take_while1;
 use nom::sequence::tuple;
+
 // Accept  =  "Accept" HCOLON [ accept-range *(COMMA accept-range) ]
 // accept-range   =  media-range *(SEMI accept-param)
 // media-range    =  ( "*/*"

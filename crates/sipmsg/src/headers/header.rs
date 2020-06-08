@@ -3,7 +3,6 @@ use crate::{
         bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, traits::NomParser,
     },
     headers::{
-        AcceptHeader,
         traits::{HeaderValueParserFn, SipHeaderParser},
         GenericParams, ExtensionHeader, SipRFCHeader,
     },
@@ -41,10 +40,8 @@ impl<'a> Header<'a> {
 
     pub fn find_parser(header_name: &'a str) -> (Option<SipRFCHeader>, HeaderValueParserFn) {
         match SipRFCHeader::from_str(&header_name) {
-            Some(rfc_header) => match rfc_header {
-                // For implement new parser add row RfCHeader => (Some(rfc_header), RFCHeaderType::parse)
-                SipRFCHeader::Accept => (Some(rfc_header), AcceptHeader::take_value),
-                _ => (Some(rfc_header), ExtensionHeader::take_value),
+            Some(rfc_header) => {
+                (Some(rfc_header), rfc_header.get_parser())
             },
             None => (None, ExtensionHeader::take_value),
         }

@@ -58,11 +58,44 @@ impl<'a> Headers<'a> {
     }
 
     /// Returns length of unique headers
+    // TODO rename to unique_len and add total_len
     pub fn len(&self) -> usize {
         match &self.ext_headers {
             Some(ext_headers) => ext_headers.len() + self.rfc_headers.len(),
             None => self.rfc_headers.len(),
         }
+    }
+
+    fn new() -> Headers<'a> {
+        Headers {
+            ext_headers: None,
+            rfc_headers: BTreeMap::<SipRFCHeader, VecDeque<SipHeader<'a>>>::new()
+        }
+    }
+
+    fn add_rfc_header(&mut self, header_type: SipRFCHeader, sh: SipHeader<'a>) {
+        if self.rfc_headers.contains_key(&header_type) {
+            self.rfc_headers.get_mut(&header_type).unwrap().push_front(sh)
+        } else {
+            let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
+            vec.push_front(sh);
+            self.rfc_headers.insert(header_type, vec);
+        }
+    }
+
+    fn add_extension_header(&mut self, sh: SipHeader<'a>) {
+        if self.ext_headers == None {
+            self.ext_headers = Some(BTreeMap::<Ascii<&'a str>, VecDeque<SipHeader<'a>>>::new());
+        }
+
+        if self.ext_headers.as_ref().unwrap().contains_key(&sh.name) {
+            self.ext_headers.as_mut().unwrap().get_mut(&sh.name).unwrap().push_front(sh)
+        } else {
+            let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
+            vec.push_front(sh);
+            self.ext_headers.as_mut().unwrap().insert(vec[0].name, vec);
+        }
+
     }
 }
 
@@ -70,32 +103,16 @@ impl<'a> NomParser<'a> for Headers<'a> {
     type ParseResult = Headers<'a>;
 
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-        let mut rfc_headers = BTreeMap::<SipRFCHeader, VecDeque<SipHeader<'a>>>::new();
-        let mut ext_headers = BTreeMap::<Ascii<&'a str>, VecDeque<SipHeader<'a>>>::new();
+        let mut headers_result = Headers::new();
         let mut inp2 = input;
-
         loop {
             let (input, (rfc_type, sh)) = SipHeader::parse(inp2)?;
             match rfc_type {
-                Some(hdr) => {
-                    // Add to rfc_headers
-                    if rfc_headers.contains_key(&hdr) {
-                        rfc_headers.get_mut(&hdr).unwrap().push_front(sh)
-                    } else {
-                        let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
-                        vec.push_front(sh);
-                        rfc_headers.insert(hdr, vec);
-                    }
+                Some(hdr_type) => {
+                    headers_result.add_rfc_header(hdr_type, sh);
                 }
                 None => {
-                    // Add to ext_headers
-                    if ext_headers.contains_key(&sh.name) {
-                        ext_headers.get_mut(&sh.name).unwrap().push_front(sh)
-                    } else {
-                        let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
-                        vec.push_front(sh);
-                        ext_headers.insert(vec[0].name, vec);
-                    }
+                    headers_result.add_extension_header(sh);
                 }
             }
 
@@ -108,14 +125,7 @@ impl<'a> NomParser<'a> for Headers<'a> {
         }
         Ok((
             inp2,
-            Headers {
-                rfc_headers: rfc_headers,
-                ext_headers: if ext_headers.len() == 0 {
-                    None
-                } else {
-                    Some(ext_headers)
-                },
-            },
+            headers_result
         ))
     }
 }
