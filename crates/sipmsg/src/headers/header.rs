@@ -1,16 +1,20 @@
 use crate::{
     common::{
-        bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, traits::NomParser,
+        bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
+        traits::NomParser,
     },
     headers::{
         traits::{HeaderValueParserFn, SipHeaderParser},
-        GenericParams, ExtensionHeader, SipRFCHeader,
+        ExtensionHeader, GenericParams, SipRFCHeader,
     },
 };
-use nom::bytes::complete::tag;
+use nom::{
+    bytes::complete::{tag, take_while1},
+    character::complete,
+    sequence::tuple,
+};
 
-use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
-
+use alloc::collections::VecDeque;
 use core::str;
 use unicase::Ascii;
 
@@ -40,9 +44,7 @@ impl<'a> Header<'a> {
 
     pub fn find_parser(header_name: &'a str) -> (Option<SipRFCHeader>, HeaderValueParserFn) {
         match SipRFCHeader::from_str(&header_name) {
-            Some(rfc_header) => {
-                (Some(rfc_header), rfc_header.get_parser())
-            },
+            Some(rfc_header) => (Some(rfc_header), rfc_header.get_parser()),
             None => (None, ExtensionHeader::take_value),
         }
     }
@@ -115,13 +117,25 @@ impl<'a> Header<'a> {
 }
 
 impl<'a> NomParser<'a> for Header<'a> {
-    type ParseResult = (Option<SipRFCHeader>, Header<'a>);
+    type ParseResult = (Option<SipRFCHeader>, VecDeque<Header<'a>>);
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+        let mut headers = VecDeque::new();
         let (input, header_name) = Header::take_name(input)?;
         let (rfc_type, value_parser) = Header::find_parser(header_name);
-        let (input, (value, params)) = Header::take_value(input, value_parser)?;
-        // TODO remember about long headers
-        // let (input, value) = Header::long_header_value_parser_wrapper(input, value_parser)?;
-        Ok((input, (rfc_type, Header::new(header_name, value, params))))
+        let mut inp = input;
+        loop {
+            // TODO remember about long headers
+            // let (input, value) = Header::long_header_value_parser_wrapper(input, value_parser)?;
+            let (input, (value, params)) = Header::take_value(inp, value_parser)?;
+            headers.push_back(Header::new(header_name, value, params));
+            if is_wsp(input[0]) || input[0] == b',' {
+                let (input, _) = take_sws_token::comma(input)?;
+                inp = input;
+                continue;
+            }
+            inp = input;
+            break;
+        }
+        Ok((inp, (rfc_type, headers)))
     }
 }

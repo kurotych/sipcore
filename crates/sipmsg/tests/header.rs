@@ -3,24 +3,24 @@ use sipmsg::*;
 #[test]
 fn parse_header() {
     match SipHeader::parse("Subject:This is a test\r\n".as_bytes()) {
-        Ok((input, (_, hdr))) => {
-            assert_eq!(hdr.name, "Subject");
-            assert_eq!(hdr.value, "This is a test");
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Subject");
+            assert_eq!(hdrs[0].value, "This is a test");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
     }
 
     match SipHeader::parse("Name: Value;parameter=false;param2\r\n".as_bytes()) {
-        Ok((input, (_, hdr))) => {
-            assert_eq!(hdr.name, "Name");
-            assert_eq!(hdr.value, "Value");
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Name");
+            assert_eq!(hdrs[0].value, "Value");
             assert_eq!(
-                hdr.params().unwrap().get("parameter"),
+                hdrs[0].params().unwrap().get("parameter"),
                 Some((&SipAscii::new("parameter"), &Some("false")))
             );
             assert_eq!(
-                hdr.params().unwrap().get(&"param2"),
+                hdrs[0].params().unwrap().get(&"param2"),
                 Some((&SipAscii::new("param2"), &None))
             );
             assert_eq!(input.len(), 2);
@@ -29,9 +29,9 @@ fn parse_header() {
     }
 
     match SipHeader::parse("Max-Forwards: 70\r\n".as_bytes()) {
-        Ok((input, (_, hdr))) => {
-            assert_eq!(hdr.name, "Max-Forwards");
-            assert_eq!(hdr.value, "70");
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Max-Forwards");
+            assert_eq!(hdrs[0].value, "70");
             assert_eq!(input.len(), 2);
         }
         Err(_e) => panic!(),

@@ -2,6 +2,7 @@ use crate::{
     common::{bnfcore::is_crlf, errorparse::SipParseError, traits::NomParser},
     headers::{SipHeader, SipRFCHeader},
 };
+use nom::bytes::complete::tag;
 
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
@@ -69,33 +70,48 @@ impl<'a> Headers<'a> {
     fn new() -> Headers<'a> {
         Headers {
             ext_headers: None,
-            rfc_headers: BTreeMap::<SipRFCHeader, VecDeque<SipHeader<'a>>>::new()
+            rfc_headers: BTreeMap::<SipRFCHeader, VecDeque<SipHeader<'a>>>::new(),
         }
     }
 
-    fn add_rfc_header(&mut self, header_type: SipRFCHeader, sh: SipHeader<'a>) {
+    fn add_rfc_header(
+        &mut self,
+        header_type: SipRFCHeader,
+        mut vec_headers: VecDeque<SipHeader<'a>>,
+    ) {
         if self.rfc_headers.contains_key(&header_type) {
-            self.rfc_headers.get_mut(&header_type).unwrap().push_front(sh)
+            self.rfc_headers
+                .get_mut(&header_type)
+                .unwrap()
+                .append(&mut vec_headers)
         } else {
-            let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
-            vec.push_front(sh);
-            self.rfc_headers.insert(header_type, vec);
+            self.rfc_headers.insert(header_type, vec_headers);
         }
     }
 
-    fn add_extension_header(&mut self, sh: SipHeader<'a>) {
+    fn add_extension_header(&mut self, mut vec_headers: VecDeque<SipHeader<'a>>) {
         if self.ext_headers == None {
             self.ext_headers = Some(BTreeMap::<Ascii<&'a str>, VecDeque<SipHeader<'a>>>::new());
         }
 
-        if self.ext_headers.as_ref().unwrap().contains_key(&sh.name) {
-            self.ext_headers.as_mut().unwrap().get_mut(&sh.name).unwrap().push_front(sh)
+        if self
+            .ext_headers
+            .as_ref()
+            .unwrap()
+            .contains_key(&vec_headers[0].name)
+        {
+            self.ext_headers
+                .as_mut()
+                .unwrap()
+                .get_mut(&vec_headers[0].name)
+                .unwrap()
+                .append(&mut vec_headers)
         } else {
-            let mut vec: VecDeque<SipHeader<'a>> = VecDeque::new();
-            vec.push_front(sh);
-            self.ext_headers.as_mut().unwrap().insert(vec[0].name, vec);
+            self.ext_headers
+                .as_mut()
+                .unwrap()
+                .insert(vec_headers[0].name, vec_headers);
         }
-
     }
 }
 
@@ -106,27 +122,23 @@ impl<'a> NomParser<'a> for Headers<'a> {
         let mut headers_result = Headers::new();
         let mut inp2 = input;
         loop {
-            let (input, (rfc_type, sh)) = SipHeader::parse(inp2)?;
+            let (input, (rfc_type, vec_headers)) = SipHeader::parse(inp2)?;
             match rfc_type {
                 Some(hdr_type) => {
-                    headers_result.add_rfc_header(hdr_type, sh);
+                    headers_result.add_rfc_header(hdr_type, vec_headers);
                 }
                 None => {
-                    headers_result.add_extension_header(sh);
+                    headers_result.add_extension_header(vec_headers);
                 }
             }
-
-            inp2 = input;
-            inp2 = &inp2[2..]; // skip crlf of header field
+            let (input, _) = tag("\r\n")(input)?; // move to header parse
+            inp2 = input; // skip crlf of header field
             if is_crlf(inp2) {
                 // end of headers and start of body part
                 break;
             }
         }
-        Ok((
-            inp2,
-            headers_result
-        ))
+        Ok((inp2, headers_result))
     }
 }
 
@@ -136,7 +148,8 @@ mod tests {
     #[test]
     fn headers_parse_test() {
         let parse_headers_result = Headers::parse(
-            "To: sip:user@example.com\r\n\
+            "Accept: application/sdp, application/pkcs7-mime, application/h.245;q=0.1\r\n\
+             To: sip:user@example.com\r\n\
              Route: <sip:192.0.2.254:5060>\r\n\
              Route: <sip:[2001:db8::1]>\r\n\
              Max-Forwards: 70\r\n\
@@ -150,11 +163,31 @@ mod tests {
         match parse_headers_result {
             Ok((_, hdrs)) => {
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[1].value,
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[0].value,
+                    "application/sdp"
+                );
+                assert_eq!(
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[1].value,
+                    "application/pkcs7-mime"
+                );
+                assert_eq!(
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[2].value,
+                    "application/h.245"
+                );
+                assert_eq!(
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[2]
+                        .params()
+                        .unwrap()
+                        .get(&"q"),
+                    Some((&Ascii::new("q"), &Some("0.1")))
+                );
+
+                assert_eq!(
+                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value,
                     "<sip:192.0.2.254:5060>"
                 );
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value,
+                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[1].value,
                     "<sip:[2001:db8::1]>"
                 );
                 assert_eq!(hdrs.get_ext("extention-header").unwrap()[0].value, "Value");
