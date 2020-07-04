@@ -87,6 +87,7 @@ impl<'a> Header<'a> {
         parser: HeaderValueParserFn,
     ) -> nom::IResult<&'a [u8], (&'a str /*value*/, Option<GenericParams<'a>>), SipParseError<'a>>
     {
+        // skip whitespaces before take value
         let (input, _) = complete::space0(input)?;
         if is_crlf(input) {
             return Ok((input, ("", None))); // This is header with empty value
@@ -96,6 +97,8 @@ impl<'a> Header<'a> {
         let (inp, value) = parser(input)?;
         let (_, value) = from_utf8_nom(value)?;
 
+        // skip whitespaces after take value
+        let (inp, _) = complete::space0(inp)?;
         if inp.is_empty() {
             return sip_parse_error!(1, "Error parse header value");
         }
@@ -133,7 +136,7 @@ impl<'a> NomParser<'a> for Header<'a> {
             // let (input, value) = Header::long_header_value_parser_wrapper(input, value_parser)?;
             let (input, (value, params)) = Header::take_value(inp, value_parser)?;
             headers.push_back(Header::new(header_name, value, params));
-            if is_wsp(input[0]) || input[0] == b',' {
+            if input[0] == b',' {
                 let (input, _) = take_sws_token::comma(input)?;
                 inp = input;
                 continue;
