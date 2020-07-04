@@ -87,6 +87,11 @@ impl<'a> Header<'a> {
         parser: HeaderValueParserFn,
     ) -> nom::IResult<&'a [u8], (&'a str /*value*/, Option<GenericParams<'a>>), SipParseError<'a>>
     {
+        let (input, _) = complete::space0(input)?;
+        if is_crlf(input) {
+            return Ok((input, ("", None))); // This is header with empty value
+        }
+
         // add long_header_value_parser_wrapper?
         let (inp, value) = parser(input)?;
         let (_, value) = from_utf8_nom(value)?;

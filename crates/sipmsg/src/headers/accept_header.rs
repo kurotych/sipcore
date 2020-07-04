@@ -19,6 +19,7 @@ pub struct AcceptHeader;
 impl AcceptHeader {
     // qvalue         =  ( "0" [ "." 0*3DIGIT ] )
     //                   / ( "1" [ "." 0*3("0") ] )
+    // TODO Move to another place
     fn validate_q_param(qvalue: &str) -> bool {
         let mut bytes = qvalue.bytes();
         let next = bytes.next();

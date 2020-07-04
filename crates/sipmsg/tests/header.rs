@@ -38,6 +38,17 @@ fn parse_header() {
     }
 }
 
+#[test]
+fn parse_header_without_value() {
+    match SipHeader::parse("Accept:  \r\n".as_bytes()) {
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Accept");
+            assert_eq!(hdrs[0].value, "");
+            assert_eq!(input.len(), 2)
+        }
+        Err(_e) => panic!(),
+    }
+}
 
 // TODO Not supported yet
 // #[test]
