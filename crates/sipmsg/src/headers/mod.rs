@@ -22,3 +22,5 @@ mod accept_header;
 pub use accept_header::AcceptHeader;
 mod accept_encoding_header;
 pub use accept_encoding_header::AcceptEncodingHeader;
+mod accept_language_header;
+pub use accept_language_header::AcceptLanguageHeader;

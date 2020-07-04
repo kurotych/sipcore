@@ -1,6 +1,6 @@
 use crate::headers::{
     traits::{HeaderValueParserFn, SipHeaderParser},
-    AcceptEncodingHeader, AcceptHeader, ExtensionHeader,
+    AcceptEncodingHeader, AcceptHeader, AcceptLanguageHeader, ExtensionHeader,
 };
 use unicase::Ascii;
 
@@ -175,6 +175,7 @@ impl SipRFCHeader {
         match self {
             &SipRFCHeader::Accept => AcceptHeader::take_value,
             &SipRFCHeader::AcceptEncoding => AcceptEncodingHeader::take_value,
+            &SipRFCHeader::AcceptLanguage => AcceptLanguageHeader::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionHeader::take_value,
         }

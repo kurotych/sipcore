@@ -147,6 +147,30 @@ fn accept_encoding_header() {
     }
 }
 
+#[test]
+fn accept_language_header() {
+    match SipHeader::parse("Accept-Language: da, en-gb;q=0.8, en;q=0.7 \r\n".as_bytes()) {
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Accept-Language");
+            assert_eq!(hdrs[0].value, "da");
+            assert_eq!(hdrs[1].value, "en-gb");
+            assert_eq!(
+                hdrs[1].params().unwrap().get("q").unwrap(),
+                (&SipAscii::new("q"), &Some("0.8"))
+            );
+
+            assert_eq!(hdrs[2].value, "en");
+            assert_eq!(
+                hdrs[2].params().unwrap().get("q").unwrap(),
+                (&SipAscii::new("q"), &Some("0.7"))
+            );
+
+            assert_eq!(input.len(), 2)
+        }
+        Err(_e) => panic!(),
+    }
+}
+
 // TODO Not supported yet
 // #[test]
 // fn parse_long_header_field() {
