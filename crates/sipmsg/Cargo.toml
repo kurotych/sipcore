@@ -11,6 +11,7 @@ categories = ["no-std"]
 
 [dependencies]
 nom = "6.0.0-alpha1"
+iri-string = "0.3.0"
 
 [dependencies.unicase]
 version ="^2.6"
