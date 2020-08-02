@@ -148,6 +148,18 @@ fn accept_encoding_header() {
 }
 
 #[test]
+fn alert_info_header() {
+    match SipHeader::parse("Alert-Info: <http://www.example.com/sounds/moo.wav> \r\n".as_bytes()) {
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Alert-Info");
+            assert_eq!(hdrs[0].value, "http://www.example.com/sounds/moo.wav");
+            assert_eq!(input, "\r\n".as_bytes());
+        }
+        Err(_) => panic!(),
+    }
+}
+
+#[test]
 fn accept_language_header() {
     match SipHeader::parse("Accept-Language: da, en-gb;q=0.8, en;q=0.7 \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
