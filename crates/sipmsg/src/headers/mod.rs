@@ -26,3 +26,5 @@ mod accept_language_header;
 pub use accept_language_header::AcceptLanguageHeader;
 mod alertinfo_header;
 pub use alertinfo_header::AlertInfoHeader;
+mod allow_header;
+pub use allow_header::AllowHeader;

@@ -148,6 +148,30 @@ fn accept_encoding_header() {
 }
 
 #[test]
+fn allow_header() {
+    match SipHeader::parse(
+        "Allow: INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH\r\n"
+            .as_bytes(),
+    ) {
+        Ok((input, (_, hdrs))) => {
+            assert_eq!(hdrs[0].name, "Allow");
+            assert_eq!(hdrs[0].value, "INVITE");
+            assert_eq!(hdrs[1].value, "ACK");
+            assert_eq!(hdrs[2].value, "CANCEL");
+            assert_eq!(hdrs[3].value, "OPTIONS");
+            assert_eq!(hdrs[4].value, "BYE");
+            assert_eq!(hdrs[5].value, "REFER");
+            assert_eq!(hdrs[6].value, "SUBSCRIBE");
+            assert_eq!(hdrs[7].value, "NOTIFY");
+            assert_eq!(hdrs[8].value, "INFO");
+            assert_eq!(hdrs[9].value, "PUBLISH");
+            assert_eq!(input, "\r\n".as_bytes());
+        }
+        Err(_) => panic!(),
+    }
+}
+
+#[test]
 fn alert_info_header() {
     match SipHeader::parse("Alert-Info: <http://www.example.com/sounds/moo.wav> \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {

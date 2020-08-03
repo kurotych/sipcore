@@ -10,8 +10,6 @@ use nom::{bytes::complete::take_while1, character::complete::space0};
 
 pub struct AcceptEncodingHeader;
 
-impl AcceptEncodingHeader {}
-
 impl SipHeaderParser for AcceptEncodingHeader {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         if !input.is_empty() && input[0] == b'*' {

@@ -158,15 +158,19 @@ fn parse_response() {
                     .value,
                 "FPBX-2.11.0(11.6.0)"
             );
-
-            assert_eq!(
-                response
-                    .headers
-                    .get_rfc_s(SipRFCHeader::Allow)
-                    .unwrap()
-                    .value,
-                "INVITE, ACK, CANCEL, OPTIONS, BYE, REFER, SUBSCRIBE, NOTIFY, INFO, PUBLISH"
-            );
+            let allow_headers = response.headers.get_rfc(SipRFCHeader::Allow).unwrap();
+            assert_eq!(allow_headers.len(), 10);
+            assert_eq!(allow_headers[0].name, "Allow");
+            assert_eq!(allow_headers[0].value, "INVITE");
+            assert_eq!(allow_headers[1].value, "ACK");
+            assert_eq!(allow_headers[2].value, "CANCEL");
+            assert_eq!(allow_headers[3].value, "OPTIONS");
+            assert_eq!(allow_headers[4].value, "BYE");
+            assert_eq!(allow_headers[5].value, "REFER");
+            assert_eq!(allow_headers[6].value, "SUBSCRIBE");
+            assert_eq!(allow_headers[7].value, "NOTIFY");
+            assert_eq!(allow_headers[8].value, "INFO");
+            assert_eq!(allow_headers[9].value, "PUBLISH");
 
             assert_eq!(
                 response
