@@ -26,7 +26,7 @@
 //! // First parameter not realized yet.
 //! // It should consist be residue if Content-Length is less then actual body length.
 //! let (_, request) = SipRequest::parse(invite_msg_buf).unwrap();
-//! assert_eq!(request.rl.method, SipRequestMethod::INVITE);
+//! assert_eq!(request.rl.method, SipMethod::INVITE);
 //! assert_eq!(request.rl.sip_version, SipVersion(2, 0));
 //!
 //! // RURI
@@ -73,6 +73,7 @@ extern crate nom;
 #[macro_use]
 pub mod common;
 pub use common::errorparse;
+pub use common::sip_method::SipMethod;
 pub use common::traits::NomParser;
 
 mod message;
@@ -83,7 +84,6 @@ pub use message::SipVersion;
 mod userinfo;
 
 mod request;
-pub use request::Method as SipRequestMethod;
 pub use request::Request as SipRequest;
 pub use request::RequestLine as SipRequestLine;
 

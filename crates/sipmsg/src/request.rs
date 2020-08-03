@@ -1,12 +1,12 @@
+use crate::common::sip_method::*;
 use crate::common::{errorparse::SipParseError, traits::NomParser};
+use crate::headers::*;
+use crate::message::*;
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{complete, is_alphabetic},
     sequence::tuple,
 };
-
-use crate::headers::*;
-use crate::message::*;
 
 use core::{str, u8};
 
@@ -46,7 +46,7 @@ impl<'a> NomParser<'a> for Request<'a> {
 /// Ex: `INVITE sip:user@example.com SIP/2.0`
 /// The Request line and u8 buffer shoud have the same life time
 pub struct RequestLine<'a> {
-    pub method: Method,
+    pub method: SipMethod,
     pub uri: SipUri<'a>,
     pub sip_version: SipVersion,
 }
@@ -91,69 +91,10 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
 }
 
 impl<'a> RequestLine<'a> {
-    fn parse_method(method: &[u8]) -> Option<Method> {
+    fn parse_method(method: &[u8]) -> Option<SipMethod> {
         match str::from_utf8(method) {
-            Ok(s) => Method::from_str(s),
+            Ok(s) => SipMethod::from_str(s),
             Err(_) => None,
-        }
-    }
-}
-
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum Method {
-    ACK,
-    BYE,
-    CANCEL,
-    INFO,
-    INVITE,
-    MESSAGE,
-    NOTIFY,
-    OPTIONS,
-    PRACK,
-    PUBLISH,
-    REFER,
-    REGISTER,
-    SUBSCRIBE,
-    UPDATE,
-}
-
-impl Method {
-    pub fn as_str(&self) -> &str {
-        match self {
-            &Method::ACK => "ACK",
-            &Method::BYE => "BYE",
-            &Method::CANCEL => "CANCEL",
-            &Method::INFO => "INFO",
-            &Method::INVITE => "INVITE",
-            &Method::MESSAGE => "MESSAGE",
-            &Method::NOTIFY => "NOTIFY",
-            &Method::OPTIONS => "OPTIONS",
-            &Method::PRACK => "PRACK",
-            &Method::PUBLISH => "PUBLISH",
-            &Method::REFER => "REFER",
-            &Method::REGISTER => "REGISTER",
-            &Method::SUBSCRIBE => "SUBSCRIBE",
-            &Method::UPDATE => "UPDATE",
-        }
-    }
-
-    pub fn from_str(s: &str) -> Option<Method> {
-        match s {
-            "ACK" => Some(Method::ACK),
-            "BYE" => Some(Method::BYE),
-            "CANCEL" => Some(Method::CANCEL),
-            "INFO" => Some(Method::INFO),
-            "INVITE" => Some(Method::INVITE),
-            "MESSAGE" => Some(Method::MESSAGE),
-            "NOTIFY" => Some(Method::NOTIFY),
-            "OPTIONS" => Some(Method::OPTIONS),
-            "PRACK" => Some(Method::PRACK),
-            "PUBLISH" => Some(Method::PUBLISH),
-            "REFER" => Some(Method::REFER),
-            "REGISTER" => Some(Method::REGISTER),
-            "SUBSCRIBE" => Some(Method::SUBSCRIBE),
-            "UPDATE" => Some(Method::UPDATE),
-            _ => None,
         }
     }
 }

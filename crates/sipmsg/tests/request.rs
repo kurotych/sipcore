@@ -15,7 +15,7 @@ fn parse_request() {
 
     match SipRequest::parse(invite_msg_buf) {
         Ok((_, parsed_req)) => {
-            assert_eq!(parsed_req.rl.method, SipRequestMethod::INVITE);
+            assert_eq!(parsed_req.rl.method, SipMethod::INVITE);
             assert_eq!(parsed_req.rl.uri.scheme, SipRequestUriScheme::SIP);
             assert_eq!(parsed_req.rl.uri.user_info().unwrap().value, "bob");
             assert_eq!(parsed_req.rl.uri.hostport.host, "biloxi.com");
@@ -134,7 +134,7 @@ fn parse_request() {
 fn get_method_type() {
     match SipRequestLine::parse("OPTIONS sip:user@example.com SIP/2.0\r\n".as_bytes()) {
         Ok((_b, rl)) => {
-            assert_eq!(rl.method, SipRequestMethod::OPTIONS);
+            assert_eq!(rl.method, SipMethod::OPTIONS);
             assert_eq!(rl.uri.scheme, SipRequestUriScheme::SIP);
             assert_eq!(rl.sip_version, SipVersion(2, 0));
             assert_eq!(rl.uri.user_info().unwrap().value, "user");
@@ -147,7 +147,7 @@ fn get_method_type() {
         "INVITE sips:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0\r\n".as_bytes(),
     ) {
         Ok((_b, rl)) => {
-            assert_eq!(rl.method, SipRequestMethod::INVITE);
+            assert_eq!(rl.method, SipMethod::INVITE);
             assert_eq!(rl.uri.scheme, SipRequestUriScheme::SIPS);
             assert_eq!(rl.sip_version, SipVersion(2, 0));
             assert_eq!(rl.uri.user_info().unwrap().value, "vivekg");
@@ -162,7 +162,7 @@ fn get_method_type() {
 
     match SipRequestLine::parse("REGISTER sip:[2001:db8::10]:9999 SIP/3.1\r\n".as_bytes()) {
         Ok((_b, rl)) => {
-            assert_eq!(rl.method, SipRequestMethod::REGISTER);
+            assert_eq!(rl.method, SipMethod::REGISTER);
             assert_eq!(rl.uri.scheme, SipRequestUriScheme::SIP);
             assert_eq!(rl.sip_version, SipVersion(3, 1));
             assert_eq!(rl.uri.hostport.host, "2001:db8::10");
