@@ -1,11 +1,10 @@
-use crate::common::bnfcore::is_wsp;
-use crate::common::nom_wrappers::from_utf8_nom;
-use crate::common::{errorparse::SipParseError, take_sws_token};
+use crate::common::{
+    bnfcore::is_wsp, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
+};
 use crate::headers::traits::SipHeaderParser;
 
 use iri_string::{spec::UriSpec, validate::iri};
-use nom::bytes::complete::take_while1;
-use nom::sequence::tuple;
+use nom::{bytes::complete::take_while1, sequence::tuple};
 
 // Alert-Info   =  "Alert-Info" HCOLON alert-param *(COMMA alert-param)
 // alert-param  =  LAQUOT absoluteURI RAQUOT *( SEMI generic-param )
@@ -20,7 +19,7 @@ impl SipHeaderParser for AlertInfoHeader {
             tuple((take_sws_token::laquot, uri, take_sws_token::raquot))(input)?;
         let (_, uri_str) = from_utf8_nom(uri)?;
         if !iri::<UriSpec>(uri_str).is_ok() {
-            return sip_parse_error!(1, "Error cast from_utf8");
+            return sip_parse_error!(1, "Invalid URI");
         }
         Ok((inp, uri))
     }

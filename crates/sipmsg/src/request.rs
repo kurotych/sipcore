@@ -1,7 +1,5 @@
-use crate::common::sip_method::*;
-use crate::common::{errorparse::SipParseError, traits::NomParser};
-use crate::headers::*;
-use crate::message::*;
+use crate::common::{errorparse::SipParseError, sip_method::*, traits::NomParser};
+use crate::{headers::*, message::*};
 use nom::{
     bytes::complete::{tag, take_while1},
     character::{complete, is_alphabetic},

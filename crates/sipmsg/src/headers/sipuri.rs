@@ -1,8 +1,8 @@
-use crate::common::nom_wrappers::from_utf8_nom;
 use crate::{
     common::bnfcore::is_unreserved, common::hostport::HostPort,
-    common::nom_wrappers::take_while_with_escaped, common::traits::NomParser,
-    errorparse::SipParseError, headers::GenericParams, userinfo::UserInfo,
+    common::nom_wrappers::from_utf8_nom, common::nom_wrappers::take_while_with_escaped,
+    common::traits::NomParser, errorparse::SipParseError, headers::GenericParams,
+    userinfo::UserInfo,
 };
 use alloc::collections::btree_map::BTreeMap;
 use nom::bytes::complete::{take, take_till, take_until};
