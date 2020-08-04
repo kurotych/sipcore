@@ -5,9 +5,7 @@ use crate::common::{
 use crate::headers::traits::SipHeaderParser;
 use nom::bytes::complete::take_while1;
 
-pub struct ExtensionHeader;
-
-// UTF8-CONT       =  %x80-BF
+pub struct ExtensionParser;
 
 // THIS MUST BE REMOVED. It just for testing.
 fn is_token_char_or_wsp(c: u8) -> bool {
@@ -26,7 +24,7 @@ fn is_token_char_or_wsp(c: u8) -> bool {
         || c == b']'
 }
 
-impl SipHeaderParser for ExtensionHeader {
+impl SipHeaderParser for ExtensionParser {
     // TODO
     // extension-header  =  header-name HCOLON header-value
     // header-value      =  *(TEXT-UTF8char / UTF8-CONT / LWS)

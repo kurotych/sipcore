@@ -2,15 +2,14 @@ use crate::common::{bnfcore::is_token_char, errorparse::SipParseError};
 use crate::headers::traits::SipHeaderParser;
 use nom::{bytes::complete::take_while1, character::complete::space0};
 
-// Accept-Encoding  =  "Accept-Encoding" HCOLON
+/// Accept-Encoding  =  "Accept-Encoding" HCOLON
 //                      [ encoding *(COMMA encoding) ]
 // encoding         =  codings *(SEMI accept-param)
 // codings          =  content-coding / "*"
 // content-coding   =  token
+pub struct AcceptEncodingParser;
 
-pub struct AcceptEncodingHeader;
-
-impl SipHeaderParser for AcceptEncodingHeader {
+impl SipHeaderParser for AcceptEncodingParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         if !input.is_empty() && input[0] == b'*' {
             let (input, _) = space0(input)?;
@@ -27,7 +26,7 @@ mod test {
 
     #[test]
     fn accept_encoding_value() {
-        match AcceptEncodingHeader::take_value("*\r\n".as_bytes()) {
+        match AcceptEncodingParser::take_value("*\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
                 assert_eq!(val, "*".as_bytes());
@@ -36,7 +35,7 @@ mod test {
                 panic!();
             }
         }
-        match AcceptEncodingHeader::take_value("gzip\r\n".as_bytes()) {
+        match AcceptEncodingParser::take_value("gzip\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
                 assert_eq!(val, "gzip".as_bytes());

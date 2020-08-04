@@ -6,12 +6,11 @@ use crate::headers::traits::SipHeaderParser;
 use iri_string::{spec::UriSpec, validate::iri};
 use nom::{bytes::complete::take_while1, sequence::tuple};
 
-// Alert-Info   =  "Alert-Info" HCOLON alert-param *(COMMA alert-param)
+/// Alert-Info   =  "Alert-Info" HCOLON alert-param *(COMMA alert-param)
 // alert-param  =  LAQUOT absoluteURI RAQUOT *( SEMI generic-param )
+pub struct AlertInfoParser;
 
-pub struct AlertInfoHeader;
-
-impl SipHeaderParser for AlertInfoHeader {
+impl SipHeaderParser for AlertInfoParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         let uri = take_while1(|c| !is_wsp(c) && c != b'>');
 
@@ -30,7 +29,7 @@ mod tests {
     use super::*;
     #[test]
     fn headers_parse_test() {
-        match AlertInfoHeader::take_value(
+        match AlertInfoParser::take_value(
             "  < http://www.example.com/sounds/moo.wav  >   \r\n".as_bytes(),
         ) {
             Ok((input, val)) => {
@@ -41,7 +40,7 @@ mod tests {
                 panic!();
             }
         }
-        match AlertInfoHeader::take_value("random word\r\n".as_bytes()) {
+        match AlertInfoParser::take_value("random word\r\n".as_bytes()) {
             Ok((_, _)) => {
                 panic!();
             }

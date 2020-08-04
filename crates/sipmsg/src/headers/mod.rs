@@ -15,16 +15,4 @@ pub use generic_params::GenericParams;
 pub mod sipuri;
 pub use sipuri::SipUri;
 
-mod extension_header;
-pub use extension_header::ExtensionHeader;
-
-mod accept_header;
-pub use accept_header::AcceptHeader;
-mod accept_encoding_header;
-pub use accept_encoding_header::AcceptEncodingHeader;
-mod accept_language_header;
-pub use accept_language_header::AcceptLanguageHeader;
-mod alertinfo_header;
-pub use alertinfo_header::AlertInfoHeader;
-mod allow_header;
-pub use allow_header::AllowHeader;
+mod parsers;

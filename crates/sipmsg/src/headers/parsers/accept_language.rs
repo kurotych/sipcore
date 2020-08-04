@@ -2,15 +2,13 @@ use crate::common::{bnfcore::is_alpha, errorparse::SipParseError};
 use crate::headers::traits::SipHeaderParser;
 use nom::{bytes::complete::take_while1, character::complete::space0};
 
-// Accept-Language  =  "Accept-Language" HCOLON
+/// Accept-Language  =  "Accept-Language" HCOLON
 //                      [ language *(COMMA language) ]
 // language         =  language-range *(SEMI accept-param)
 // language-range   =  ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) / "*" )
-pub struct AcceptLanguageHeader;
+pub struct AcceptLanguageParser;
 
-impl AcceptLanguageHeader {}
-
-impl SipHeaderParser for AcceptLanguageHeader {
+impl SipHeaderParser for AcceptLanguageParser {
     fn take_value(initial_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         if !initial_input.is_empty() && initial_input[0] == b'*' {
             let (input, _) = space0(initial_input)?;
@@ -41,7 +39,7 @@ mod test {
     // Accept-Language: da, en-gb;q=0.8, en;q=0.7
     #[test]
     fn accept_language_value() {
-        match AcceptLanguageHeader::take_value("en-gb;q=0.8\r\n".as_bytes()) {
+        match AcceptLanguageParser::take_value("en-gb;q=0.8\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, ";q=0.8\r\n".as_bytes());
                 assert_eq!(val, "en-gb".as_bytes());
@@ -50,7 +48,7 @@ mod test {
                 panic!();
             }
         }
-        match AcceptLanguageHeader::take_value("da\r\n".as_bytes()) {
+        match AcceptLanguageParser::take_value("da\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
                 assert_eq!(val, "da".as_bytes());
@@ -60,7 +58,7 @@ mod test {
             }
         }
 
-        match AcceptLanguageHeader::take_value("*\r\n".as_bytes()) {
+        match AcceptLanguageParser::take_value("*\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
                 assert_eq!(val, "*".as_bytes());

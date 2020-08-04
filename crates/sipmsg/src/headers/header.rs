@@ -5,7 +5,7 @@ use crate::{
     },
     headers::{
         traits::{HeaderValueParserFn, SipHeaderParser},
-        ExtensionHeader, GenericParams, SipRFCHeader,
+        parsers::ExtensionParser, GenericParams, SipRFCHeader,
     },
 };
 use nom::{
@@ -45,7 +45,7 @@ impl<'a> Header<'a> {
     pub fn find_parser(header_name: &'a str) -> (Option<SipRFCHeader>, HeaderValueParserFn) {
         match SipRFCHeader::from_str(&header_name) {
             Some(rfc_header) => (Some(rfc_header), rfc_header.get_parser()),
-            None => (None, ExtensionHeader::take_value),
+            None => (None, ExtensionParser::take_value),
         }
     }
 

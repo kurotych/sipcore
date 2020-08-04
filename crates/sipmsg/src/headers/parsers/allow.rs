@@ -4,10 +4,10 @@ use crate::common::{
 use crate::headers::traits::SipHeaderParser;
 use nom::bytes::complete::take_while1;
 
-pub struct AllowHeader;
-// Allow  =  "Allow" HCOLON [Method *(COMMA Method)]
+/// Allow  =  "Allow" HCOLON [Method *(COMMA Method)]
+pub struct AllowParser;
 
-impl SipHeaderParser for AllowHeader {
+impl SipHeaderParser for AllowParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         let (input, value) = take_while1(is_alpha)(input)?;
         // TODO is create validatation without casting to string
@@ -26,7 +26,7 @@ mod tests {
     use super::*;
     #[test]
     fn header_parse_test() {
-        match AllowHeader::take_value(
+        match AllowParser::take_value(
             "INVITE\r\n".as_bytes(),
         ) {
             Ok((input, val)) => {
@@ -37,7 +37,7 @@ mod tests {
                 panic!();
             }
         }
-        match AllowHeader::take_value("UNKMETHOD\r\n".as_bytes()) {
+        match AllowParser::take_value("UNKMETHOD\r\n".as_bytes()) {
             Ok((_, _)) => {
                 panic!();
             }

@@ -4,19 +4,17 @@ use crate::common::{
     take_sws_token,
 };
 use crate::headers::traits::SipHeaderParser;
-use nom::bytes::complete::take_while1;
-use nom::sequence::tuple;
+use nom::{bytes::complete::take_while1, sequence::tuple};
 
-// Accept  =  "Accept" HCOLON [ accept-range *(COMMA accept-range) ]
+/// Accept  =  "Accept" HCOLON [ accept-range *(COMMA accept-range) ]
 // accept-range   =  media-range *(SEMI accept-param)
 // media-range    =  ( "*/*"
 //                 / ( m-type SLASH "*" )
 //                 / ( m-type SLASH m-subtype )
 // accept-param   =  ("q" EQUAL qvalue) / generic-param
+pub struct AcceptParser;
 
-pub struct AcceptHeader;
-
-impl AcceptHeader {
+impl AcceptParser {
     // qvalue         =  ( "0" [ "." 0*3DIGIT ] )
     //                   / ( "1" [ "." 0*3("0") ] )
     // TODO Move to another place
@@ -50,7 +48,7 @@ impl AcceptHeader {
     }
 }
 
-impl SipHeaderParser for AcceptHeader {
+impl SipHeaderParser for AcceptParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         let (inp, (left_part, slash_part, right_part)) = tuple((
             take_while1(is_token_char),
@@ -76,7 +74,7 @@ mod test {
 
     #[test]
     fn test_take_accept_value() {
-        match AcceptHeader::take_value("application/sdp\r\n".as_bytes()) {
+        match AcceptParser::take_value("application/sdp\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
                 assert_eq!(val, "application/sdp".as_bytes());
@@ -86,7 +84,7 @@ mod test {
             }
         }
 
-        match AcceptHeader::take_value("application/h.245;q=0.1\r\n".as_bytes()) {
+        match AcceptParser::take_value("application/h.245;q=0.1\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, ";q=0.1\r\n".as_bytes());
                 assert_eq!(val, "application/h.245".as_bytes());
@@ -99,15 +97,15 @@ mod test {
 
     #[test]
     fn test_validate_q_param() {
-        assert_eq!(AcceptHeader::validate_q_param(""), false);
-        assert_eq!(AcceptHeader::validate_q_param("1.1"), false);
-        assert_eq!(AcceptHeader::validate_q_param("9"), false);
-        assert_eq!(AcceptHeader::validate_q_param("00"), false);
-        assert_eq!(AcceptHeader::validate_q_param("0.001"), true);
-        assert_eq!(AcceptHeader::validate_q_param("0.01"), true);
-        assert_eq!(AcceptHeader::validate_q_param("0.1"), true);
-        assert_eq!(AcceptHeader::validate_q_param("0."), true);
-        assert_eq!(AcceptHeader::validate_q_param("1."), true);
-        assert_eq!(AcceptHeader::validate_q_param("1.000"), true);
+        assert_eq!(AcceptParser::validate_q_param(""), false);
+        assert_eq!(AcceptParser::validate_q_param("1.1"), false);
+        assert_eq!(AcceptParser::validate_q_param("9"), false);
+        assert_eq!(AcceptParser::validate_q_param("00"), false);
+        assert_eq!(AcceptParser::validate_q_param("0.001"), true);
+        assert_eq!(AcceptParser::validate_q_param("0.01"), true);
+        assert_eq!(AcceptParser::validate_q_param("0.1"), true);
+        assert_eq!(AcceptParser::validate_q_param("0."), true);
+        assert_eq!(AcceptParser::validate_q_param("1."), true);
+        assert_eq!(AcceptParser::validate_q_param("1.000"), true);
     }
 }
