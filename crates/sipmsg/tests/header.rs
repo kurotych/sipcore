@@ -36,6 +36,13 @@ fn parse_header() {
         }
         Err(_e) => panic!(),
     }
+
+    let res = SipHeader::parse(
+        "Authentication-Info: nextnonce=\"47364c23432d2e131a5fb210812c\"\r\n".as_bytes(),
+    );
+    let (input, (_, hdrs)) = res.unwrap();
+    assert_eq!(input, "\r\n".as_bytes());
+    assert_eq!(hdrs[0].value, "nextnonce=\"47364c23432d2e131a5fb210812c\"");
 }
 
 #[test]

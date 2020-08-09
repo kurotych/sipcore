@@ -10,3 +10,5 @@ mod allow;
 pub use allow::AllowParser;
 mod extension;
 pub use extension::ExtensionParser;
+mod authentication_info;
+pub use authentication_info::AuthenticationInfoParser;
