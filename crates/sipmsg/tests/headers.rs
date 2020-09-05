@@ -17,11 +17,11 @@ fn parse_headers() {
         Ok((input, hdrs)) => {
             assert_eq!(hdrs.len(), 7);
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
                 "sip:user@example.com"
             );
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::From).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::From).unwrap().value.vstr,
                 "caller<sip:caller@example.com>"
             );
             assert_eq!(
@@ -34,7 +34,7 @@ fn parse_headers() {
             );
 
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::MaxForwards).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::MaxForwards).unwrap().value.vstr,
                 "70"
             );
             assert_eq!(
@@ -43,18 +43,18 @@ fn parse_headers() {
             );
 
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::CallID).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::CallID).unwrap().value.vstr,
                 "lwsdisp.1234abcd@funky.example.com"
             );
             assert_eq!(hdrs.get_rfc_s(SipRFCHeader::CallID).unwrap().params(), None);
 
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap().value.vstr,
                 "60 OPTIONS"
             );
             assert_eq!(hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap().params(), None);
 
-            assert_eq!(hdrs.get_ext_s("customheader").unwrap().value, "value");
+            assert_eq!(hdrs.get_ext_s("customheader").unwrap().value.vstr, "value");
             assert_eq!(
                 hdrs.get_ext_s("customheader")
                     .unwrap()
@@ -65,7 +65,7 @@ fn parse_headers() {
             );
 
             assert_eq!(
-                hdrs.get_rfc_s(SipRFCHeader::Via).unwrap().value,
+                hdrs.get_rfc_s(SipRFCHeader::Via).unwrap().value.vstr,
                 "SIP/2.0/UDP funky.example.com"
             );
             assert_eq!(

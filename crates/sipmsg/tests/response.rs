@@ -54,7 +54,7 @@ fn parse_response() {
             assert_eq!(response.headers.len(), 9);
 
             assert_eq!(
-                response.headers.get_rfc_s(SipRFCHeader::Via).unwrap().value,
+                response.headers.get_rfc_s(SipRFCHeader::Via).unwrap().value.vstr,
                 "SIP/2.0/UDP 192.168.178.69:60686"
             );
             assert_eq!(
@@ -98,7 +98,7 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "<sip:12@192.168.178.26>"
             );
 
@@ -117,7 +117,7 @@ fn parse_response() {
             );
 
             assert_eq!(
-                response.headers.get_rfc_s(SipRFCHeader::To).unwrap().value,
+                response.headers.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
                 "<sip:12@192.168.178.26>"
             );
 
@@ -137,7 +137,7 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CallID)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1"
             );
 
@@ -146,7 +146,7 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CSeq)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "62833 REGISTER"
             );
 
@@ -155,29 +155,29 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::Server)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "FPBX-2.11.0(11.6.0)"
             );
             let allow_headers = response.headers.get_rfc(SipRFCHeader::Allow).unwrap();
             assert_eq!(allow_headers.len(), 10);
             assert_eq!(allow_headers[0].name, "Allow");
-            assert_eq!(allow_headers[0].value, "INVITE");
-            assert_eq!(allow_headers[1].value, "ACK");
-            assert_eq!(allow_headers[2].value, "CANCEL");
-            assert_eq!(allow_headers[3].value, "OPTIONS");
-            assert_eq!(allow_headers[4].value, "BYE");
-            assert_eq!(allow_headers[5].value, "REFER");
-            assert_eq!(allow_headers[6].value, "SUBSCRIBE");
-            assert_eq!(allow_headers[7].value, "NOTIFY");
-            assert_eq!(allow_headers[8].value, "INFO");
-            assert_eq!(allow_headers[9].value, "PUBLISH");
+            assert_eq!(allow_headers[0].value.vstr, "INVITE");
+            assert_eq!(allow_headers[1].value.vstr, "ACK");
+            assert_eq!(allow_headers[2].value.vstr, "CANCEL");
+            assert_eq!(allow_headers[3].value.vstr, "OPTIONS");
+            assert_eq!(allow_headers[4].value.vstr, "BYE");
+            assert_eq!(allow_headers[5].value.vstr, "REFER");
+            assert_eq!(allow_headers[6].value.vstr, "SUBSCRIBE");
+            assert_eq!(allow_headers[7].value.vstr, "NOTIFY");
+            assert_eq!(allow_headers[8].value.vstr, "INFO");
+            assert_eq!(allow_headers[9].value.vstr, "PUBLISH");
 
             assert_eq!(
                 response
                     .headers
                     .get_rfc_s(SipRFCHeader::Supported)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "replaces, timer"
             );
             assert_eq!(
@@ -185,7 +185,7 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::ContentLength)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "0"
             );
         }

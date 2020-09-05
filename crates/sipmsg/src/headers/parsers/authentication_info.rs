@@ -1,7 +1,10 @@
 use crate::{
     common::errorparse::SipParseError,
     common::{bnfcore::is_alpha, take_sws_token},
-    headers::traits::SipHeaderParser,
+    headers::{
+        traits::SipHeaderParser,
+        header::{HeaderValue, HeaderValueType},
+    }
 };
 use nom::bytes::complete::take_while;
 
@@ -21,7 +24,7 @@ impl AuthenticationInfoParser {
 }
 
 impl SipHeaderParser for AuthenticationInfoParser {
-    fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         let (input, info_name) = take_while(is_alpha)(source_input)?;
         if !AuthenticationInfoParser::is_info_name_allowed(info_name) {
             return sip_parse_error!(1, "AuthentificatiionInfo value name is invalid");
@@ -31,7 +34,8 @@ impl SipHeaderParser for AuthenticationInfoParser {
         let (input, value) = take_while(|c: u8| c != b'"')(input)?;
         let (input, lq) = take_sws_token::rdquot(input)?;
         let header_length = info_name.len() + eq.len() + rq.len() + value.len() + lq.len();
-        Ok((input, &source_input[..header_length]))
+        let (_, hdr_val) = HeaderValue::new(&source_input[..header_length], HeaderValueType::SimpleString, None)?;
+        Ok((input, hdr_val))
     }
 }
 
@@ -45,6 +49,6 @@ mod test {
         );
         let (input, val) = val.unwrap();
         assert_eq!(input, "\r\n".as_bytes());
-        assert_eq!(val, "nextnonce=\"47364c23432d2e131a5fb210812c\"".as_bytes());
+        assert_eq!(val.vstr, "nextnonce=\"47364c23432d2e131a5fb210812c\"");
     }
 }

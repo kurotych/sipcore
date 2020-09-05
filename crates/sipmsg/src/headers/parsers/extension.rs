@@ -1,8 +1,13 @@
-use crate::common::{
-    bnfcore::{is_token_char, is_wsp},
-    errorparse::SipParseError,
+use crate::{
+    common::{
+        bnfcore::{is_token_char, is_wsp},
+        errorparse::SipParseError,
+    },
+    headers::{
+        header::{HeaderValue, HeaderValueType},
+        traits::SipHeaderParser,
+    },
 };
-use crate::headers::traits::SipHeaderParser;
 use nom::bytes::complete::take_while1;
 
 pub struct ExtensionParser;
@@ -28,7 +33,9 @@ impl SipHeaderParser for ExtensionParser {
     // TODO
     // extension-header  =  header-name HCOLON header-value
     // header-value      =  *(TEXT-UTF8char / UTF8-CONT / LWS)
-    fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-        take_while1(is_token_char_or_wsp)(input)
+    fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
+        let (inp, res_val) = take_while1(is_token_char_or_wsp)(input)?;
+        let (_, hdr_val) = HeaderValue::new(res_val, HeaderValueType::SimpleString, None)?;
+        Ok((inp, hdr_val))
     }
 }

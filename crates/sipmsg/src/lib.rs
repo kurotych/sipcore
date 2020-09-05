@@ -39,12 +39,12 @@
 //!
 //! // Via Header
 //! let via_headers = request.headers.get_rfc(SipRFCHeader::Via).unwrap();
-//! assert_eq!(via_headers[0].value, "SIP/2.0/UDP pc33.atlanta.com");
+//! assert_eq!(via_headers[0].value.vstr, "SIP/2.0/UDP pc33.atlanta.com");
 //! assert_eq!(
 //!     via_headers[0].params().unwrap().get(&"branch"),
 //!     Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
 //! );
-//! assert_eq!(via_headers[1].value, "SIP/2.0/UDP 192.168.1.111");
+//! assert_eq!(via_headers[1].value.vstr, "SIP/2.0/UDP 192.168.1.111");
 //! assert_eq!(
 //!     via_headers[1].params(),
 //!     None
@@ -53,7 +53,7 @@
 //! // Extention Header
 //! let extention_header = request.headers.get_ext_s("extention-header").unwrap();
 //! assert_eq!(extention_header.name, "extention-header");
-//! assert_eq!(extention_header.value, "extention header value");
+//! assert_eq!(extention_header.value.vstr, "extention header value");
 //! assert_eq!(
 //!     extention_header.params().unwrap().get(&"param"),
 //!     Some((&SipAscii::new("param"), &Some("123")))

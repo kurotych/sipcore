@@ -2,10 +2,9 @@ use crate::{
     common::{bnfcore::is_crlf, errorparse::SipParseError, traits::NomParser},
     headers::{SipHeader, SipRFCHeader},
 };
-use nom::bytes::complete::tag;
-
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
 use core::str;
+use nom::bytes::complete::tag;
 use unicase::Ascii;
 
 pub struct Headers<'a> {
@@ -163,15 +162,15 @@ mod tests {
         match parse_headers_result {
             Ok((_, hdrs)) => {
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[0].value,
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[0].value.vstr,
                     "application/sdp"
                 );
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[1].value,
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[1].value.vstr,
                     "application/pkcs7-mime"
                 );
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[2].value,
+                    hdrs.get_rfc(SipRFCHeader::Accept).unwrap()[2].value.vstr,
                     "application/h.245"
                 );
                 assert_eq!(
@@ -183,14 +182,17 @@ mod tests {
                 );
 
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value,
+                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[0].value.vstr,
                     "<sip:192.0.2.254:5060>"
                 );
                 assert_eq!(
-                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[1].value,
+                    hdrs.get_rfc(SipRFCHeader::Route).unwrap()[1].value.vstr,
                     "<sip:[2001:db8::1]>"
                 );
-                assert_eq!(hdrs.get_ext("extention-header").unwrap()[0].value, "Value");
+                assert_eq!(
+                    hdrs.get_ext("extention-header").unwrap()[0].value.vstr,
+                    "Value"
+                );
                 assert_eq!(hdrs.get_rfc(SipRFCHeader::Route).unwrap().len(), 2);
             }
             Err(_) => panic!(),

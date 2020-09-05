@@ -3,7 +3,11 @@ use crate::common::{
     errorparse::SipParseError,
     take_sws_token,
 };
-use crate::headers::traits::SipHeaderParser;
+use crate::headers::{
+    header::{HeaderValue, HeaderValueType},
+    traits::SipHeaderParser,
+};
+
 use nom::{bytes::complete::take_while1, sequence::tuple};
 
 /// Accept  =  "Accept" HCOLON [ accept-range *(COMMA accept-range) ]
@@ -49,14 +53,15 @@ impl AcceptParser {
 }
 
 impl SipHeaderParser for AcceptParser {
-    fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         let (inp, (left_part, slash_part, right_part)) = tuple((
             take_while1(is_token_char),
             take_sws_token::slash,
             take_while1(is_token_char),
         ))(input)?;
         let offset = left_part.len() + slash_part.len() + right_part.len();
-        Ok((inp, &input[..offset]))
+        let (_, hdr_val) = HeaderValue::new(&input[..offset], HeaderValueType::SimpleString, None)?;
+        Ok((inp, hdr_val))
     }
 }
 
@@ -77,7 +82,7 @@ mod test {
         match AcceptParser::take_value("application/sdp\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val, "application/sdp".as_bytes());
+                assert_eq!(val.vstr, "application/sdp");
             }
             Err(_) => {
                 panic!();
@@ -87,7 +92,7 @@ mod test {
         match AcceptParser::take_value("application/h.245;q=0.1\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, ";q=0.1\r\n".as_bytes());
-                assert_eq!(val, "application/h.245".as_bytes());
+                assert_eq!(val.vstr, "application/h.245");
             }
             Err(_) => {
                 panic!();

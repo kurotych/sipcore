@@ -27,7 +27,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::Via)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "SIP/2.0/UDP pc33.atlanta.com"
             );
             assert_eq!(
@@ -45,7 +45,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::To)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "Bob <sip:bob@biloxi.com>"
             );
             assert_eq!(
@@ -53,7 +53,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "Alice <sip:alice@atlanta.com>"
             );
             assert_eq!(
@@ -82,7 +82,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::MaxForwards)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "70"
             );
 
@@ -91,7 +91,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CallID)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "987asjd97y7atg"
             );
 
@@ -100,7 +100,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CSeq)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "986759 INVITE"
             );
 
@@ -109,7 +109,7 @@ fn parse_request() {
                     .headers
                     .get_rfc_s(SipRFCHeader::Accept)
                     .unwrap()
-                    .value,
+                    .value.vstr,
                 "application/h.245"
             );
 

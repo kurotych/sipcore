@@ -5,7 +5,7 @@ fn parse_header() {
     match SipHeader::parse("Subject:This is a test\r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Subject");
-            assert_eq!(hdrs[0].value, "This is a test");
+            assert_eq!(hdrs[0].value.vstr, "This is a test");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -14,7 +14,7 @@ fn parse_header() {
     match SipHeader::parse("Name: Value;parameter=false;param2\r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Name");
-            assert_eq!(hdrs[0].value, "Value");
+            assert_eq!(hdrs[0].value.vstr, "Value");
             assert_eq!(
                 hdrs[0].params().unwrap().get("parameter"),
                 Some((&SipAscii::new("parameter"), &Some("false")))
@@ -31,7 +31,7 @@ fn parse_header() {
     match SipHeader::parse("Max-Forwards: 70\r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Max-Forwards");
-            assert_eq!(hdrs[0].value, "70");
+            assert_eq!(hdrs[0].value.vstr, "70");
             assert_eq!(input.len(), 2);
         }
         Err(_e) => panic!(),
@@ -42,7 +42,7 @@ fn parse_header() {
     );
     let (input, (_, hdrs)) = res.unwrap();
     assert_eq!(input, "\r\n".as_bytes());
-    assert_eq!(hdrs[0].value, "nextnonce=\"47364c23432d2e131a5fb210812c\"");
+    assert_eq!(hdrs[0].value.vstr, "nextnonce=\"47364c23432d2e131a5fb210812c\"");
 }
 
 #[test]
@@ -50,7 +50,7 @@ fn parse_header_without_value() {
     match SipHeader::parse("Accept:  \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept");
-            assert_eq!(hdrs[0].value, "");
+            assert_eq!(hdrs[0].value.vstr, "");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -73,9 +73,9 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding:  compress, gzip \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "compress");
+            assert_eq!(hdrs[0].value.vstr, "compress");
             assert_eq!(hdrs[1].name, "Accept-Encoding");
-            assert_eq!(hdrs[1].value, "gzip");
+            assert_eq!(hdrs[1].value.vstr, "gzip");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -84,7 +84,7 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding:  \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "");
+            assert_eq!(hdrs[0].value.vstr, "");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -93,7 +93,7 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding: *  \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "*");
+            assert_eq!(hdrs[0].value.vstr, "*");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -102,13 +102,13 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding:compress;q=0.5, gzip;q=1.0\r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "compress");
+            assert_eq!(hdrs[0].value.vstr, "compress");
             assert_eq!(
                 hdrs[0].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("0.5"))
             );
             assert_eq!(hdrs[1].name, "Accept-Encoding");
-            assert_eq!(hdrs[1].value, "gzip");
+            assert_eq!(hdrs[1].value.vstr, "gzip");
             assert_eq!(
                 hdrs[1].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("1.0"))
@@ -121,20 +121,20 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding: gzip;q=1.0, identity; q=0.5, *;q=0\r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "gzip");
+            assert_eq!(hdrs[0].value.vstr, "gzip");
             assert_eq!(
                 hdrs[0].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("1.0"))
             );
             assert_eq!(hdrs[1].name, "Accept-Encoding");
-            assert_eq!(hdrs[1].value, "identity");
+            assert_eq!(hdrs[1].value.vstr, "identity");
             assert_eq!(
                 hdrs[1].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("0.5"))
             );
 
             assert_eq!(hdrs[2].name, "Accept-Encoding");
-            assert_eq!(hdrs[2].value, "*");
+            assert_eq!(hdrs[2].value.vstr, "*");
             assert_eq!(
                 hdrs[2].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("0"))
@@ -147,7 +147,7 @@ fn accept_encoding_header() {
     match SipHeader::parse("Accept-Encoding: gzip \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Encoding");
-            assert_eq!(hdrs[0].value, "gzip");
+            assert_eq!(hdrs[0].value.vstr, "gzip");
             assert_eq!(input.len(), 2)
         }
         Err(_e) => panic!(),
@@ -162,16 +162,16 @@ fn allow_header() {
     ) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Allow");
-            assert_eq!(hdrs[0].value, "INVITE");
-            assert_eq!(hdrs[1].value, "ACK");
-            assert_eq!(hdrs[2].value, "CANCEL");
-            assert_eq!(hdrs[3].value, "OPTIONS");
-            assert_eq!(hdrs[4].value, "BYE");
-            assert_eq!(hdrs[5].value, "REFER");
-            assert_eq!(hdrs[6].value, "SUBSCRIBE");
-            assert_eq!(hdrs[7].value, "NOTIFY");
-            assert_eq!(hdrs[8].value, "INFO");
-            assert_eq!(hdrs[9].value, "PUBLISH");
+            assert_eq!(hdrs[0].value.vstr, "INVITE");
+            assert_eq!(hdrs[1].value.vstr, "ACK");
+            assert_eq!(hdrs[2].value.vstr, "CANCEL");
+            assert_eq!(hdrs[3].value.vstr, "OPTIONS");
+            assert_eq!(hdrs[4].value.vstr, "BYE");
+            assert_eq!(hdrs[5].value.vstr, "REFER");
+            assert_eq!(hdrs[6].value.vstr, "SUBSCRIBE");
+            assert_eq!(hdrs[7].value.vstr, "NOTIFY");
+            assert_eq!(hdrs[8].value.vstr, "INFO");
+            assert_eq!(hdrs[9].value.vstr, "PUBLISH");
             assert_eq!(input, "\r\n".as_bytes());
         }
         Err(_) => panic!(),
@@ -183,7 +183,7 @@ fn alert_info_header() {
     match SipHeader::parse("Alert-Info: <http://www.example.com/sounds/moo.wav> \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Alert-Info");
-            assert_eq!(hdrs[0].value, "http://www.example.com/sounds/moo.wav");
+            assert_eq!(hdrs[0].value.vstr, "http://www.example.com/sounds/moo.wav");
             assert_eq!(input, "\r\n".as_bytes());
         }
         Err(_) => panic!(),
@@ -195,14 +195,14 @@ fn accept_language_header() {
     match SipHeader::parse("Accept-Language: da, en-gb;q=0.8, en;q=0.7 \r\n".as_bytes()) {
         Ok((input, (_, hdrs))) => {
             assert_eq!(hdrs[0].name, "Accept-Language");
-            assert_eq!(hdrs[0].value, "da");
-            assert_eq!(hdrs[1].value, "en-gb");
+            assert_eq!(hdrs[0].value.vstr, "da");
+            assert_eq!(hdrs[1].value.vstr, "en-gb");
             assert_eq!(
                 hdrs[1].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("0.8"))
             );
 
-            assert_eq!(hdrs[2].value, "en");
+            assert_eq!(hdrs[2].value.vstr, "en");
             assert_eq!(
                 hdrs[2].params().unwrap().get("q").unwrap(),
                 (&SipAscii::new("q"), &Some("0.7"))

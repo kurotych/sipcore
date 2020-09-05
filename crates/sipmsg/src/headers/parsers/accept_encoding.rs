@@ -1,5 +1,10 @@
-use crate::common::{bnfcore::is_token_char, errorparse::SipParseError};
-use crate::headers::traits::SipHeaderParser;
+use crate::{
+    common::{bnfcore::is_token_char, errorparse::SipParseError},
+    headers::{
+        header::{HeaderValue, HeaderValueType},
+        traits::SipHeaderParser,
+    },
+};
 use nom::{bytes::complete::take_while1, character::complete::space0};
 
 /// Accept-Encoding  =  "Accept-Encoding" HCOLON
@@ -10,13 +15,15 @@ use nom::{bytes::complete::take_while1, character::complete::space0};
 pub struct AcceptEncodingParser;
 
 impl SipHeaderParser for AcceptEncodingParser {
-    fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         if !input.is_empty() && input[0] == b'*' {
             let (input, _) = space0(input)?;
-            return Ok((&input[1..], &input[..1]));
+            let (_, hdr_val) = HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None)?;
+            return Ok((&input[1..], hdr_val));
         }
         let (input, value) = take_while1(is_token_char)(input)?;
-        Ok((input, value))
+        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::SimpleString, None)?;
+        Ok((input, hdr_val))
     }
 }
 
@@ -29,7 +36,7 @@ mod test {
         match AcceptEncodingParser::take_value("*\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val, "*".as_bytes());
+                assert_eq!(val.vstr, "*");
             }
             Err(_) => {
                 panic!();
@@ -38,7 +45,7 @@ mod test {
         match AcceptEncodingParser::take_value("gzip\r\n".as_bytes()) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val, "gzip".as_bytes());
+                assert_eq!(val.vstr, "gzip");
             }
             Err(_) => {
                 panic!();

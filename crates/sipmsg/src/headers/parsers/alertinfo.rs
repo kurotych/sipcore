@@ -1,7 +1,12 @@
-use crate::common::{
-    bnfcore::is_wsp, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
+use crate::{
+    common::{
+        bnfcore::is_wsp, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
+    },
+    headers:: {
+        header::{HeaderValue, HeaderValueType},
+        traits::SipHeaderParser
+    }
 };
-use crate::headers::traits::SipHeaderParser;
 
 use iri_string::{spec::UriSpec, validate::iri};
 use nom::{bytes::complete::take_while1, sequence::tuple};
@@ -11,7 +16,7 @@ use nom::{bytes::complete::take_while1, sequence::tuple};
 pub struct AlertInfoParser;
 
 impl SipHeaderParser for AlertInfoParser {
-    fn take_value(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         let uri = take_while1(|c| !is_wsp(c) && c != b'>');
 
         let (inp, (_ /*LAQUOT*/, uri, _ /* RAQUOT */)) =
@@ -20,7 +25,8 @@ impl SipHeaderParser for AlertInfoParser {
         if !iri::<UriSpec>(uri_str).is_ok() {
             return sip_parse_error!(1, "Invalid URI");
         }
-        Ok((inp, uri))
+        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::SimpleString, None)?;
+        Ok((inp, hdr_val))
     }
 }
 
@@ -34,7 +40,7 @@ mod tests {
         ) {
             Ok((input, val)) => {
                 assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val, "http://www.example.com/sounds/moo.wav".as_bytes());
+                assert_eq!(val.vstr, "http://www.example.com/sounds/moo.wav");
             }
             Err(_) => {
                 panic!();

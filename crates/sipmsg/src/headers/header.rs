@@ -4,33 +4,77 @@ use crate::{
         traits::NomParser,
     },
     headers::{
+        parsers::ExtensionParser,
         traits::{HeaderValueParserFn, SipHeaderParser},
-        parsers::ExtensionParser, GenericParams, SipRFCHeader,
+        GenericParams, SipRFCHeader,
     },
 };
-use nom::{
-    bytes::complete::{tag, take_while1},
-    character::complete,
-    sequence::tuple,
-};
-
-use alloc::collections::VecDeque;
+use alloc::collections::{BTreeMap, VecDeque};
 use core::str;
+use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
 use unicase::Ascii;
+
+// All possible types of value
+#[derive(PartialEq, Debug)]
+pub enum HeaderValueType {
+    EmptyValue,   // SIP header with empty value
+    SimpleString, // Haven't tags
+}
+
+#[derive(PartialEq, Debug)]
+pub enum HeaderValueTags {}
+
+#[derive(PartialEq, Debug)]
+pub struct HeaderValue<'a> {
+    pub vstr: &'a str,
+    pub vtype: HeaderValueType,
+    pub vtags: Option<BTreeMap<HeaderValueTags, &'a str>>,
+}
+
+impl<'a> HeaderValue<'a> {
+    pub fn create_empty_value() -> HeaderValue<'a> {
+        HeaderValue {
+            vstr: "",
+            vtype: HeaderValueType::EmptyValue,
+            vtags: None,
+        }
+    }
+
+    pub fn new(
+        val: &'a [u8],
+        vtype: HeaderValueType,
+        vtags: Option<BTreeMap<HeaderValueTags, &'a str>>,
+    ) -> nom::IResult<&'a [u8], HeaderValue<'a>, SipParseError<'a>> {
+        let (_, vstr) = from_utf8_nom(val)?;
+
+        Ok((
+            val,
+            HeaderValue {
+                vstr: vstr,
+                vtype: vtype,
+                vtags: vtags,
+            },
+        ))
+    }
+}
 
 #[derive(PartialEq, Debug)]
 /// [rfc3261 section-7.3](https://tools.ietf.org/html/rfc3261#section-7.3)
 pub struct Header<'a> {
-    /// Sip header name
+    /// SIP header name
     pub name: Ascii<&'a str>,
-    /// Sip header value
-    pub value: &'a str,
-    /// Sip parameters
+    /// SIP header value
+    pub value: HeaderValue<'a>,
+    /// SIP parameters
     parameters: Option<GenericParams<'a>>,
 }
 
 impl<'a> Header<'a> {
-    pub fn new(name: &'a str, value: &'a str, parameters: Option<GenericParams<'a>>) -> Header<'a> {
+    pub fn new(
+        name: &'a str,
+        value: HeaderValue<'a>,
+        parameters: Option<GenericParams<'a>>,
+    ) -> Header<'a> {
         Header {
             name: { Ascii::new(name) },
             value: value,
@@ -62,40 +106,40 @@ impl<'a> Header<'a> {
         }
     }
 
-    pub fn long_header_value_parser_wrapper(
-        input: &[u8],
-        parser: HeaderValueParserFn,
-    ) -> nom::IResult<&[u8], &[u8], SipParseError> {
-        let mut offset = 0;
-        loop {
-            let (rest, val) = parser(&input[offset..])?;
-            offset += val.len();
-            if !rest.is_empty() && is_wsp(rest[0]) {
-                let (_, (sp, _, sp2)) =
-                    tuple((complete::space1, tag("\r\n"), complete::space0))(rest)?;
-                offset += sp.len() + 2 /* \r\n */ + sp2.len();
-                continue;
-            }
-            break;
-        }
-        Ok((&input[offset..], &input[..offset]))
-    }
+    // pub fn long_header_value_parser_wrapper(
+    //     input: &[u8],
+    //     parser: HeaderValueParserFn,
+    // ) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    //     let mut offset = 0;
+    //     loop {
+    //         let (rest, val) = parser(&input[offset..])?;
+    //         offset += vallen();
+    //         if !rest.is_empty() && is_wsp(rest[0]) {
+    //             let (_, (sp, _, sp2)) =
+    //                 tuple((complete::space1, tag("\r\n"), complete::space0))(rest)?;
+    //             offset += sp.len() + 2 /* \r\n */ + sp2.len();
+    //             continue;
+    //         }
+    //         break;
+    //     }
+    //     Ok((&input[offset..], &input[..offset]))
+    // }
 
     /// Should return COMMA, SEMI or '\r\n' in first argument
     pub fn take_value(
         input: &'a [u8],
         parser: HeaderValueParserFn,
-    ) -> nom::IResult<&'a [u8], (&'a str /*value*/, Option<GenericParams<'a>>), SipParseError<'a>>
+    ) -> nom::IResult<&'a [u8], (HeaderValue<'a>, Option<GenericParams<'a>>), SipParseError<'a>>
     {
         // skip whitespaces before take value
         let (input, _) = complete::space0(input)?;
         if is_crlf(input) {
-            return Ok((input, ("", None))); // This is header with empty value
+            return Ok((input, (HeaderValue::create_empty_value(), None))); // This is header with empty value
         }
 
         // add long_header_value_parser_wrapper?
         let (inp, value) = parser(input)?;
-        let (_, value) = from_utf8_nom(value)?;
+        // let (_, value) = from_utf8_nom(value)?;
 
         // skip whitespaces after take value
         let (inp, _) = complete::space0(inp)?;
