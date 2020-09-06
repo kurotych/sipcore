@@ -15,20 +15,27 @@ use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
 use unicase::Ascii;
 
 // All possible types of value
+// Glossary: R-required, O-optional
 #[derive(PartialEq, Debug)]
 pub enum HeaderValueType {
-    EmptyValue,   // SIP header with empty value
+    EmptyValue,   // SIP header with empty value. Haven't tags
     SimpleString, // Haven't tags
+    AuthentificationInfo // tags: AinfoType(R), AinfoValue(R)
 }
 
-#[derive(PartialEq, Debug)]
-pub enum HeaderValueTags {}
+#[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
+pub enum HeaderTagType {
+    AinfoType, // nextnonce, qop, rspauth, etc.
+    AinfoValue, // value after equal without quotes
+}
+
+pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;
 
 #[derive(PartialEq, Debug)]
 pub struct HeaderValue<'a> {
     pub vstr: &'a str,
     pub vtype: HeaderValueType,
-    pub vtags: Option<BTreeMap<HeaderValueTags, &'a str>>,
+    pub vtags: Option<HeaderTags<'a>>,
 }
 
 impl<'a> HeaderValue<'a> {
@@ -43,7 +50,7 @@ impl<'a> HeaderValue<'a> {
     pub fn new(
         val: &'a [u8],
         vtype: HeaderValueType,
-        vtags: Option<BTreeMap<HeaderValueTags, &'a str>>,
+        vtags: Option<HeaderTags<'a>>,
     ) -> nom::IResult<&'a [u8], HeaderValue<'a>, SipParseError<'a>> {
         let (_, vstr) = from_utf8_nom(val)?;
 
@@ -55,6 +62,10 @@ impl<'a> HeaderValue<'a> {
                 vtags: vtags,
             },
         ))
+    }
+
+    pub fn tags(&self) -> Option<&HeaderTags<'a>> {
+        self.vtags.as_ref()
     }
 }
 
