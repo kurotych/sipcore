@@ -1,7 +1,7 @@
 use crate::common::{
     bnfcore::is_token_char,
     errorparse::SipParseError,
-    nom_wrappers::{from_utf8_nom, take_while_trim_spaces},
+    nom_wrappers::{from_utf8_nom, take_while_trim_sws},
     traits::NomParser,
 };
 use alloc::collections::btree_map::BTreeMap;
@@ -19,7 +19,7 @@ pub struct GenericParam<'a> {
 impl<'a> NomParser<'a> for GenericParam<'a> {
     type ParseResult = (Ascii<&'a str>, Option<&'a str>);
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-        let (input, parameter_name) = take_while_trim_spaces(input, is_token_char)?;
+        let (input, parameter_name) = take_while_trim_sws(input, is_token_char)?;
 
         let (_, param_name) = from_utf8_nom(parameter_name)?;
 
@@ -32,7 +32,7 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
         }
 
         let (input, parameter_value) =
-            take_while_trim_spaces(&input[1..] /* skip '=' */, is_token_char)?;
+            take_while_trim_sws(&input[1..] /* skip '=' */, is_token_char)?;
 
         let (_, parameter_value) = from_utf8_nom(parameter_value)?;
 
@@ -141,14 +141,11 @@ mod tests {
         expected_value: Option<&str>,
         expected_len: usize,
     ) {
-        match GenericParam::parse(input_str.as_bytes()) {
-            Ok((i, (name, value))) => {
-                assert_eq!(name, expected_name);
-                assert_eq!(value, expected_value);
-                assert_eq!(i.len(), expected_len);
-            }
-            Err(_) => panic!(),
-        }
+        let res = GenericParam::parse(input_str.as_bytes());
+        let (i, (name, value)) = res.unwrap();
+        assert_eq!(name, expected_name);
+        assert_eq!(value, expected_value);
+        assert_eq!(i.len(), expected_len);
     }
 
     fn fail_parameter_test(input_str: &str) {

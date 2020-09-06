@@ -13,13 +13,12 @@
 ///    COLON   =  SWS ":" SWS ; colon
 ///    LDQUOT  =  SWS DQUOTE; open double quotation mark
 ///    RDQUOT  =  DQUOTE SWS ; close double quotation mark
-
+use crate::common::{errorparse::SipParseError, nom_wrappers::take_while_trim_sws};
 use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
-use crate::common::{errorparse::SipParseError, nom_wrappers::take_while_trim_spaces};
 
 macro_rules! take_func {
     ($inp: expr, $chr:expr) => {
-        take_while_trim_spaces($inp, |c: u8| c == $chr)
+        take_while_trim_sws($inp, |c: u8| c == $chr)
     };
 }
 
@@ -54,13 +53,13 @@ pub fn colon(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
     take_func!(input, b':')
 }
 pub fn ldquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    take_while_trim_spaces_left(input, |x: u8| x == b'"')
+    take_while_trim_sws_left(input, |x: u8| x == b'"')
 }
 pub fn rdquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    take_while_trim_spaces_right(input, |x: u8| x == b'"')
+    take_while_trim_sws_right(input, |x: u8| x == b'"')
 }
 
-pub fn take_while_trim_spaces_left(
+pub fn take_while_trim_sws_left(
     input: &[u8],
     cond_fun: fn(c: u8) -> bool,
 ) -> nom::IResult<&[u8], &[u8], SipParseError> {
@@ -68,45 +67,10 @@ pub fn take_while_trim_spaces_left(
     Ok((input, result))
 }
 
-pub fn take_while_trim_spaces_right(
+pub fn take_while_trim_sws_right(
     input: &[u8],
     cond_fun: fn(c: u8) -> bool,
 ) -> nom::IResult<&[u8], &[u8], SipParseError> {
     let (input, (result, _)) = tuple((take_while1(cond_fun), complete::space0))(input)?;
     Ok((input, result))
 }
-
-// #[derive(Debug, PartialEq)]
-// pub enum SwsTokenType {
-//     STAR,
-//     SLASH,
-//     EQUAL,
-//     LPAREN,
-//     RPAREN,
-//     RAQUOT,
-//     LAQUOT,
-//     COMMA,
-//     SEMI,
-//     COLON,
-//     LDQUOT,
-//     RDQUOT,
-// }
-
-// impl SwsTokenType {
-//     pub fn as_char(&self) -> char {
-//         match self {
-//             &SwsTokenType::STAR => '*',
-//             &SwsTokenType::SLASH => '/',
-//             &SwsTokenType::EQUAL => '=',
-//             &SwsTokenType::LPAREN => '(',
-//             &SwsTokenType::RPAREN => ')',
-//             &SwsTokenType::RAQUOT => '>',
-//             &SwsTokenType::LAQUOT => '<',
-//             &SwsTokenType::COMMA => ',',
-//             &SwsTokenType::SEMI => ';',
-//             &SwsTokenType::COLON => ':',
-//             &SwsTokenType::LDQUOT => '"',
-//             &SwsTokenType::RDQUOT => '"',
-//         }
-//     }
-// }

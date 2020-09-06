@@ -18,14 +18,14 @@ use unicase::Ascii;
 // Glossary: R-required, O-optional
 #[derive(PartialEq, Debug)]
 pub enum HeaderValueType {
-    EmptyValue,   // SIP header with empty value. Haven't tags
-    SimpleString, // Haven't tags
-    AuthentificationInfo // tags: AinfoType(R), AinfoValue(R)
+    EmptyValue,           // SIP header with empty value. Haven't tags
+    SimpleString,         // Haven't tags
+    AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
 pub enum HeaderTagType {
-    AinfoType, // nextnonce, qop, rspauth, etc.
+    AinfoType,  // nextnonce, qop, rspauth, etc.
     AinfoValue, // value after equal without quotes
 }
 
@@ -117,25 +117,6 @@ impl<'a> Header<'a> {
         }
     }
 
-    // pub fn long_header_value_parser_wrapper(
-    //     input: &[u8],
-    //     parser: HeaderValueParserFn,
-    // ) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    //     let mut offset = 0;
-    //     loop {
-    //         let (rest, val) = parser(&input[offset..])?;
-    //         offset += vallen();
-    //         if !rest.is_empty() && is_wsp(rest[0]) {
-    //             let (_, (sp, _, sp2)) =
-    //                 tuple((complete::space1, tag("\r\n"), complete::space0))(rest)?;
-    //             offset += sp.len() + 2 /* \r\n */ + sp2.len();
-    //             continue;
-    //         }
-    //         break;
-    //     }
-    //     Ok((&input[offset..], &input[..offset]))
-    // }
-
     /// Should return COMMA, SEMI or '\r\n' in first argument
     pub fn take_value(
         input: &'a [u8],
@@ -148,7 +129,6 @@ impl<'a> Header<'a> {
             return Ok((input, (HeaderValue::create_empty_value(), None))); // This is header with empty value
         }
 
-        // add long_header_value_parser_wrapper?
         let (inp, value) = parser(input)?;
         // let (_, value) = from_utf8_nom(value)?;
 
@@ -187,8 +167,6 @@ impl<'a> NomParser<'a> for Header<'a> {
         let (rfc_type, value_parser) = Header::find_parser(header_name);
         let mut inp = input;
         loop {
-            // TODO remember about long headers
-            // let (input, value) = Header::long_header_value_parser_wrapper(input, value_parser)?;
             let (input, (value, params)) = Header::take_value(inp, value_parser)?;
             headers.push_back(Header::new(header_name, value, params));
             if input[0] == b',' {
