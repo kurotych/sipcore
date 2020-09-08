@@ -1,4 +1,7 @@
-use crate::common::bnfcore::{is_crlf, is_escaped, is_wsp};
+use crate::common::{
+    bnfcore::{is_crlf, is_escaped, is_wsp},
+    take_sws_token,
+};
 use crate::errorparse::SipParseError;
 use core::str::from_utf8;
 use nom::{
@@ -24,6 +27,27 @@ pub fn take_while_with_escaped(
     }
 
     Ok((&input[idx..], &input[..idx]))
+}
+
+fn take_until_nonescaped_quote(
+    source_input: &[u8],
+) -> nom::IResult<&[u8] /* it shoud be quote, otherwise - error */, &[u8], SipParseError> {
+    let mut idx = 0;
+    while idx < source_input.len() {
+        if source_input[idx] == b'\"' && idx != 0 && source_input[idx - 1] != b'\\' {
+            return Ok((&source_input[idx..], &source_input[..idx]));
+        }
+        idx += 1;
+    }
+
+    sip_parse_error!(1, "take_until_nonescaped_quote error!")
+}
+
+pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    let (input, _) = take_sws_token::ldquot(source_input)?;
+    let (input, result) = take_until_nonescaped_quote(input)?;
+    let (input, _) = take_sws_token::rdquot(input)?;
+    Ok((input, result))
 }
 
 /// LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
@@ -62,6 +86,28 @@ pub fn from_utf8_nom(v: &[u8]) -> nom::IResult<&str, &str, SipParseError> {
 mod tests {
     use super::*;
     use crate::common::bnfcore::*;
+
+    fn take_quoted_string_case(input: &str, expected_result: &str, expected_input_rest: &str) {
+        let res = take_qutoed_string(input.as_bytes());
+        let (input, result) = res.unwrap();
+        assert_eq!(result, expected_result.as_bytes());
+        assert_eq!(input, expected_input_rest.as_bytes())
+    }
+    #[test]
+    fn take_qutoed_string_test() {
+        take_quoted_string_case(
+            "  \t\"dcd98b7102dd2f0e8b11d0f600bfb0c093\"  \r\n",
+            "dcd98b7102dd2f0e8b11d0f600bfb0c093",
+            "\r\n",
+        );
+
+        // check with escaped char
+        take_quoted_string_case(
+            "  \"this is string with escaped \\\" char\"  \r\nNextHeader: nextvalue\r\n\r\n",
+            "this is string with escaped \\\" char",
+            "\r\nNextHeader: nextvalue\r\n\r\n",
+        );
+    }
 
     fn test_sws_case(source_val: &str, expected_result: &str) {
         let res = take_sws(source_val.as_bytes());
