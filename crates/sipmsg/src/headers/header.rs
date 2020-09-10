@@ -21,12 +21,30 @@ pub enum HeaderValueType {
     EmptyValue,           // SIP header with empty value. Haven't tags
     SimpleString,         // Haven't tags
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
+
+    // Authorization     =  "Authorization" HCOLON credentials
+    // credentials       =  ("Digest" LWS digest-response)
+    // other-response
+    AuthorizationDigest, // tags: username / realm / nonce / digest-uri
+                         //       / dresponse / algorithm / cnonce
+                         //       / opaque / message-qop / nonce-count / auth-param
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
 pub enum HeaderTagType {
     AinfoType,  // nextnonce, qop, rspauth, etc.
     AinfoValue, // value after equal without quotes
+    Username,
+    Realm,
+    Nonce,
+    DigestUri, // digest-uri-value  =  Request-URI ; as defined in Section 25
+    Dresponse,
+    Algorithm,
+    Cnonce,
+    Opaque,
+    QopValue,
+    NonceCount,
+    AuthParam,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

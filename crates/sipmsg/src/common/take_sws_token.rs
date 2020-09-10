@@ -13,8 +13,9 @@
 ///    COLON   =  SWS ":" SWS ; colon
 ///    LDQUOT  =  SWS DQUOTE; open double quotation mark
 ///    RDQUOT  =  DQUOTE SWS ; close double quotation mark
+use nom::bytes::complete::tag;
 use crate::common::{errorparse::SipParseError, nom_wrappers::take_while_trim_sws};
-use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
+use nom::{character::complete, sequence::tuple};
 
 macro_rules! take_func {
     ($inp: expr, $chr:expr) => {
@@ -53,24 +54,10 @@ pub fn colon(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
     take_func!(input, b':')
 }
 pub fn ldquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    take_while_trim_sws_left(input, |x: u8| x == b'"')
-}
-pub fn rdquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    take_while_trim_sws_right(input, |x: u8| x == b'"')
-}
-
-pub fn take_while_trim_sws_left(
-    input: &[u8],
-    cond_fun: fn(c: u8) -> bool,
-) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, (_, result)) = tuple((complete::space0, take_while1(cond_fun)))(input)?;
+    let (input, (_, result)) = tuple((complete::space0, tag("\"")))(input)?;
     Ok((input, result))
 }
-
-pub fn take_while_trim_sws_right(
-    input: &[u8],
-    cond_fun: fn(c: u8) -> bool,
-) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, (result, _)) = tuple((take_while1(cond_fun), complete::space0))(input)?;
+pub fn rdquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    let (input, (result, _)) = tuple((tag("\""), complete::space0))(input)?;
     Ok((input, result))
 }

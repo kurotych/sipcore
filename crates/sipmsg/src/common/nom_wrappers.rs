@@ -34,7 +34,11 @@ fn take_until_nonescaped_quote(
 ) -> nom::IResult<&[u8] /* it shoud be quote, otherwise - error */, &[u8], SipParseError> {
     let mut idx = 0;
     while idx < source_input.len() {
-        if source_input[idx] == b'\"' && idx != 0 && source_input[idx - 1] != b'\\' {
+        if source_input[idx] == b'\"' {
+            if idx != 0 && source_input[idx - 1] == b'\\' {
+                idx += 1;
+                continue;
+            }
             return Ok((&source_input[idx..], &source_input[..idx]));
         }
         idx += 1;
@@ -107,6 +111,8 @@ mod tests {
             "this is string with escaped \\\" char",
             "\r\nNextHeader: nextvalue\r\n\r\n",
         );
+
+        take_quoted_string_case("\"\"", "", "");
     }
 
     fn test_sws_case(source_val: &str, expected_result: &str) {
