@@ -18,7 +18,7 @@
 //! To: Bob <sip:bob@biloxi.com>\r\n\
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
 //! Max-Forwards: 70\r\n\
-//! Call-ID: 987asjd97y7atg\r\n\
+//! Call-ID: f81d4fae-7dec-11d0-a765-00a0c91e6bf6@foo.bar.com\r\n\
 //! Extention-Header: extention header value;param=123;without_value\r\n\
 //! CSeq: 986759 INVITE\r\n\r\nbody_stuff"
 //! .as_bytes();
@@ -36,6 +36,12 @@
 //! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some((&SipAscii::new("user"), &Some("phone"))));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"to"), Some(&"alice%40atlanta.com"));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
+//!
+//! let call_id_header = request.headers.get_rfc_s(SipRFCHeader::CallID).unwrap();
+//! assert_eq!(call_id_header.value.vstr, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6@foo.bar.com");
+//! assert_eq!(call_id_header.value.tags().unwrap()[&SipHeaderTagType::ID],
+//!           "f81d4fae-7dec-11d0-a765-00a0c91e6bf6".as_bytes());
+//! assert_eq!(call_id_header.value.tags().unwrap()[&SipHeaderTagType::Host], b"foo.bar.com");
 //!
 //! // Via Header
 //! let via_headers = request.headers.get_rfc(SipRFCHeader::Via).unwrap();

@@ -28,6 +28,9 @@ pub enum HeaderValueType {
     AuthorizationDigest, // tags: username / realm / nonce / digest-uri
                          //       / dresponse / algorithm / cnonce
                          //       / opaque / message-qop / nonce-count / auth-param
+
+    // callid   =  word [ "@" word ]
+    CallID         // tags: ID, Host
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -45,6 +48,8 @@ pub enum HeaderTagType {
     QopValue,
     NonceCount,
     AuthParam,
+    ID,
+    Host
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

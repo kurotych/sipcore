@@ -210,3 +210,38 @@ fn authorization_header() {
 
     assert_eq!(input, b"\r\n");
 }
+
+#[test]
+fn call_id_header() {
+    let res = SipHeader::parse("i: 3848276298220188511@atlanta.example.com\r\n".as_bytes());
+    let (input, (_, hdrs)) = res.unwrap();
+    assert_eq!(
+        hdrs[0].value.vstr,
+        "3848276298220188511@atlanta.example.com"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::ID],
+        b"3848276298220188511"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::Host],
+        b"atlanta.example.com"
+    );
+    assert_eq!(input, b"\r\n");
+
+    let res = SipHeader::parse("call-id: 3848276298220188511\r\n".as_bytes());
+    let (input, (_, hdrs)) = res.unwrap();
+    assert_eq!(
+        hdrs[0].value.vstr,
+        "3848276298220188511"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::ID],
+        b"3848276298220188511"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap().get(&SipHeaderTagType::Host),
+        None
+    );
+    assert_eq!(input, b"\r\n");
+}

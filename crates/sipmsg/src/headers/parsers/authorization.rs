@@ -49,8 +49,6 @@ impl Authorization {
         None
     }
 }
-// quoted-string
-//
 
 // Authorization: Digest username="bob",
 // realm="biloxi.com",
@@ -87,8 +85,7 @@ impl SipHeaderParser for Authorization {
                 let (input, val) = take_while(is_token_char)(input)?;
                 tags.insert(tt, val);
                 input_tmp = input;
-            }
-            else {
+            } else {
                 let (input, val) = take_qutoed_string(input)?;
                 tags.insert(tt, val);
                 input_tmp = input;
