@@ -30,7 +30,10 @@ pub enum HeaderValueType {
                          //       / opaque / message-qop / nonce-count / auth-param
 
     // callid   =  word [ "@" word ]
-    CallID         // tags: ID, Host
+    CallID,         // tags: ID(R), Host(O)
+
+    // Call-Info   =  "Call-Info" HCOLON info *(COMMA info)
+    CallInfo, // tags: AbsoluteURI(R)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -49,7 +52,8 @@ pub enum HeaderTagType {
     NonceCount,
     AuthParam,
     ID,
-    Host
+    Host,
+    AbsoluteURI
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

@@ -231,10 +231,7 @@ fn call_id_header() {
 
     let res = SipHeader::parse("call-id: 3848276298220188511\r\n".as_bytes());
     let (input, (_, hdrs)) = res.unwrap();
-    assert_eq!(
-        hdrs[0].value.vstr,
-        "3848276298220188511"
-    );
+    assert_eq!(hdrs[0].value.vstr, "3848276298220188511");
     assert_eq!(
         hdrs[0].value.tags().unwrap()[&SipHeaderTagType::ID],
         b"3848276298220188511"
@@ -243,5 +240,41 @@ fn call_id_header() {
         hdrs[0].value.tags().unwrap().get(&SipHeaderTagType::Host),
         None
     );
+    assert_eq!(input, b"\r\n");
+}
+
+#[test]
+fn callinfo_test() {
+    let res = SipHeader::parse(
+        "Call-Info: <http://wwww.example.com/alice/photo.jpg> ;purpose=icon,\r\n \
+    <http://www.example.com/alice/> ;purpose=info\r\n"
+            .as_bytes(),
+    );
+    let (input, (_, hdrs)) = res.unwrap();
+    assert_eq!(
+        hdrs[0].value.vstr,
+        "http://wwww.example.com/alice/photo.jpg"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
+        "http://wwww.example.com/alice/photo.jpg".as_bytes()
+    );
+
+    assert_eq!(
+        hdrs[0].params().unwrap().get("purpose"),
+        Some((&SipAscii::new("purpose"), &Some("icon")))
+    );
+
+    assert_eq!(hdrs[1].value.vstr, "http://www.example.com/alice/");
+    assert_eq!(
+        hdrs[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
+        "http://www.example.com/alice/".as_bytes()
+    );
+
+    assert_eq!(
+        hdrs[1].params().unwrap().get("purpose"),
+        Some((&SipAscii::new("purpose"), &Some("info")))
+    );
+
     assert_eq!(input, b"\r\n");
 }
