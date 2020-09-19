@@ -9,6 +9,7 @@ use nom::bytes::complete::{take, take_until, take_while1};
 // hostname         =  *( domainlabel "." ) toplabel [ "." ]
 // host             =  hostname / IPv4address / IPv6reference
 // hostport         =  host [ ":" port ]
+#[derive(PartialEq, Debug)]
 pub struct HostPort<'a> {
     pub host: &'a str, // hostname / IPv4address / IPv6reference
     pub port: Option<u16>,
@@ -40,7 +41,7 @@ impl<'a> NomParser<'a> for HostPort<'a> {
         } else {
             HostPort::take_ipv6_host(input)?
         };
-        if rest.len() == 0 || (rest.len() > 2 && rest[0] != b':') {
+        if rest.len() <= 1 || rest[0] != b':' {
             let (_, host_str) = from_utf8_nom(host)?;
             return Ok((
                 rest,
@@ -52,7 +53,6 @@ impl<'a> NomParser<'a> for HostPort<'a> {
         }
 
         let (rest, port_str) = take_while1(is_digit)(&rest[1..])?;
-
         match str::from_utf8(port_str) {
             Ok(port_str) => match u16::from_str_radix(port_str, 10) {
                 Ok(port) => {
@@ -95,6 +95,8 @@ mod tests {
     #[test]
     fn host_parse_simple() {
         host_port_test_case("127.0.0.1", "127.0.0.1", None, "");
+        host_port_test_case("127.0.0.1\r\n", "127.0.0.1", None, "\r\n");
+        host_port_test_case("127.0.0.1\n", "127.0.0.1", None, "\n");
         host_port_test_case("127.0.0.1:8080", "127.0.0.1", Some(8080), "");
         host_port_test_case("google.com", "google.com", None, "");
         host_port_test_case("[2001:db8::10]", "2001:db8::10", None, "");
