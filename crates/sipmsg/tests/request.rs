@@ -8,6 +8,7 @@ fn parse_request() {
                           To: Bob <sip:bob@biloxi.com>\r\n\
                           From: Alice <sip:alice@atlanta.com>;tag=88sja8x;onemore\r\n\
                           Max-Forwards: 70\r\n\
+                          Contact: Caller <sip:alice@client.atlanta.example.com;transport=tcp>\r\n\
                           Call-ID: 987asjd97y7atg\r\n\
                           Call-Info: <http://wwww.example.com/alice/photo.jpg> ;purpose=icon, \r\n \
                           <http://www.example.com/alice/> ;purpose=info\r\n\
@@ -24,7 +25,7 @@ fn parse_request() {
     assert_eq!(parsed_req.rl.uri.hostport.host, "biloxi.com");
     assert_eq!(parsed_req.rl.sip_version, SipVersion(2, 0));
 
-    assert_eq!(parsed_req.headers.len(), 8);
+    assert_eq!(parsed_req.headers.len(), 9);
     assert_eq!(
         parsed_req
             .headers
@@ -161,6 +162,36 @@ fn parse_request() {
     assert_eq!(
         callinfo_headers[1].params().unwrap().get("purpose"),
         Some((&SipAscii::new("purpose"), &Some("info")))
+    );
+
+    let contact_header = parsed_req.headers.get_rfc_s(SipRFCHeader::Contact).unwrap();
+    assert_eq!(
+        contact_header.value.tags().unwrap()[&SipHeaderTagType::DisplayName],
+        b"Caller"
+    );
+    assert_eq!(
+        contact_header
+            .value
+            .sip_uri()
+            .unwrap()
+            .user_info()
+            .unwrap()
+            .value,
+        "alice"
+    );
+    assert_eq!(
+        contact_header.value.sip_uri().unwrap().hostport.host,
+        "client.atlanta.example.com"
+    );
+    assert_eq!(
+        contact_header
+            .value
+            .sip_uri()
+            .unwrap()
+            .params()
+            .unwrap()
+            .get(&"transport"),
+        Some((&Ascii::new("transport"), &Some("tcp")))
     );
 
     assert_eq!(parsed_req.body.unwrap(), "body_stuff".as_bytes())

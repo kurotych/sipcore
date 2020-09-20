@@ -10,6 +10,7 @@
 //! ```rust
 //!
 //! use sipmsg::*;
+//! use unicase::Ascii;
 //!
 //! let invite_msg_buf = "\
 //! INVITE sip:bob@biloxi.com;user=phone?to=alice%40atlanta.com&priority=urgent SIP/2.0\r\n\
@@ -17,6 +18,7 @@
 //! Via: SIP/2.0/UDP 192.168.1.111\r\n\
 //! To: Bob <sip:bob@biloxi.com>\r\n\
 //! From: Alice <sip:alice@atlanta.com>;tag=88sja8x\r\n\
+//! Contact: Caller <sip:alice@client.atlanta.example.com;transport=tcp>\r\n\
 //! Max-Forwards: 70\r\n\
 //! Call-ID: f81d4fae-7dec-11d0-a765-00a0c91e6bf6@foo.bar.com\r\n\
 //! Extention-Header: extention header value;param=123;without_value\r\n\
@@ -54,6 +56,26 @@
 //! assert_eq!(
 //!     via_headers[1].params(),
 //!     None
+//! );
+//!
+//! // Contact header
+//! let contact_header = request.headers.get_rfc_s(SipRFCHeader::Contact).unwrap();
+//! assert_eq!(
+//!            contact_header.value.tags().unwrap()[&SipHeaderTagType::DisplayName],
+//!            b"Caller"
+//! );
+//! assert_eq!(
+//!            contact_header.value.sip_uri().unwrap().user_info().unwrap().value,
+//!            "alice"
+//! );
+//! assert_eq!(
+//!            contact_header.value.sip_uri().unwrap().hostport.host,
+//!            "client.atlanta.example.com"
+//! );
+//!
+//! assert_eq!(
+//!    contact_header.value.sip_uri().unwrap().params().unwrap().get(&"transport"),
+//!    Some((&Ascii::new("transport"), &Some("tcp")))
 //! );
 //!
 //! // Extention Header
