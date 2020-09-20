@@ -17,12 +17,14 @@ impl SipHeaderParser for AcceptLanguageParser {
     fn take_value(initial_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         if !initial_input.is_empty() && initial_input[0] == b'*' {
             let (input, _) = space0(initial_input)?;
-            let (_, hdr_val) = HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None)?;
+            let (_, hdr_val) =
+                HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None, None)?;
             return Ok((&input[1..], hdr_val));
         }
         let (input, left_part) = take_while1(is_alpha)(initial_input)?;
         if !input.is_empty() && input[0] != b'-' {
-            let (_, hdr_val) = HeaderValue::new(left_part, HeaderValueType::SimpleString, None)?;
+            let (_, hdr_val) =
+                HeaderValue::new(left_part, HeaderValueType::SimpleString, None, None)?;
             return Ok((input, hdr_val));
         }
         if left_part.len() < 1 || left_part.len() > 8 {
@@ -39,6 +41,7 @@ impl SipHeaderParser for AcceptLanguageParser {
         let (_, hdr_val) = HeaderValue::new(
             &initial_input[..offset],
             HeaderValueType::SimpleString,
+            None,
             None,
         )?;
         Ok((input, hdr_val))

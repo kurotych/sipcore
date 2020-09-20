@@ -104,6 +104,7 @@ impl SipHeaderParser for Authorization {
             &source_input[..hdr_len],
             HeaderValueType::AuthorizationDigest,
             Some(tags),
+            None,
         )?;
         Ok((input_tmp, hdr_val))
     }

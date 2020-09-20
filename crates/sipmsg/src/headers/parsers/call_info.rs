@@ -21,7 +21,7 @@ impl SipHeaderParser for CallInfo {
         let mut tags = HeaderTags::new();
         tags.insert(HeaderTagType::AbsoluteURI, uri);
 
-        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::CallInfo, Some(tags))?;
+        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::CallInfo, Some(tags), None)?;
 
         return Ok((input, hdr_val));
     }

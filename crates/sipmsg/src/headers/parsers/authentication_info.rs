@@ -43,6 +43,7 @@ impl SipHeaderParser for AuthenticationInfoParser {
             &source_input[..header_length],
             HeaderValueType::SimpleString,
             Some(tags),
+            None,
         )?;
         Ok((input, hdr_val))
     }
@@ -67,6 +68,5 @@ mod test {
             val.tags().unwrap()[&HeaderTagType::AinfoValue],
             "47364c23432d2e131a5fb210812c".as_bytes()
         );
-
     }
 }

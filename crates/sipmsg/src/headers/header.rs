@@ -6,7 +6,7 @@ use crate::{
     headers::{
         parsers::ExtensionParser,
         traits::{HeaderValueParserFn, SipHeaderParser},
-        GenericParams, SipRFCHeader,
+        GenericParams, SipRFCHeader, SipUri,
     },
 };
 use alloc::collections::{BTreeMap, VecDeque};
@@ -26,14 +26,18 @@ pub enum HeaderValueType {
     // credentials       =  ("Digest" LWS digest-response)
     // other-response
     AuthorizationDigest, // tags: username / realm / nonce / digest-uri
-                         //       / dresponse / algorithm / cnonce
-                         //       / opaque / message-qop / nonce-count / auth-param
+    //       / dresponse / algorithm / cnonce
+    //       / opaque / message-qop / nonce-count / auth-param
 
     // callid   =  word [ "@" word ]
-    CallID,         // tags: ID(R), Host(O)
+    CallID, // tags: ID(R), Host(O)
 
     // Call-Info   =  "Call-Info" HCOLON info *(COMMA info)
     CallInfo, // tags: AbsoluteURI(R)
+
+    // Contact        =  ("Contact" / "m" ) HCOLON
+    // ( STAR / (contact-param *(COMMA contact-param)))
+    Contact, // tags: Star(O), DisplayName(O), URI(R)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -53,7 +57,10 @@ pub enum HeaderTagType {
     AuthParam,
     ID,
     Host,
-    AbsoluteURI
+    AbsoluteURI,
+    Star, // alway must be equal to *
+    DisplayName,
+    URI,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;
@@ -62,7 +69,8 @@ pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;
 pub struct HeaderValue<'a> {
     pub vstr: &'a str,
     pub vtype: HeaderValueType,
-    pub vtags: Option<HeaderTags<'a>>,
+    vtags: Option<HeaderTags<'a>>,
+    sip_uri: Option<SipUri<'a>>,
 }
 
 impl<'a> HeaderValue<'a> {
@@ -71,6 +79,7 @@ impl<'a> HeaderValue<'a> {
             vstr: "",
             vtype: HeaderValueType::EmptyValue,
             vtags: None,
+            sip_uri: None,
         }
     }
 
@@ -78,6 +87,7 @@ impl<'a> HeaderValue<'a> {
         val: &'a [u8],
         vtype: HeaderValueType,
         vtags: Option<HeaderTags<'a>>,
+        sip_uri: Option<SipUri<'a>>,
     ) -> nom::IResult<&'a [u8], HeaderValue<'a>, SipParseError<'a>> {
         let (_, vstr) = from_utf8_nom(val)?;
 
@@ -87,12 +97,17 @@ impl<'a> HeaderValue<'a> {
                 vstr: vstr,
                 vtype: vtype,
                 vtags: vtags,
+                sip_uri: sip_uri,
             },
         ))
     }
 
     pub fn tags(&self) -> Option<&HeaderTags<'a>> {
         self.vtags.as_ref()
+    }
+
+    pub fn sip_uri(&self) -> Option<&SipUri<'a>> {
+        self.sip_uri.as_ref()
     }
 }
 

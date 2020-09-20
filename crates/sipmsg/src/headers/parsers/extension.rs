@@ -35,7 +35,7 @@ impl SipHeaderParser for ExtensionParser {
     // header-value      =  *(TEXT-UTF8char / UTF8-CONT / LWS)
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         let (inp, res_val) = take_while1(is_token_char_or_wsp)(input)?;
-        let (_, hdr_val) = HeaderValue::new(res_val, HeaderValueType::SimpleString, None)?;
+        let (_, hdr_val) = HeaderValue::new(res_val, HeaderValueType::SimpleString, None, None)?;
         Ok((inp, hdr_val))
     }
 }

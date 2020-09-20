@@ -2,10 +2,10 @@ use crate::{
     common::{
         bnfcore::is_wsp, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
     },
-    headers:: {
+    headers::{
         header::{HeaderValue, HeaderValueType},
-        traits::SipHeaderParser
-    }
+        traits::SipHeaderParser,
+    },
 };
 
 use iri_string::{spec::UriSpec, validate::iri};
@@ -25,7 +25,7 @@ impl SipHeaderParser for AlertInfoParser {
         if !iri::<UriSpec>(uri_str).is_ok() {
             return sip_parse_error!(1, "Invalid URI");
         }
-        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::SimpleString, None)?;
+        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::SimpleString, None, None)?;
         Ok((inp, hdr_val))
     }
 }

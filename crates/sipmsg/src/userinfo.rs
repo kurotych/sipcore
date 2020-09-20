@@ -7,6 +7,7 @@ use core::str;
 
 /// userinfo =  ( user / telephone-subscriber ) [ ":" password ] "@"
 /// user     =  1*( unreserved / escaped / user-unreserved )
+#[derive(PartialEq, Debug)]
 pub struct UserInfo<'a> {
     pub value: &'a str, // ( user / telephone-subscriber )
     pub password: Option<&'a str>,

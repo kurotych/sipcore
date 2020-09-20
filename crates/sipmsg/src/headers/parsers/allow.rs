@@ -23,7 +23,7 @@ impl SipHeaderParser for AllowParser {
         if res.is_none() == true {
             return sip_parse_error!(1, "Invalid Method name");
         }
-        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::SimpleString, None)?;
+        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::SimpleString, None, None)?;
         Ok((input, hdr_val))
     }
 }

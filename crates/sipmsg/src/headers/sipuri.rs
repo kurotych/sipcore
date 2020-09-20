@@ -109,6 +109,7 @@ impl<'a> NomParser<'a> for SipUriHeader<'a> {
 // userinfo         =  ( user / telephone-subscriber ) [ ":" password ] "@"
 // hostport         =  host [ ":" port ]
 /// Its general form, in the case of a SIP URI, is: sip:user:password@host:port;uri-parameters?headers
+#[derive(PartialEq, Debug)]
 pub struct SipUri<'a> {
     pub scheme: RequestUriScheme,
     user_info: Option<UserInfo<'a>>,
@@ -163,12 +164,11 @@ impl<'a> SipUri<'a> {
             }
         }
     }
-}
 
-impl<'a> NomParser<'a> for SipUri<'a> {
-    type ParseResult = SipUri<'a>;
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    pub fn parse_ext(
+        input: &'a [u8],
+        parse_with_parameters: bool,
+    ) -> nom::IResult<&[u8], SipUri<'a>, SipParseError> {
         let (input, uri_scheme) = take_until(":")(input)?;
         let (input, _) = take(1usize)(input)?; // skip ':'
         let scheme = RequestUriScheme::from_bytes(uri_scheme)?;
@@ -188,6 +188,25 @@ impl<'a> NomParser<'a> for SipUri<'a> {
         };
 
         let (input, hostport) = HostPort::parse(input)?;
+
+        if !parse_with_parameters {
+            let (input, headers) = if input.is_empty() {
+                (input, None)
+            } else {
+                SipUri::try_parse_headers(input)?
+            };
+
+            return Ok((
+                input,
+                SipUri {
+                    scheme: scheme,
+                    user_info: userinfo,
+                    hostport: hostport,
+                    parameters: None,
+                    headers: headers,
+                },
+            ));
+        }
 
         let (input, params) = if input.is_empty() {
             (input, None)
@@ -214,6 +233,14 @@ impl<'a> NomParser<'a> for SipUri<'a> {
     }
 }
 
+impl<'a> NomParser<'a> for SipUri<'a> {
+    type ParseResult = SipUri<'a>;
+
+    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+        SipUri::parse_ext(input, true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -221,19 +248,22 @@ mod tests {
 
     #[test]
     fn test_sip_uri_parse() {
-        let (rest, sip_uri) = SipUri::parse("sip:atlanta.com".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext("sip:atlanta.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
 
-        let (rest, sip_uri) = SipUri::parse("sip:alice@atlanta.com".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext("sip:alice@atlanta.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "alice");
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
 
-        let (rest, sip_uri) =
-            SipUri::parse("sip:alice:secretword@atlanta.com;transport=tcp".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext(
+            "sip:alice:secretword@atlanta.com;transport=tcp".as_bytes(),
+            true,
+        )
+        .unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "alice");
@@ -245,8 +275,11 @@ mod tests {
             Some((&Ascii::new("transport"), &Some("tcp")))
         );
 
-        let (rest, sip_uri) =
-            SipUri::parse("sip:+1-212-555-1212:1234@gateway.com;user=phone".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext(
+            "sip:+1-212-555-1212:1234@gateway.com;user=phone".as_bytes(),
+            true,
+        )
+        .unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "+1-212-555-1212");
@@ -258,13 +291,13 @@ mod tests {
             Some((&Ascii::new("user"), &Some("phone")))
         );
 
-        let (rest, sip_uri) = SipUri::parse("sips:1212@gateway.com".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext("sips:1212@gateway.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIPS);
         assert_eq!(sip_uri.user_info().unwrap().value, "1212");
         assert_eq!(sip_uri.hostport.host, "gateway.com");
 
-        let (rest, sip_uri) = SipUri::parse("sip:alice@192.0.2.4:8888".as_bytes()).unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext("sip:alice@192.0.2.4:8888".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "alice");
@@ -272,15 +305,17 @@ mod tests {
         assert_eq!(sip_uri.hostport.port, Some(8888));
 
         let (rest, sip_uri) =
-            SipUri::parse("sip:alice;day=tuesday@atlanta.com".as_bytes()).unwrap();
+            SipUri::parse_ext("sip:alice;day=tuesday@atlanta.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "alice;day=tuesday");
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
 
-        let (rest, sip_uri) =
-            SipUri::parse("sips:alice@atlanta.com?subject=project%20x&priority=urgent".as_bytes())
-                .unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext(
+            "sips:alice@atlanta.com?subject=project%20x&priority=urgent".as_bytes(),
+            true,
+        )
+        .unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(
             sip_uri.headers().unwrap().get(&"subject"),
@@ -291,9 +326,11 @@ mod tests {
         assert_eq!(sip_uri.user_info().unwrap().value, "alice");
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
 
-        let (rest, sip_uri) =
-            SipUri::parse("sip:atlanta.com;method=REGISTER?to=alice%40atlanta.com".as_bytes())
-                .unwrap();
+        let (rest, sip_uri) = SipUri::parse_ext(
+            "sip:atlanta.com;method=REGISTER?to=alice%40atlanta.com".as_bytes(),
+            true,
+        )
+        .unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(
             sip_uri.headers().unwrap().get(&"to"),
@@ -305,9 +342,25 @@ mod tests {
         );
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.hostport.host, "atlanta.com");
-        match sip_uri.user_info() {
-            Some(_) => panic!(),
-            None => {} // ok
-        }
+        assert_eq!(sip_uri.user_info(), None);
+
+        let (rest, sip_uri) = SipUri::parse_ext(
+            "sips:alice@atlanta.com?subject=project%20x&priority=urgent ;transport=tcp".as_bytes(),
+            false,
+        )
+        .unwrap();
+        //   assert_eq!(rest.len(), 0);
+        assert_eq!(
+            sip_uri.headers().unwrap().get(&"subject"),
+            Some(&"project%20x")
+        );
+        assert_eq!(sip_uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
+        assert_eq!(sip_uri.user_info().unwrap().value, "alice");
+        assert_eq!(sip_uri.scheme, RequestUriScheme::SIPS);
+        assert_eq!(sip_uri.hostport.host, "atlanta.com");
+
+        assert_eq!(sip_uri.params(), None);
+
+        assert_eq!(rest, b" ;transport=tcp");
     }
 }
