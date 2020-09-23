@@ -1,32 +1,40 @@
+use nom::character::complete::space0;
+use crate::common::bnfcore::is_wsp;
 use crate::{
-    common::{
-        bnfcore::is_wsp, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
-    },
+    common::{errorparse::SipParseError, take_sws_token},
     headers::{
-        header::{HeaderValue, HeaderValueType},
+        header::{HeaderTagType, HeaderTags, HeaderValue, HeaderValueType},
         traits::SipHeaderParser,
     },
 };
 
-use iri_string::{spec::UriSpec, validate::iri};
-use nom::{bytes::complete::take_while1, sequence::tuple};
+use nom::bytes::complete::take_while1;
 
 /// Alert-Info   =  "Alert-Info" HCOLON alert-param *(COMMA alert-param)
 // alert-param  =  LAQUOT absoluteURI RAQUOT *( SEMI generic-param )
 pub struct AlertInfoParser;
 
 impl SipHeaderParser for AlertInfoParser {
-    fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let uri = take_while1(|c| !is_wsp(c) && c != b'>');
+    fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
+        // let uri = take_while1(|c| !is_wsp(c) && c != b'>');
+        let (input, _) = take_sws_token::laquot(source_input)?;
+        let laquout_len = source_input.len() - input.len();
+        let (input, uri) = take_while1(|c| !is_wsp(c) && c != b'>')(input)?;
+        let (input, spaces_before_raquot) = space0(input)?;
 
-        let (inp, (_ /*LAQUOT*/, uri, _ /* RAQUOT */)) =
-            tuple((take_sws_token::laquot, uri, take_sws_token::raquot))(input)?;
-        let (_, uri_str) = from_utf8_nom(uri)?;
-        if !iri::<UriSpec>(uri_str).is_ok() {
-            return sip_parse_error!(1, "Invalid URI");
-        }
-        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::SimpleString, None, None)?;
-        Ok((inp, hdr_val))
+
+        let mut tags = HeaderTags::new();
+        tags.insert(HeaderTagType::PureValue, uri);
+
+        let (input, _) = take_sws_token::raquot(input)?;
+        // 1 for '>' char
+        let (_, hdr_val) = HeaderValue::new(
+            &source_input[..uri.len() + laquout_len + 1 + spaces_before_raquot.len()],
+            HeaderValueType::SimpleString,
+            Some(tags),
+            None,
+        )?;
+        Ok((input, hdr_val))
     }
 }
 
@@ -35,17 +43,18 @@ mod tests {
     use super::*;
     #[test]
     fn headers_parse_test() {
-        match AlertInfoParser::take_value(
-            "  < http://www.example.com/sounds/moo.wav  >   \r\n".as_bytes(),
-        ) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "http://www.example.com/sounds/moo.wav");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) = AlertInfoParser::take_value(
+            "< http://www.example.com/sounds/moo.wav  >   \r\n".as_bytes(),
+        )
+        .unwrap();
+
+        assert_eq!(input, "\r\n".as_bytes());
+        assert_eq!(
+            val.tags().unwrap()[&HeaderTagType::PureValue],
+            "http://www.example.com/sounds/moo.wav".as_bytes()
+        );
+        assert_eq!(val.vstr, "< http://www.example.com/sounds/moo.wav  >");
+
         match AlertInfoParser::take_value("random word\r\n".as_bytes()) {
             Ok((_, _)) => {
                 panic!();

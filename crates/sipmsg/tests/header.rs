@@ -151,7 +151,14 @@ fn alert_info_header() {
             .unwrap();
 
     assert_eq!(hdrs[0].name, "Alert-Info");
-    assert_eq!(hdrs[0].value.vstr, "http://www.example.com/sounds/moo.wav");
+    assert_eq!(
+        hdrs[0].value.vstr,
+        "<http://www.example.com/sounds/moo.wav>"
+    );
+    assert_eq!(
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        "http://www.example.com/sounds/moo.wav".as_bytes()
+    );
     assert_eq!(input, "\r\n".as_bytes());
 }
 
@@ -247,16 +254,16 @@ fn call_id_header() {
 fn callinfo_test() {
     let res = SipHeader::parse(
         "Call-Info: <http://wwww.example.com/alice/photo.jpg> ;purpose=icon,\r\n \
-    <http://www.example.com/alice/> ;purpose=info\r\n"
+    <http://www.example.com/alice/ > ;purpose=info\r\n"
             .as_bytes(),
     );
     let (input, (_, hdrs)) = res.unwrap();
     assert_eq!(
         hdrs[0].value.vstr,
-        "http://wwww.example.com/alice/photo.jpg"
+        "<http://wwww.example.com/alice/photo.jpg>"
     );
     assert_eq!(
-        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
         "http://wwww.example.com/alice/photo.jpg".as_bytes()
     );
 
@@ -265,9 +272,12 @@ fn callinfo_test() {
         Some((&SipAscii::new("purpose"), &Some("icon")))
     );
 
-    assert_eq!(hdrs[1].value.vstr, "http://www.example.com/alice/");
     assert_eq!(
-        hdrs[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
+        hdrs[1].value.vstr,
+        "<http://www.example.com/alice/ >"
+    );
+    assert_eq!(
+        hdrs[1].value.tags().unwrap()[&SipHeaderTagType::PureValue],
         "http://www.example.com/alice/".as_bytes()
     );
 

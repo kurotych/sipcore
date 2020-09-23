@@ -54,33 +54,16 @@ mod test {
     // Accept-Language: da, en-gb;q=0.8, en;q=0.7
     #[test]
     fn accept_language_value() {
-        match AcceptLanguageParser::take_value("en-gb;q=0.8\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, ";q=0.8\r\n".as_bytes());
-                assert_eq!(val.vstr, "en-gb");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
-        match AcceptLanguageParser::take_value("da\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "da");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) = AcceptLanguageParser::take_value("en-gb ;q=0.8\r\n".as_bytes()).unwrap();
+        assert_eq!(input, " ;q=0.8\r\n".as_bytes());
+        assert_eq!(val.vstr, "en-gb");
 
-        match AcceptLanguageParser::take_value("*\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "*");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) = AcceptLanguageParser::take_value("da \r\n".as_bytes()).unwrap();
+        assert_eq!(input, " \r\n".as_bytes());
+        assert_eq!(val.vstr, "da");
+
+        let (input, val) = AcceptLanguageParser::take_value("*\r\n".as_bytes()).unwrap();
+        assert_eq!(input, "\r\n".as_bytes());
+        assert_eq!(val.vstr, "*");
     }
 }

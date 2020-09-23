@@ -16,7 +16,5 @@ mod authorization;
 pub use authorization::Authorization;
 mod callid;
 pub use callid::CallID;
-mod call_info;
-pub use call_info::CallInfo;
 mod contact;
 pub use contact::Contact;

@@ -20,6 +20,7 @@ use unicase::Ascii;
 pub enum HeaderValueType {
     EmptyValue,           // SIP header with empty value. Haven't tags
     SimpleString,         // Haven't tags
+    QuotedValue,          // tags: PureValue(R)
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
 
     // Authorization     =  "Authorization" HCOLON credentials
@@ -33,7 +34,7 @@ pub enum HeaderValueType {
     CallID, // tags: ID(R), Host(O)
 
     // Call-Info   =  "Call-Info" HCOLON info *(COMMA info)
-    CallInfo, // tags: AbsoluteURI(R)
+    CallInfo, // tags: PureValue(R)
 
     // Contact        =  ("Contact" / "m" ) HCOLON
     // ( STAR / (contact-param *(COMMA contact-param)))
@@ -42,6 +43,7 @@ pub enum HeaderValueType {
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
 pub enum HeaderTagType {
+    PureValue,
     AinfoType,  // nextnonce, qop, rspauth, etc.
     AinfoValue, // value after equal without quotes
     Username,
@@ -57,7 +59,6 @@ pub enum HeaderTagType {
     AuthParam,
     ID,
     Host,
-    AbsoluteURI,
     Star, // alway must be equal to *
     DisplayName,
     URI,

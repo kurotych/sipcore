@@ -80,25 +80,14 @@ mod test {
 
     #[test]
     fn test_take_accept_value() {
-        match AcceptParser::take_value("application/sdp\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "application/sdp");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) = AcceptParser::take_value("application/sdp\r\n".as_bytes()).unwrap();
+        assert_eq!(input, "\r\n".as_bytes());
+        assert_eq!(val.vstr, "application/sdp");
 
-        match AcceptParser::take_value("application/h.245;q=0.1\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, ";q=0.1\r\n".as_bytes());
-                assert_eq!(val.vstr, "application/h.245");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) =
+            AcceptParser::take_value("application/h.245 ; q=0.1\r\n".as_bytes()).unwrap();
+        assert_eq!(input, " ; q=0.1\r\n".as_bytes());
+        assert_eq!(val.vstr, "application/h.245");
     }
 
     #[test]

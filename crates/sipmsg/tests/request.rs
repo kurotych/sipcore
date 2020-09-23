@@ -136,12 +136,13 @@ fn parse_request() {
     );
 
     let callinfo_headers = parsed_req.headers.get_rfc(SipRFCHeader::CallInfo).unwrap();
+
     assert_eq!(
         callinfo_headers[0].value.vstr,
-        "http://wwww.example.com/alice/photo.jpg"
+        "<http://wwww.example.com/alice/photo.jpg>"
     );
     assert_eq!(
-        callinfo_headers[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
+        callinfo_headers[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
         "http://wwww.example.com/alice/photo.jpg".as_bytes()
     );
 
@@ -151,12 +152,12 @@ fn parse_request() {
     );
 
     assert_eq!(
-        callinfo_headers[1].value.vstr,
-        "http://www.example.com/alice/"
+        callinfo_headers[1].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        "http://www.example.com/alice/".as_bytes()
     );
     assert_eq!(
-        callinfo_headers[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
-        "http://www.example.com/alice/".as_bytes()
+        callinfo_headers[1].value.vstr,
+        "<http://www.example.com/alice/>"
     );
 
     assert_eq!(

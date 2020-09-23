@@ -34,23 +34,12 @@ mod test {
 
     #[test]
     fn accept_encoding_value() {
-        match AcceptEncodingParser::take_value("*\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "*");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
-        match AcceptEncodingParser::take_value("gzip\r\n".as_bytes()) {
-            Ok((input, val)) => {
-                assert_eq!(input, "\r\n".as_bytes());
-                assert_eq!(val.vstr, "gzip");
-            }
-            Err(_) => {
-                panic!();
-            }
-        }
+        let (input, val) = AcceptEncodingParser::take_value("*\r\n".as_bytes()).unwrap();
+        assert_eq!(input, "\r\n".as_bytes());
+        assert_eq!(val.vstr, "*");
+
+        let (input, val) = AcceptEncodingParser::take_value("gzip \r\n".as_bytes()).unwrap();
+        assert_eq!(input, " \r\n".as_bytes());
+        assert_eq!(val.vstr, "gzip");
     }
 }
