@@ -54,7 +54,7 @@ impl AcceptParser {
 
 impl SipHeaderParser for AcceptParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let (inp, (left_part, slash_part, right_part)) = tuple((
+        let (inp, (left_part, (_, slash_part, _), right_part)) = tuple((
             take_while1(is_token_char),
             take_sws_token::slash,
             take_while1(is_token_char),

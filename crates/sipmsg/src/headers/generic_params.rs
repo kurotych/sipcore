@@ -19,7 +19,7 @@ pub struct GenericParam<'a> {
 impl<'a> NomParser<'a> for GenericParam<'a> {
     type ParseResult = (Ascii<&'a str>, Option<&'a str>);
     fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
-        let (input, parameter_name) = take_while_trim_sws(input, is_token_char)?;
+        let (input, (_, parameter_name, _)) = take_while_trim_sws(input, is_token_char)?;
 
         let (_, param_name) = from_utf8_nom(parameter_name)?;
 
@@ -31,7 +31,7 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
             return sip_parse_error!(2, "generic-param parse error");
         }
 
-        let (input, parameter_value) =
+        let (input, (_, parameter_value, _)) =
             take_while_trim_sws(&input[1..] /* skip '=' */, is_token_char)?;
 
         let (_, parameter_value) = from_utf8_nom(parameter_value)?;

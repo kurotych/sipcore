@@ -1,11 +1,11 @@
 use crate::{
-    common::{bnfcore::is_alpha, errorparse::SipParseError},
+    common::{bnfcore::is_alpha, errorparse::SipParseError, nom_wrappers::take_sws},
     headers::{
         header::{HeaderValue, HeaderValueType},
         traits::SipHeaderParser,
     },
 };
-use nom::{bytes::complete::take_while1, character::complete::space0};
+use nom::{bytes::complete::take_while1};
 
 /// Accept-Language  =  "Accept-Language" HCOLON
 //                      [ language *(COMMA language) ]
@@ -16,7 +16,7 @@ pub struct AcceptLanguageParser;
 impl SipHeaderParser for AcceptLanguageParser {
     fn take_value(initial_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         if !initial_input.is_empty() && initial_input[0] == b'*' {
-            let (input, _) = space0(initial_input)?;
+            let (input, _) = take_sws(initial_input)?;
             let (_, hdr_val) =
                 HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None, None)?;
             return Ok((&input[1..], hdr_val));

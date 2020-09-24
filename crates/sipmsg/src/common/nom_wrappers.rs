@@ -57,15 +57,25 @@ pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], Sip
 /// LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
 /// SWS  =  [LWS] ; sep whitespace
 pub fn take_sws(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, _) = complete::space0(source_input)?; // *WSP
+    let mut taken_chars = 0;
+    let (input, spaces) = complete::space0(source_input)?; // *WSP
     if input.is_empty() || input.len() <= 2 {
-        return Ok((input, b""));
+        return Ok((input, spaces));
     }
-    if is_crlf(input) && (input.len() > 2 && is_wsp(input[2])) {
-        let (input, _) = tag("\r\n")(input)?;
-        return take_sws(input);
+    taken_chars += spaces.len();
+    let mut tmp_inp = input;
+    loop {
+        if is_crlf(tmp_inp) && (tmp_inp.len() > 2 && is_wsp(tmp_inp[2])) {
+            let (inp, _) = tag("\r\n")(tmp_inp)?;
+            taken_chars += 2;
+            let (input, spaces) = complete::space0(inp)?; // *WSP
+            taken_chars += spaces.len();
+            tmp_inp = input;
+            continue;
+        }
+        break;
     }
-    return Ok((input, b""));
+    return Ok((tmp_inp, &source_input[..taken_chars]));
 }
 
 /// trim start and end swses
@@ -74,9 +84,9 @@ pub fn take_sws(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError
 pub fn take_while_trim_sws(
     input: &[u8],
     cond_fun: fn(c: u8) -> bool,
-) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, (_, result, _)) = tuple((take_sws, take_while1(cond_fun), take_sws))(input)?;
-    Ok((input, result))
+) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
+    let (input, (sws1, result, sws2)) = tuple((take_sws, take_while1(cond_fun), take_sws))(input)?;
+    Ok((input, (sws1, result, sws2)))
 }
 
 pub fn from_utf8_nom(v: &[u8]) -> nom::IResult<&str, &str, SipParseError> {
@@ -115,19 +125,21 @@ mod tests {
         take_quoted_string_case("\"\"", "", "");
     }
 
-    fn test_sws_case(source_val: &str, expected_result: &str) {
+    fn test_sws_case(source_val: &str, expected_result: &str, expected_taken_chars: &str) {
         let res = take_sws(source_val.as_bytes());
-        let (input, _) = res.unwrap();
+        let (input, taken_chars) = res.unwrap();
         assert_eq!(input, expected_result.as_bytes());
+        assert_eq!(taken_chars, expected_taken_chars.as_bytes());
     }
 
     #[test]
     fn test_sws_test() {
-        test_sws_case("value", "value");
-        test_sws_case("\r\nvalue", "\r\nvalue");
-        test_sws_case("\r\n\tvalue", "value");
-        test_sws_case("   \r\n\t \tvalue", "value");
-        test_sws_case("  \r\nvalue", "\r\nvalue");
+        test_sws_case("value", "value", "");
+        test_sws_case("\r\nvalue", "\r\nvalue", "");
+        test_sws_case("\r\n\tvalue", "value", "\r\n\t");
+        test_sws_case("   \r\n\t \tvalue", "value", "   \r\n\t \t");
+        test_sws_case("  \r\nvalue", "\r\nvalue", "  ");
+        test_sws_case("  \r\n", "\r\n", "  ");
     }
     fn test_take_while_trim_sws_case(
         test_string: &str,
@@ -135,7 +147,7 @@ mod tests {
         expected_rest: &str,
     ) {
         let res = take_while_trim_sws(test_string.as_bytes(), is_token_char);
-        let (input, result) = res.unwrap();
+        let (input, (_, result, _)) = res.unwrap();
         assert_eq!(input, expected_rest.as_bytes());
         assert_eq!(result, expected_result.as_bytes());
     }

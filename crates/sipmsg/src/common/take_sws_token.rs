@@ -23,34 +23,34 @@ macro_rules! take_func {
     };
 }
 
-pub fn star(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn star(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'*')
 }
-pub fn slash(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn slash(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'/')
 }
-pub fn equal(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn equal(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'=')
 }
-pub fn lparen(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn lparen(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'(')
 }
-pub fn rparen(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn rparen(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b')')
 }
-pub fn raquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn raquot(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'>')
 }
-pub fn laquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn laquot(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b'<')
 }
-pub fn comma(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn comma(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b',')
 }
-pub fn semi(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn semi(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b';')
 }
-pub fn colon(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+pub fn colon(input: &[u8]) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
     take_func!(input, b':')
 }
 pub fn ldquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {

@@ -1,11 +1,11 @@
 use crate::{
-    common::{bnfcore::is_token_char, errorparse::SipParseError},
+    common::{bnfcore::is_token_char, errorparse::SipParseError, nom_wrappers::take_sws},
     headers::{
         header::{HeaderValue, HeaderValueType},
         traits::SipHeaderParser,
     },
 };
-use nom::{bytes::complete::take_while1, character::complete::space0};
+use nom::{bytes::complete::take_while1};
 
 /// Accept-Encoding  =  "Accept-Encoding" HCOLON
 //                      [ encoding *(COMMA encoding) ]
@@ -17,7 +17,7 @@ pub struct AcceptEncodingParser;
 impl SipHeaderParser for AcceptEncodingParser {
     fn take_value(input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         if !input.is_empty() && input[0] == b'*' {
-            let (input, _) = space0(input)?;
+            let (input, _) = take_sws(input)?;
             let (_, hdr_val) =
                 HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None, None)?;
             return Ok((&input[1..], hdr_val));

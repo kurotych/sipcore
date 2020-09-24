@@ -12,7 +12,6 @@ use crate::{
 };
 use core::str::from_utf8;
 use nom::bytes::complete::{tag, take_while};
-use nom::character::complete::space1;
 use unicase::Ascii;
 
 // Authorization     =  "Authorization" HCOLON credentials
@@ -63,7 +62,7 @@ impl Authorization {
 impl SipHeaderParser for Authorization {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         let (input, _) = tag("Digest")(source_input)?;
-        let (input, _) = space1(input)?; // LWS
+        let (input, _) = take_sws(input)?; // LWS
         let mut tags = HeaderTags::new();
         let mut input_tmp = input;
         loop {

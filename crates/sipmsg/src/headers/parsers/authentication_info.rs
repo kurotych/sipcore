@@ -1,3 +1,5 @@
+use crate::common::nom_wrappers::take_sws;
+use crate::common::bnfcore::is_wsp;
 use crate::{
     common::errorparse::SipParseError,
     common::{bnfcore::is_alpha, take_sws_token},
@@ -29,16 +31,17 @@ impl SipHeaderParser for AuthenticationInfoParser {
         if !AuthenticationInfoParser::is_info_name_allowed(info_name) {
             return sip_parse_error!(1, "AuthentificatiionInfo value name is invalid");
         }
-        let (input, eq) = take_sws_token::equal(input)?;
+        let (input, (_, eq, _)) = take_sws_token::equal(input)?;
         let (input, rq) = take_sws_token::ldquot(input)?;
-        let (input, value) = take_while(|c: u8| c != b'"')(input)?;
+        let (input, value) = take_while(|c: u8| c != b'"' && !is_wsp(c))(input)?;
+        let (input, spaces) = take_sws(input)?;
         let (input, lq) = take_sws_token::rdquot(input)?;
 
         let mut tags = HeaderTags::new();
         tags.insert(HeaderTagType::AinfoType, info_name);
         tags.insert(HeaderTagType::AinfoValue, value);
 
-        let header_length = info_name.len() + eq.len() + rq.len() + value.len() + lq.len();
+        let header_length = info_name.len() + eq.len() + rq.len() + value.len() + lq.len() + spaces.len();
         let (_, hdr_val) = HeaderValue::new(
             &source_input[..header_length],
             HeaderValueType::SimpleString,
@@ -55,11 +58,11 @@ mod test {
     #[test]
     fn auth_info_parser_test() {
         let val = AuthenticationInfoParser::take_value(
-            "nextnonce=\"47364c23432d2e131a5fb210812c\"\r\n".as_bytes(),
+            "nextnonce=\"47364c23432d2e131a5fb210812c  \"  \r\n".as_bytes(),
         );
         let (input, val) = val.unwrap();
         assert_eq!(input, "\r\n".as_bytes());
-        assert_eq!(val.vstr, "nextnonce=\"47364c23432d2e131a5fb210812c\"");
+        assert_eq!(val.vstr, "nextnonce=\"47364c23432d2e131a5fb210812c  \"");
         assert_eq!(
             val.tags().unwrap()[&HeaderTagType::AinfoType],
             "nextnonce".as_bytes()

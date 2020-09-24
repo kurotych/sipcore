@@ -103,6 +103,19 @@ fn take_display_name(
     )
 }
 
+fn make_star_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
+    let mut tags = HeaderTags::new();
+    tags.insert(HeaderTagType::Star, &source_input[..1]);
+    let (input, _) = take_sws_token::star(source_input)?;
+    let (_, hdr_val) = HeaderValue::new(
+        &source_input[..1],
+        HeaderValueType::Contact,
+        Some(tags),
+        None,
+    )?;
+    Ok((input, hdr_val))
+}
+
 impl SipHeaderParser for Contact {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
         if source_input.is_empty() {
@@ -112,15 +125,7 @@ impl SipHeaderParser for Contact {
         let mut tags = HeaderTags::new();
         if source_input[0] == b'*' {
             // This is: Contact: *\r\n
-            tags.insert(HeaderTagType::Star, &source_input[..1]);
-            let (input, _) = take_sws_token::star(source_input)?;
-            let (_, hdr_val) = HeaderValue::new(
-                &source_input[..1],
-                HeaderValueType::Contact,
-                Some(tags),
-                None,
-            )?;
-            return Ok((input, hdr_val));
+            return make_star_value(source_input);
         }
 
         if source_input.len() < 5 {
@@ -159,14 +164,16 @@ impl SipHeaderParser for Contact {
 
         if is_sip_uri {
             let (input, sipuri) = SipUri::parse_ext(input, is_quoted_uri)?;
+            let mut count_wsps_after_raquout = 0;
             let input = if is_quoted_uri {
-                let (input, _) = take_sws_token::raquot(input)?;
+                let (input, (_, _, wsps_after)) = take_sws_token::raquot(input)?;
+                count_wsps_after_raquout = wsps_after.len();
                 input
             } else {
                 input
             };
             let (_, hdr_val) = HeaderValue::new(
-                source_input,
+                &source_input[..source_input.len() - input.len() - count_wsps_after_raquout],
                 HeaderValueType::Contact,
                 Some(tags),
                 Some(sipuri),
@@ -193,7 +200,7 @@ mod test {
         assert_eq!(val.tags().unwrap()[&HeaderTagType::Star], b"*");
 
         let (input, val) = Contact::take_value(
-            "\"Mr. Watson\"  <sip:watson@worcester.bell-telephone.com>;q=0.7; expires=3600 \r\n"
+            "\"Mr. Watson\"  <sip:watson@worcester.bell-telephone.com> ;q=0.7; expires=3600 \r\n"
                 .as_bytes(),
         )
         .unwrap();
@@ -207,16 +214,21 @@ mod test {
             val.sip_uri().unwrap().hostport.host,
             "worcester.bell-telephone.com"
         );
+        assert_eq!(
+            val.vstr,
+            "\"Mr. Watson\"  <sip:watson@worcester.bell-telephone.com>"
+        );
         assert_eq!(input, b";q=0.7; expires=3600 \r\n");
         /*---------------------------------------------*/
         let (input, val) =
-            Contact::take_value("<sips:bob@192.0.2.4>;expires=60 \r\n".as_bytes()).unwrap();
+            Contact::take_value("< sips:bob@192.0.2.4  > ;expires=60 \r\n".as_bytes()).unwrap();
         assert_eq!(
             val.sip_uri().unwrap().scheme,
             sipuri::RequestUriScheme::SIPS
         );
         assert_eq!(val.tags().unwrap().get(&HeaderTagType::DisplayName), None);
         assert_eq!(val.sip_uri().unwrap().user_info().unwrap().value, "bob");
+        assert_eq!(val.vstr, "< sips:bob@192.0.2.4  >");
         assert_eq!(input, b";expires=60 \r\n");
         /*---------------------------------------------*/
         let (_, val) = Contact::take_value("\"\" <sip:carol@chicago.com> \r\n".as_bytes()).unwrap();
@@ -225,9 +237,10 @@ mod test {
         /*---------------------------------------------*/
 
         let (input, val) = Contact::take_value(
-            "\"Mr. Watson\" <   sip:watson@worcester.bell-telephone.com  > \r\n".as_bytes(),
+            "\"Mr. Watson\" <   sip:watson@worcester.bell-telephone.com  >  \r\n".as_bytes(),
         )
         .unwrap();
+
         assert_eq!(
             val.tags().unwrap()[&HeaderTagType::DisplayName],
             b"Mr. Watson"
@@ -237,6 +250,11 @@ mod test {
             val.sip_uri().unwrap().hostport.host,
             "worcester.bell-telephone.com"
         );
+        assert_eq!(
+            val.vstr,
+            "\"Mr. Watson\" <   sip:watson@worcester.bell-telephone.com  >"
+        );
+
         assert_eq!(input, b"\r\n");
         /*---------------------------------------------*/
         let (input, val) = Contact::take_value(

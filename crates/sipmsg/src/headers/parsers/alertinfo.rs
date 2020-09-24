@@ -1,7 +1,6 @@
-use nom::character::complete::space0;
 use crate::common::bnfcore::is_wsp;
 use crate::{
-    common::{errorparse::SipParseError, take_sws_token},
+    common::{errorparse::SipParseError, take_sws_token, nom_wrappers::take_sws},
     headers::{
         header::{HeaderTagType, HeaderTags, HeaderValue, HeaderValueType},
         traits::SipHeaderParser,
@@ -20,7 +19,7 @@ impl SipHeaderParser for AlertInfoParser {
         let (input, _) = take_sws_token::laquot(source_input)?;
         let laquout_len = source_input.len() - input.len();
         let (input, uri) = take_while1(|c| !is_wsp(c) && c != b'>')(input)?;
-        let (input, spaces_before_raquot) = space0(input)?;
+        let (input, taken_wsps_before_raquot) = take_sws(input)?;
 
 
         let mut tags = HeaderTags::new();
@@ -29,7 +28,7 @@ impl SipHeaderParser for AlertInfoParser {
         let (input, _) = take_sws_token::raquot(input)?;
         // 1 for '>' char
         let (_, hdr_val) = HeaderValue::new(
-            &source_input[..uri.len() + laquout_len + 1 + spaces_before_raquot.len()],
+            &source_input[..uri.len() + laquout_len + 1 + taken_wsps_before_raquot.len()],
             HeaderValueType::SimpleString,
             Some(tags),
             None,
