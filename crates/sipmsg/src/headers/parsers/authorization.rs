@@ -85,7 +85,7 @@ impl SipHeaderParser for Authorization {
                 tags.insert(tt, val);
                 input_tmp = input;
             } else {
-                let (input, val) = take_qutoed_string(input)?;
+                let (input, (_, val, _ )) = take_qutoed_string(input)?;
                 tags.insert(tt, val);
                 input_tmp = input;
             }

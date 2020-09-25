@@ -47,11 +47,11 @@ fn take_until_nonescaped_quote(
     sip_parse_error!(1, "take_until_nonescaped_quote error!")
 }
 
-pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, _) = take_sws_token::ldquot(source_input)?;
+pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
+    let (input, ldqout_wsps) = take_sws_token::ldquot(source_input)?;
     let (input, result) = take_until_nonescaped_quote(input)?;
-    let (input, _) = take_sws_token::rdquot(input)?;
-    Ok((input, result))
+    let (input, rdqout_wsps) = take_sws_token::rdquot(input)?;
+    Ok((input, (ldqout_wsps, result, rdqout_wsps)))
 }
 
 /// LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
@@ -103,7 +103,7 @@ mod tests {
 
     fn take_quoted_string_case(input: &str, expected_result: &str, expected_input_rest: &str) {
         let res = take_qutoed_string(input.as_bytes());
-        let (input, result) = res.unwrap();
+        let (input, (_, result, _)) = res.unwrap();
         assert_eq!(result, expected_result.as_bytes());
         assert_eq!(input, expected_input_rest.as_bytes())
     }
@@ -123,6 +123,13 @@ mod tests {
         );
 
         take_quoted_string_case("\"\"", "", "");
+
+        let res = take_qutoed_string(" \r\n \"value\" \r\nnext_value".as_bytes());
+        let (input, (leftwsps, result, rightwsps) ) = res.unwrap();
+        assert_eq!(result, "value".as_bytes());
+        assert_eq!(leftwsps, " \r\n ".as_bytes());
+        assert_eq!(input, "\r\nnext_value".as_bytes());
+        assert_eq!(rightwsps, " ".as_bytes());
     }
 
     fn test_sws_case(source_val: &str, expected_result: &str, expected_taken_chars: &str) {
