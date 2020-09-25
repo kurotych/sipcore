@@ -254,7 +254,7 @@ fn call_id_header() {
 fn callinfo_test() {
     let res = SipHeader::parse(
         "Call-Info: <http://wwww.example.com/alice/photo.jpg> ;purpose=icon,\r\n \
-    <http://www.example.com/alice/ > ;purpose=info\r\n"
+    <http://www.example.com/alice/> ;purpose=info\r\n"
             .as_bytes(),
     );
     let (input, (_, hdrs)) = res.unwrap();
@@ -274,7 +274,7 @@ fn callinfo_test() {
 
     assert_eq!(
         hdrs[1].value.vstr,
-        "<http://www.example.com/alice/ >"
+        "<http://www.example.com/alice/>"
     );
     assert_eq!(
         hdrs[1].value.tags().unwrap()[&SipHeaderTagType::PureValue],

@@ -40,12 +40,7 @@ pub fn lparen(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipPar
 pub fn rparen(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     take_func!(input, b')')
 }
-pub fn raquot(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
-    take_func!(input, b'>')
-}
-pub fn laquot(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
-    take_func!(input, b'<')
-}
+
 pub fn comma(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     take_func!(input, b',')
 }
@@ -55,11 +50,20 @@ pub fn semi(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParse
 pub fn colon(input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     take_func!(input, b':')
 }
+
+pub fn raquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    let (input, (_, wsps)) = tuple((tag(">"), take_sws))(input)?;
+    Ok((input, wsps))
+}
+pub fn laquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    let (input, (wsps, _)) = tuple((take_sws, tag("<")))(input)?;
+    Ok((input, wsps))
+}
 pub fn ldquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, (result, _)) = tuple((take_sws, tag("\"")))(input)?;
-    Ok((input, result))
+    let (input, (wsps, _)) = tuple((take_sws, tag("\"")))(input)?;
+    Ok((input, wsps))
 }
 pub fn rdquot(input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    let (input, (_, result)) = tuple((tag("\""), take_sws))(input)?;
-    Ok((input, result))
+    let (input, (_, wsps)) = tuple((tag("\""), take_sws))(input)?;
+    Ok((input, wsps))
 }

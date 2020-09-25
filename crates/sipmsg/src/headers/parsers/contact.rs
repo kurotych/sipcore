@@ -166,7 +166,7 @@ impl SipHeaderParser for Contact {
             let (input, sipuri) = SipUri::parse_ext(input, is_quoted_uri)?;
             let mut count_wsps_after_raquout = 0;
             let input = if is_quoted_uri {
-                let (input, (_, _, wsps_after)) = take_sws_token::raquot(input)?;
+                let (input, wsps_after) = take_sws_token::raquot(input)?;
                 count_wsps_after_raquout = wsps_after.len();
                 input
             } else {
@@ -221,14 +221,14 @@ mod test {
         assert_eq!(input, b";q=0.7; expires=3600 \r\n");
         /*---------------------------------------------*/
         let (input, val) =
-            Contact::take_value("< sips:bob@192.0.2.4  > ;expires=60 \r\n".as_bytes()).unwrap();
+            Contact::take_value("<sips:bob@192.0.2.4> ;expires=60 \r\n".as_bytes()).unwrap();
         assert_eq!(
             val.sip_uri().unwrap().scheme,
             sipuri::RequestUriScheme::SIPS
         );
         assert_eq!(val.tags().unwrap().get(&HeaderTagType::DisplayName), None);
         assert_eq!(val.sip_uri().unwrap().user_info().unwrap().value, "bob");
-        assert_eq!(val.vstr, "< sips:bob@192.0.2.4  >");
+        assert_eq!(val.vstr, "<sips:bob@192.0.2.4>");
         assert_eq!(input, b";expires=60 \r\n");
         /*---------------------------------------------*/
         let (_, val) = Contact::take_value("\"\" <sip:carol@chicago.com> \r\n".as_bytes()).unwrap();
@@ -237,7 +237,7 @@ mod test {
         /*---------------------------------------------*/
 
         let (input, val) = Contact::take_value(
-            "\"Mr. Watson\" <   sip:watson@worcester.bell-telephone.com  >  \r\n".as_bytes(),
+            "\"Mr. Watson\" <sip:watson@worcester.bell-telephone.com>  \r\n".as_bytes(),
         )
         .unwrap();
 
@@ -252,7 +252,7 @@ mod test {
         );
         assert_eq!(
             val.vstr,
-            "\"Mr. Watson\" <   sip:watson@worcester.bell-telephone.com  >"
+            "\"Mr. Watson\" <sip:watson@worcester.bell-telephone.com>"
         );
 
         assert_eq!(input, b"\r\n");
