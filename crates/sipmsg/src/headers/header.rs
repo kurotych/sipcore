@@ -38,7 +38,7 @@ pub enum HeaderValueType {
 
     // Contact        =  ("Contact" / "m" ) HCOLON
     // ( STAR / (contact-param *(COMMA contact-param)))
-    Contact, // tags: Star(O), DisplayName(O), URI(R)
+    Contact, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -46,6 +46,7 @@ pub enum HeaderTagType {
     PureValue,
     AinfoType,  // nextnonce, qop, rspauth, etc.
     AinfoValue, // value after equal without quotes
+    AbsoluteURI, // absolute uri without qoutes
     Username,
     Realm,
     Nonce,
@@ -61,7 +62,6 @@ pub enum HeaderTagType {
     Host,
     Star, // alway must be equal to *
     DisplayName,
-    URI,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

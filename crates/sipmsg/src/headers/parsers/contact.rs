@@ -182,9 +182,17 @@ impl SipHeaderParser for Contact {
         }
 
         // this is absolute uri
-        let uri = take_while1(|c| !is_wsp(c) && c != b'>');
-        let (input, (uri, _ /* RAQUOT */)) = tuple((uri, take_sws_token::raquot))(input)?;
-        let (_, hdr_val) = HeaderValue::new(uri, HeaderValueType::Contact, Some(tags), None)?;
+        let uri_taker = take_while1(|c| c != b'>');
+        let (input, (uri, spaces_after_raquot)) =
+            tuple((uri_taker, take_sws_token::raquot))(input)?;
+        tags.insert(HeaderTagType::AbsoluteURI, uri);
+
+        let (_, hdr_val) = HeaderValue::new(
+            &source_input[..source_input.len() - input.len() - spaces_after_raquot.len()],
+            HeaderValueType::Contact,
+            Some(tags),
+            None,
+        )?;
         return Ok((input, hdr_val));
     }
 }
@@ -276,7 +284,11 @@ mod test {
         let (_, val) =
             Contact::take_value("Caller <mailto:carol@chicago.com> \r\n".as_bytes()).unwrap();
         assert_eq!(val.tags().unwrap()[&HeaderTagType::DisplayName], b"Caller");
-        assert_eq!(val.vstr, "mailto:carol@chicago.com");
+        assert_eq!(
+            val.tags().unwrap()[&HeaderTagType::AbsoluteURI],
+            "mailto:carol@chicago.com".as_bytes()
+        );
+        assert_eq!(val.vstr, "Caller <mailto:carol@chicago.com>");
 
         let (_, val) = Contact::take_value("A <sip:carol@chicago.com> \r\n".as_bytes()).unwrap();
         assert_eq!(val.tags().unwrap()[&HeaderTagType::DisplayName], b"A");
@@ -324,5 +336,15 @@ mod test {
         );
 
         assert_eq!(inp, "\r\n".as_bytes());
+        /************************************************/
+        let (inp, val) =
+            Contact::take_value("<http://www.example.com/sounds/moo.wav>  ;param\r\n".as_bytes())
+                .unwrap();
+        assert_eq!(
+            val.tags().unwrap()[&HeaderTagType::AbsoluteURI],
+            "http://www.example.com/sounds/moo.wav".as_bytes()
+        );
+        assert_eq!(val.vstr, "<http://www.example.com/sounds/moo.wav>");
+        assert_eq!(inp, ";param\r\n".as_bytes());
     }
 }
