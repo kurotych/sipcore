@@ -196,6 +196,7 @@ impl SipRFCHeader {
             &SipRFCHeader::ContentType => AcceptParser::take_value,
             &SipRFCHeader::CSeq => CSeq::take_value,
             &SipRFCHeader::Date => Date::take_value,
+            &SipRFCHeader::ErrorInfo => AlertInfoParser::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
