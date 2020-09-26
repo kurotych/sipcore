@@ -16,4 +16,5 @@ pub use generic_params::GenericParams;
 pub mod sipuri;
 pub use sipuri::SipUri;
 
+mod name_addr;
 mod parsers;

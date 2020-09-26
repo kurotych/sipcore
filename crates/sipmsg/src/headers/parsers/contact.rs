@@ -1,22 +1,11 @@
 use crate::{
-    common::{
-        bnfcore::{is_token_char, is_wsp},
-        errorparse::SipParseError,
-        take_sws_token,
-    },
+    common::{errorparse::SipParseError, take_sws_token},
     headers::{
         header::{HeaderTagType, HeaderTags, HeaderValue, HeaderValueType},
+        name_addr,
         traits::SipHeaderParser,
     },
 };
-
-use nom::{
-    bytes::complete::{take_while, take_while1},
-    character::complete,
-    sequence::tuple,
-};
-
-use crate::SipUri;
 
 /*
 Contact        =  ("Contact" / "m" ) HCOLON
@@ -55,54 +44,6 @@ contact-extension  =  generic-param
 
 pub struct Contact;
 
-#[derive(PartialEq, Debug)]
-enum ContactValueType {
-    QuotedDisplayName,
-    TokenDisplayName,
-    SipURI,
-    AquoutedSipURI,
-}
-
-fn predict_value_type(input: &[u8]) -> ContactValueType {
-    if input[0] == b'"' {
-        return ContactValueType::QuotedDisplayName;
-    }
-
-    if input[0] == b'<' {
-        return ContactValueType::AquoutedSipURI;
-    }
-
-    if &input[..3] != b"sip" {
-        return ContactValueType::TokenDisplayName;
-    }
-
-    if input[3] == b':' || &input[3..5] == b"s:" {
-        return ContactValueType::SipURI; // this is start of URI, display name isn't present
-    }
-
-    return ContactValueType::TokenDisplayName;
-}
-
-fn take_display_name(
-    source_input: &[u8],
-    display_name_type: ContactValueType,
-) -> nom::IResult<&[u8], &[u8], SipParseError> {
-    if display_name_type == ContactValueType::QuotedDisplayName {
-        let (input, _) = take_sws_token::ldquot(source_input)?;
-        let (input, display_name) = take_while(|c: u8| c != b'"')(input)?;
-        let (input, _) = take_sws_token::rdquot(input)?;
-        return Ok((input, display_name));
-    } else if display_name_type == ContactValueType::TokenDisplayName {
-        let (input, display_name) = take_while1(is_token_char)(source_input)?;
-        let (input, _) = complete::space0(input)?;
-        return Ok((input, display_name));
-    }
-    sip_parse_error!(
-        666,
-        "Parsing of contact is failed. Something wrong we should never be here"
-    )
-}
-
 fn make_star_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
     let mut tags = HeaderTags::new();
     tags.insert(HeaderTagType::Star, &source_input[..1]);
@@ -122,78 +63,14 @@ impl SipHeaderParser for Contact {
             return sip_parse_error!(1, "Contact header value is empty");
         }
 
-        let mut tags = HeaderTags::new();
         if source_input[0] == b'*' {
             // This is: Contact: *\r\n
             return make_star_value(source_input);
         }
-
-        if source_input.len() < 5 {
-            return sip_parse_error!(2, "Contact header value is too short");
-        }
-        let next_value_type = predict_value_type(source_input);
-        let input = if next_value_type == ContactValueType::QuotedDisplayName
-            || next_value_type == ContactValueType::TokenDisplayName
-        {
-            let (input, display_name) = take_display_name(source_input, next_value_type)?;
-            tags.insert(HeaderTagType::DisplayName, display_name);
-            input
-        } else {
-            source_input
-        };
-
-        if input.is_empty() {
-            return sip_parse_error!(3, "Contact header value is invalid");
-        }
-
-        let (input, is_quoted_uri) = if input[0] == b'<' {
-            let (input, _) = take_sws_token::laquot(input)?;
-            (input, true)
-        } else {
-            (input, false)
-        };
-
-        if source_input.len() < 5 {
-            return sip_parse_error!(2, "Contact header value is too short");
-        }
-
-        let is_sip_uri = &input[..4] == b"sip:" || &input[..5] == b"sips:";
-        if !is_sip_uri && !is_quoted_uri {
-            return sip_parse_error!(4, "Absolute uri in contact header without <> not supported");
-        }
-
-        if is_sip_uri {
-            let (input, sipuri) = SipUri::parse_ext(input, is_quoted_uri)?;
-            let mut count_wsps_after_raquout = 0;
-            let input = if is_quoted_uri {
-                let (input, wsps_after) = take_sws_token::raquot(input)?;
-                count_wsps_after_raquout = wsps_after.len();
-                input
-            } else {
-                input
-            };
-            let (_, hdr_val) = HeaderValue::new(
-                &source_input[..source_input.len() - input.len() - count_wsps_after_raquout],
-                HeaderValueType::Contact,
-                Some(tags),
-                Some(sipuri),
-            )?;
-            return Ok((input, hdr_val));
-        }
-
-        // this is absolute uri
-        let uri_taker = take_while1(|c| c != b'>');
-        let (input, (uri, spaces_after_raquot)) =
-            tuple((uri_taker, take_sws_token::raquot))(input)?;
-        tags.insert(HeaderTagType::AbsoluteURI, uri);
-
-        let (_, hdr_val) = HeaderValue::new(
-            &source_input[..source_input.len() - input.len() - spaces_after_raquot.len()],
-            HeaderValueType::Contact,
-            Some(tags),
-            None,
-        )?;
-        return Ok((input, hdr_val));
+        let (input, (vstr_val, tags, sipuri)) = name_addr::take(source_input)?;
+        let (_, hdr_val) =
+            HeaderValue::new(vstr_val, HeaderValueType::Contact, Some(tags), sipuri)?;
+        Ok((input, hdr_val))
     }
 }
 
