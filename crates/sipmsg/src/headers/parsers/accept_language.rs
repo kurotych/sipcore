@@ -18,13 +18,13 @@ impl SipHeaderParser for AcceptLanguageParser {
         if !initial_input.is_empty() && initial_input[0] == b'*' {
             let (input, _) = take_sws(initial_input)?;
             let (_, hdr_val) =
-                HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None, None)?;
+                HeaderValue::new(&input[..1], HeaderValueType::TokenValue, None, None)?;
             return Ok((&input[1..], hdr_val));
         }
         let (input, left_part) = take_while1(is_alpha)(initial_input)?;
         if !input.is_empty() && input[0] != b'-' {
             let (_, hdr_val) =
-                HeaderValue::new(left_part, HeaderValueType::SimpleString, None, None)?;
+                HeaderValue::new(left_part, HeaderValueType::TokenValue, None, None)?;
             return Ok((input, hdr_val));
         }
         if left_part.len() < 1 || left_part.len() > 8 {
@@ -40,7 +40,7 @@ impl SipHeaderParser for AcceptLanguageParser {
         let offset = left_part.len() + right_part.len() + 1 /*`-`*/;
         let (_, hdr_val) = HeaderValue::new(
             &initial_input[..offset],
-            HeaderValueType::SimpleString,
+            HeaderValueType::TokenValue,
             None,
             None,
         )?;

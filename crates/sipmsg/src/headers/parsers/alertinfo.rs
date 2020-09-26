@@ -26,7 +26,7 @@ impl SipHeaderParser for AlertInfoParser {
         // 1 for '>' char
         let (_, hdr_val) = HeaderValue::new(
             &source_input[..source_input.len() - input.len() - spaces_after_raquot.len()],
-            HeaderValueType::SimpleString,
+            HeaderValueType::TokenValue,
             Some(tags),
             None,
         )?;

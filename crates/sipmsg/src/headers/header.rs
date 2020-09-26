@@ -19,7 +19,7 @@ use unicase::Ascii;
 #[derive(PartialEq, Debug)]
 pub enum HeaderValueType {
     EmptyValue,           // SIP header with empty value. Haven't tags
-    SimpleString,         // Haven't tags
+    TokenValue,           // Haven't tags. Simple value of token chars
     QuotedValue,          // tags: PureValue(R)
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
 

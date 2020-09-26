@@ -19,11 +19,11 @@ impl SipHeaderParser for AcceptEncodingParser {
         if !input.is_empty() && input[0] == b'*' {
             let (input, _) = take_sws(input)?;
             let (_, hdr_val) =
-                HeaderValue::new(&input[..1], HeaderValueType::SimpleString, None, None)?;
+                HeaderValue::new(&input[..1], HeaderValueType::TokenValue, None, None)?;
             return Ok((&input[1..], hdr_val));
         }
         let (input, value) = take_while1(is_token_char)(input)?;
-        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::SimpleString, None, None)?;
+        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::TokenValue, None, None)?;
         Ok((input, hdr_val))
     }
 }

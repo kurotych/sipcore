@@ -61,7 +61,7 @@ impl SipHeaderParser for AcceptParser {
         ))(input)?;
         let offset = left_part.len() + slash_part.len() + right_part.len();
         let (_, hdr_val) =
-            HeaderValue::new(&input[..offset], HeaderValueType::SimpleString, None, None)?;
+            HeaderValue::new(&input[..offset], HeaderValueType::TokenValue, None, None)?;
         Ok((inp, hdr_val))
     }
 }

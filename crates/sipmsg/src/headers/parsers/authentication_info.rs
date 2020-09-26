@@ -40,7 +40,7 @@ impl SipHeaderParser for AuthenticationInfoParser {
 
         let (_, hdr_val) = HeaderValue::new(
             &source_input[..source_input.len() - input.len() - spaces_after_rdquot.len()],
-            HeaderValueType::SimpleString,
+            HeaderValueType::TokenValue,
             Some(tags),
             None,
         )?;
