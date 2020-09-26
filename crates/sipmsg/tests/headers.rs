@@ -17,12 +17,13 @@ fn parse_headers() {
          response=\"7587245234b3434cc3412213e5f113a5432\"\r\n\
          Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n\
          l: 8\r\n\
+         date: Sat, 15 Oct 2005 04:44:56 GMT\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 13);
+    assert_eq!(hdrs.len(), 14);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -143,5 +144,8 @@ fn parse_headers() {
         content_type.params().unwrap().get("charset").unwrap(),
         &Some("ISO-8859-4")
     );
+
+    let date_hdr = &hdrs.get_rfc_s(SipRFCHeader::Date).unwrap();
+    assert_eq!(date_hdr.value.vstr, "Sat, 15 Oct 2005 04:44:56 GMT");
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
