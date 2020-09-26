@@ -1,13 +1,7 @@
-use crate::common::{
-    bnfcore::{is_token_char},
-    errorparse::SipParseError,
+use crate::{
+    common::errorparse::SipParseError,
+    headers::{header::HeaderValue, parsers::token_header, traits::SipHeaderParser},
 };
-use crate::headers::{
-    header::{HeaderValue, HeaderValueType},
-    traits::SipHeaderParser,
-};
-use nom::bytes::complete::take_while1;
-
 
 // Content-Disposition: attachment; filename=smime.p7s; handling=required
 // Content-Disposition: session
@@ -17,9 +11,7 @@ pub struct ContentDisposition;
 
 impl SipHeaderParser for ContentDisposition {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let (input, value) = take_while1(is_token_char)(source_input)?;
-        let (_, hdr_val) = HeaderValue::new(value, HeaderValueType::TokenValue, None, None)?;
-        Ok((input, hdr_val))
+        token_header::take(source_input)
     }
 }
 
@@ -34,4 +26,3 @@ mod tests {
         assert_eq!(val.vstr, "session");
     }
 }
-
