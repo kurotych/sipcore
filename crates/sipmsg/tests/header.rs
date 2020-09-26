@@ -272,10 +272,7 @@ fn callinfo_test() {
         Some((&SipAscii::new("purpose"), &Some("icon")))
     );
 
-    assert_eq!(
-        hdrs[1].value.vstr,
-        "<http://www.example.com/alice/>"
-    );
+    assert_eq!(hdrs[1].value.vstr, "<http://www.example.com/alice/>");
     assert_eq!(
         hdrs[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://www.example.com/alice/".as_bytes()
@@ -287,4 +284,24 @@ fn callinfo_test() {
     );
 
     assert_eq!(input, b"\r\n");
+}
+
+#[test]
+fn content_disposition_header() {
+    let (input, (_, hdrs)) = SipHeader::parse(
+        "Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n".as_bytes(),
+    )
+    .unwrap();
+
+    assert_eq!(hdrs[0].name, "Content-Disposition");
+    assert_eq!(hdrs[0].value.vstr, "attachment");
+    assert_eq!(
+        hdrs[0].params().unwrap().get("filename").unwrap(),
+        (&SipAscii::new("filename"), &Some("smime.p7s"))
+    );
+    assert_eq!(
+        hdrs[0].params().unwrap().get("handling").unwrap(),
+        (&SipAscii::new("handling"), &Some("required"))
+    );
+    assert_eq!(input.len(), 2)
 }

@@ -12,12 +12,13 @@ fn parse_headers() {
          Authorization: Digest username=\"Alice\", realm=\"atlanta.com\" \r\n\
          \t,nonce=\"84a4cc6f3082121f32b42a2187831a9e\",\r\n \
          response=\"7587245234b3434cc3412213e5f113a5432\"\r\n\
+         Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 8);
+    assert_eq!(hdrs.len(), 9);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -104,5 +105,18 @@ fn parse_headers() {
         auth_val.tags().unwrap()[&SipHeaderTagType::Dresponse],
         "7587245234b3434cc3412213e5f113a5432".as_bytes()
     );
+
+    let content_disp_hdr = &hdrs.get_rfc_s(SipRFCHeader::ContentDisposition).unwrap();
+
+    assert_eq!(content_disp_hdr.value.vstr, "attachment");
+    assert_eq!(
+        content_disp_hdr.params().unwrap().get("filename").unwrap(),
+        (&SipAscii::new("filename"), &Some("smime.p7s"))
+    );
+    assert_eq!(
+        content_disp_hdr.params().unwrap().get("handling").unwrap(),
+        (&SipAscii::new("handling"), &Some("required"))
+    );
+
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
