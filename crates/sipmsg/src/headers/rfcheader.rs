@@ -1,8 +1,8 @@
 use crate::headers::{
     parsers::{
-        AcceptEncodingParser, AcceptLanguageParser, AcceptParser, AlertInfoParser,
-        AuthenticationInfoParser, Authorization, CallID, Contact, ExtensionParser,
-        token_header, digit_header
+        digit_header, token_header, AcceptEncodingParser, AcceptLanguageParser, AcceptParser,
+        AlertInfoParser, AuthenticationInfoParser, Authorization, CSeq, CallID, Contact,
+        ExtensionParser,
     },
     traits::{HeaderValueParserFn, SipHeaderParser},
 };
@@ -193,6 +193,7 @@ impl SipRFCHeader {
             &SipRFCHeader::ContentLanguage => token_header::take,
             &SipRFCHeader::ContentLength => digit_header::take,
             &SipRFCHeader::ContentType => AcceptParser::take_value,
+            &SipRFCHeader::CSeq => CSeq::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

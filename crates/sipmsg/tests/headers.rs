@@ -58,11 +58,17 @@ fn parse_headers() {
     );
     assert_eq!(hdrs.get_rfc_s(SipRFCHeader::CallID).unwrap().params(), None);
 
-    assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap().value.vstr,
-        "60 OPTIONS"
-    );
+    let cseq_header = hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap();
+    assert_eq!(cseq_header.value.vstr, "60 OPTIONS");
     assert_eq!(hdrs.get_rfc_s(SipRFCHeader::CSeq).unwrap().params(), None);
+    assert_eq!(
+        cseq_header.value.tags().unwrap()[&SipHeaderTagType::Number],
+        b"60"
+    );
+    assert_eq!(
+        cseq_header.value.tags().unwrap()[&SipHeaderTagType::Method],
+        b"OPTIONS"
+    );
 
     assert_eq!(hdrs.get_ext_s("customheader").unwrap().value.vstr, "value");
     assert_eq!(
