@@ -10,7 +10,7 @@ repository = "https://github.com/armatusmiles/sipcore"
 categories = ["no-std"]
 
 [dependencies]
-nom = "6.0.0-alpha1"
+nom = "6.0.0-alpha2"
 
 [dependencies.unicase]
 version ="^2.6"
