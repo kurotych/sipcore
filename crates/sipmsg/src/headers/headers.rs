@@ -178,7 +178,7 @@ mod tests {
                         .params()
                         .unwrap()
                         .get(&"q"),
-                    Some((&Ascii::new("q"), &Some("0.1")))
+                    Some(&Some("0.1"))
                 );
 
                 assert_eq!(

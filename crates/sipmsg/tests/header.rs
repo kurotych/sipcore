@@ -13,11 +13,11 @@ fn parse_header() {
     assert_eq!(hdrs[0].value.vstr, "Value");
     assert_eq!(
         hdrs[0].params().unwrap().get("parameter"),
-        Some((&SipAscii::new("parameter"), &Some("false")))
+        Some(&Some("false"))
     );
     assert_eq!(
         hdrs[0].params().unwrap().get(&"param2"),
-        Some((&SipAscii::new("param2"), &None))
+        Some(&None)
     );
     assert_eq!(input.len(), 2);
 
@@ -82,13 +82,13 @@ fn accept_encoding_header() {
     assert_eq!(hdrs[0].value.vstr, "compress");
     assert_eq!(
         hdrs[0].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("0.5"))
+        &Some("0.5")
     );
     assert_eq!(hdrs[1].name, "Accept-Encoding");
     assert_eq!(hdrs[1].value.vstr, "gzip");
     assert_eq!(
         hdrs[1].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("1.0"))
+        &Some("1.0")
     );
     assert_eq!(input.len(), 2);
 
@@ -99,20 +99,20 @@ fn accept_encoding_header() {
     assert_eq!(hdrs[0].value.vstr, "gzip");
     assert_eq!(
         hdrs[0].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("1.0"))
+        &Some("1.0")
     );
     assert_eq!(hdrs[1].name, "Accept-Encoding");
     assert_eq!(hdrs[1].value.vstr, "identity");
     assert_eq!(
         hdrs[1].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("0.5"))
+        &Some("0.5")
     );
 
     assert_eq!(hdrs[2].name, "Accept-Encoding");
     assert_eq!(hdrs[2].value.vstr, "*");
     assert_eq!(
         hdrs[2].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("0"))
+        &Some("0")
     );
     assert_eq!(input.len(), 2);
 
@@ -172,13 +172,13 @@ fn accept_language_header() {
     assert_eq!(hdrs[1].value.vstr, "en-gb");
     assert_eq!(
         hdrs[1].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("0.8"))
+        &Some("0.8")
     );
 
     assert_eq!(hdrs[2].value.vstr, "en");
     assert_eq!(
         hdrs[2].params().unwrap().get("q").unwrap(),
-        (&SipAscii::new("q"), &Some("0.7"))
+        &Some("0.7")
     );
 
     assert_eq!(input.len(), 2)
@@ -269,7 +269,7 @@ fn callinfo_test() {
 
     assert_eq!(
         hdrs[0].params().unwrap().get("purpose"),
-        Some((&SipAscii::new("purpose"), &Some("icon")))
+        Some(&Some("icon"))
     );
 
     assert_eq!(hdrs[1].value.vstr, "<http://www.example.com/alice/>");
@@ -280,7 +280,7 @@ fn callinfo_test() {
 
     assert_eq!(
         hdrs[1].params().unwrap().get("purpose"),
-        Some((&SipAscii::new("purpose"), &Some("info")))
+        Some(&Some("info"))
     );
 
     assert_eq!(input, b"\r\n");
@@ -297,11 +297,11 @@ fn content_disposition_header() {
     assert_eq!(hdrs[0].value.vstr, "attachment");
     assert_eq!(
         hdrs[0].params().unwrap().get("filename").unwrap(),
-        (&SipAscii::new("filename"), &Some("smime.p7s"))
+        &Some("smime.p7s")
     );
     assert_eq!(
         hdrs[0].params().unwrap().get("handling").unwrap(),
-        (&SipAscii::new("handling"), &Some("required"))
+        &Some("required")
     );
     assert_eq!(input.len(), 2)
 }

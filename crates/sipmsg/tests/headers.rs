@@ -33,7 +33,7 @@ fn parse_headers() {
             .params()
             .unwrap()
             .get(&"tag"),
-        Some((&SipAscii::new("tag"), &Some("323")))
+        Some(&Some("323"))
     );
 
     assert_eq!(
@@ -67,7 +67,7 @@ fn parse_headers() {
             .params()
             .unwrap()
             .get(&"param"),
-        Some((&SipAscii::new("param"), &Some("false")))
+        Some(&Some("false"))
     );
 
     assert_eq!(
@@ -80,7 +80,7 @@ fn parse_headers() {
             .params()
             .unwrap()
             .get(&"branch"),
-        Some((&SipAscii::new("branch"), &Some("z9hG4bKkdjuw")))
+        Some(&Some("z9hG4bKkdjuw"))
     );
     let auth_val = &hdrs.get_rfc_s(SipRFCHeader::Authorization).unwrap().value;
     assert_eq!(
@@ -111,11 +111,11 @@ fn parse_headers() {
     assert_eq!(content_disp_hdr.value.vstr, "attachment");
     assert_eq!(
         content_disp_hdr.params().unwrap().get("filename").unwrap(),
-        (&SipAscii::new("filename"), &Some("smime.p7s"))
+        &Some("smime.p7s")
     );
     assert_eq!(
         content_disp_hdr.params().unwrap().get("handling").unwrap(),
-        (&SipAscii::new("handling"), &Some("required"))
+        &Some("required")
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());

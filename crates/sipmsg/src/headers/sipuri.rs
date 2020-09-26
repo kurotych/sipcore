@@ -244,7 +244,6 @@ impl<'a> NomParser<'a> for SipUri<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use unicase::Ascii;
 
     #[test]
     fn test_sip_uri_parse() {
@@ -272,7 +271,7 @@ mod tests {
         assert_eq!(sip_uri.hostport.port, None);
         assert_eq!(
             sip_uri.params().unwrap().get(&"transport"),
-            Some((&Ascii::new("transport"), &Some("tcp")))
+            Some(&Some("tcp"))
         );
 
         let (rest, sip_uri) = SipUri::parse_ext(
@@ -286,10 +285,7 @@ mod tests {
         assert_eq!(sip_uri.user_info().unwrap().password, Some("1234"));
         assert_eq!(sip_uri.hostport.host, "gateway.com");
         assert_eq!(sip_uri.hostport.port, None);
-        assert_eq!(
-            sip_uri.params().unwrap().get(&"user"),
-            Some((&Ascii::new("user"), &Some("phone")))
-        );
+        assert_eq!(sip_uri.params().unwrap().get(&"user"), Some(&Some("phone")));
 
         let (rest, sip_uri) = SipUri::parse_ext("sips:1212@gateway.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
@@ -297,7 +293,8 @@ mod tests {
         assert_eq!(sip_uri.user_info().unwrap().value, "1212");
         assert_eq!(sip_uri.hostport.host, "gateway.com");
 
-        let (rest, sip_uri) = SipUri::parse_ext("sip:alice@192.0.2.4:8888".as_bytes(), true).unwrap();
+        let (rest, sip_uri) =
+            SipUri::parse_ext("sip:alice@192.0.2.4:8888".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.user_info().unwrap().value, "alice");
@@ -338,7 +335,7 @@ mod tests {
         );
         assert_eq!(
             sip_uri.params().unwrap().get(&"method"),
-            Some((&Ascii::new("method"), &Some("REGISTER")))
+            Some(&Some("REGISTER"))
         );
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
         assert_eq!(sip_uri.hostport.host, "atlanta.com");

@@ -54,7 +54,12 @@ fn parse_response() {
             assert_eq!(response.headers.len(), 9);
 
             assert_eq!(
-                response.headers.get_rfc_s(SipRFCHeader::Via).unwrap().value.vstr,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::Via)
+                    .unwrap()
+                    .value
+                    .vstr,
                 "SIP/2.0/UDP 192.168.178.69:60686"
             );
             assert_eq!(
@@ -65,10 +70,7 @@ fn parse_response() {
                     .params()
                     .unwrap()
                     .get(&"branch"),
-                Some((
-                    &SipAscii::new("branch"),
-                    &Some("z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc")
-                ))
+                Some(&Some("z9hG4bKPj7IVefnk0j6Wn9oUM78ubmcURGDehvKEc"))
             );
 
             assert_eq!(
@@ -79,7 +81,7 @@ fn parse_response() {
                     .params()
                     .unwrap()
                     .get(&"received"),
-                Some((&SipAscii::new("received"), &Some("192.168.178.69")))
+                Some(&Some("192.168.178.69"))
             );
 
             assert_eq!(
@@ -90,7 +92,7 @@ fn parse_response() {
                     .params()
                     .unwrap()
                     .get(&"rport"),
-                Some((&SipAscii::new("rport"), &Some("60686")))
+                Some(&Some("60686"))
             );
 
             assert_eq!(
@@ -98,7 +100,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::From)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "<sip:12@192.168.178.26>"
             );
 
@@ -110,14 +113,16 @@ fn parse_response() {
                     .params()
                     .unwrap()
                     .get(&"tag"),
-                Some((
-                    &SipAscii::new("tag"),
-                    &Some("XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b")
-                ))
+                Some(&Some("XOO-LeGIwZmwa2UROKMXEhZGA5mKcY0b"))
             );
 
             assert_eq!(
-                response.headers.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
+                response
+                    .headers
+                    .get_rfc_s(SipRFCHeader::To)
+                    .unwrap()
+                    .value
+                    .vstr,
                 "<sip:12@192.168.178.26>"
             );
 
@@ -129,7 +134,7 @@ fn parse_response() {
                     .params()
                     .unwrap()
                     .get(&"tag"),
-                Some((&SipAscii::new("tag"), &Some("as68275e50")))
+                Some(&Some("as68275e50"))
             );
 
             assert_eq!(
@@ -137,7 +142,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CallID)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "p8gpcmxSdWwcM5xV89nm2LkEbcTPUdT1"
             );
 
@@ -146,7 +152,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::CSeq)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "62833 REGISTER"
             );
 
@@ -155,7 +162,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::Server)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "FPBX-2.11.0(11.6.0)"
             );
             let allow_headers = response.headers.get_rfc(SipRFCHeader::Allow).unwrap();
@@ -177,7 +185,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::Supported)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "replaces, timer"
             );
             assert_eq!(
@@ -185,7 +194,8 @@ fn parse_response() {
                     .headers
                     .get_rfc_s(SipRFCHeader::ContentLength)
                     .unwrap()
-                    .value.vstr,
+                    .value
+                    .vstr,
                 "0"
             );
         }

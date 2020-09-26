@@ -46,9 +46,9 @@ pub struct GenericParams<'a> {
 }
 
 impl<'a> GenericParams<'a> {
-    pub fn get(&self, key: &'a str) -> Option<(&Ascii<&'a str>, &Option<&'a str>)> {
+    pub fn get(&self, key: &'a str) -> Option<&Option<&'a str>> {
         let key = Ascii::new(key);
-        self.params.get_key_value(&key)
+        self.params.get(&key)
     }
 
     pub fn contains(&self, key: &'a str) -> bool {
@@ -85,7 +85,7 @@ mod tests {
     use super::*;
 
     fn assert_eq_gp(gparams: &GenericParams, key: &str, val: Option<&str>) {
-        assert_eq!(gparams.get(key), Some((&Ascii::new(key), &val)));
+        assert_eq!(gparams.get(key), Some(&val));
     }
     #[test]
     fn patameters_contains_test() {

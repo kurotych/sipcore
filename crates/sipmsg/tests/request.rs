@@ -1,5 +1,4 @@
 use sipmsg::*;
-use unicase::Ascii;
 
 #[test]
 fn parse_request() {
@@ -43,7 +42,7 @@ fn parse_request() {
             .params()
             .unwrap()
             .get(&"branch"),
-        Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
+        Some(&Some("z9hG4bKkjshdyff"))
     );
     assert_eq!(
         parsed_req
@@ -71,7 +70,7 @@ fn parse_request() {
             .params()
             .unwrap()
             .get(&"tag"),
-        Some((&SipAscii::new("tag"), &Some("88sja8x")))
+        Some(&Some("88sja8x"))
     );
     assert_eq!(
         parsed_req
@@ -81,7 +80,7 @@ fn parse_request() {
             .params()
             .unwrap()
             .get(&"onemore"),
-        Some((&SipAscii::new("onemore"), &None))
+        Some(&None)
     );
 
     assert_eq!(
@@ -132,7 +131,7 @@ fn parse_request() {
             .params()
             .unwrap()
             .get(&"q"),
-        Some((&SipAscii::new("q"), &Some("0.1")))
+        Some(&Some("0.1"))
     );
 
     let callinfo_headers = parsed_req.headers.get_rfc(SipRFCHeader::CallInfo).unwrap();
@@ -148,7 +147,7 @@ fn parse_request() {
 
     assert_eq!(
         callinfo_headers[0].params().unwrap().get("purpose"),
-        Some((&SipAscii::new("purpose"), &Some("icon")))
+        Some(&Some("icon"))
     );
 
     assert_eq!(
@@ -162,7 +161,7 @@ fn parse_request() {
 
     assert_eq!(
         callinfo_headers[1].params().unwrap().get("purpose"),
-        Some((&SipAscii::new("purpose"), &Some("info")))
+        Some(&Some("info"))
     );
 
     let contact_header = parsed_req.headers.get_rfc_s(SipRFCHeader::Contact).unwrap();
@@ -192,7 +191,7 @@ fn parse_request() {
             .params()
             .unwrap()
             .get(&"transport"),
-        Some((&Ascii::new("transport"), &Some("tcp")))
+        Some(&Some("tcp"))
     );
 
     assert_eq!(parsed_req.body.unwrap(), "body_stuff".as_bytes())
@@ -219,10 +218,7 @@ fn get_method_type() {
     assert_eq!(rl.sip_version, SipVersion(2, 0));
     assert_eq!(rl.uri.user_info().unwrap().value, "vivekg");
     assert_eq!(rl.uri.hostport.host, "chair-dnrc.example.com");
-    assert_eq!(
-        rl.uri.params().unwrap().get(&"unknownparam"),
-        Some((&Ascii::new("unknownparam"), &None))
-    );
+    assert_eq!(rl.uri.params().unwrap().get(&"unknownparam"), Some(&None));
 
     let res = SipRequestLine::parse("REGISTER sip:[2001:db8::10]:9999 SIP/3.1\r\n".as_bytes());
     let (_, rl) = res.unwrap();

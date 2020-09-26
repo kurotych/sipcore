@@ -35,7 +35,7 @@
 //! assert_eq!(request.rl.uri.scheme, SipRequestUriScheme::SIP);
 //! assert_eq!(request.rl.uri.user_info().unwrap().value, "bob");
 //! assert_eq!(request.rl.uri.hostport.host, "biloxi.com");
-//! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some((&SipAscii::new("user"), &Some("phone"))));
+//! assert_eq!(request.rl.uri.params().unwrap().get(&"user"), Some(&Some("phone")));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"to"), Some(&"alice%40atlanta.com"));
 //! assert_eq!(request.rl.uri.headers().unwrap().get(&"priority"), Some(&"urgent"));
 //!
@@ -50,7 +50,7 @@
 //! assert_eq!(via_headers[0].value.vstr, "SIP/2.0/UDP pc33.atlanta.com");
 //! assert_eq!(
 //!     via_headers[0].params().unwrap().get(&"branch"),
-//!     Some((&SipAscii::new("branch"), &Some("z9hG4bKkjshdyff")))
+//!     Some(&Some("z9hG4bKkjshdyff"))
 //! );
 //! assert_eq!(via_headers[1].value.vstr, "SIP/2.0/UDP 192.168.1.111");
 //! assert_eq!(
@@ -75,7 +75,11 @@
 //!
 //! assert_eq!(
 //!    contact_header.value.sip_uri().unwrap().params().unwrap().get(&"transport"),
-//!    Some((&Ascii::new("transport"), &Some("tcp")))
+//!    Some(&Some("tcp"))
+//! );
+//! assert_eq!(
+//!    contact_header.value.sip_uri().unwrap().params().unwrap().get(&"non-exists-param"),
+//!    None
 //! );
 //!
 //! // Extention Header
@@ -84,11 +88,11 @@
 //! assert_eq!(extention_header.value.vstr, "extention header value");
 //! assert_eq!(
 //!     extention_header.params().unwrap().get(&"param"),
-//!     Some((&SipAscii::new("param"), &Some("123")))
+//!     Some(&Some("123"))
 //! );
 //! assert_eq!(
 //!     extention_header.params().unwrap().get(&"without_value"),
-//!     Some((&SipAscii::new("without_value"), &None))
+//!     Some(&None)
 //! );
 //!
 //! // Body

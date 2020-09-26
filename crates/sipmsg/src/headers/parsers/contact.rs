@@ -78,7 +78,6 @@ impl SipHeaderParser for Contact {
 mod test {
     use super::*;
     use crate::headers::sipuri;
-    use unicase::Ascii;
     #[test]
     fn contact_parser_test() {
         let (_, val) = Contact::take_value("* \r\n".as_bytes()).unwrap();
@@ -151,7 +150,7 @@ mod test {
 
         assert_eq!(
             val.sip_uri().unwrap().params().unwrap().get(&"line"),
-            Some((&Ascii::new("line"), &Some("12071")))
+            Some(&Some("12071"))
         );
         assert_eq!(
             input,
@@ -209,7 +208,7 @@ mod test {
                 .params()
                 .unwrap()
                 .get(&"unknownparam"),
-            Some((&Ascii::new("unknownparam"), &None))
+            Some(&None)
         );
 
         assert_eq!(inp, "\r\n".as_bytes());
