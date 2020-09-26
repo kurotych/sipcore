@@ -20,12 +20,13 @@ fn parse_headers() {
          date: Sat, 15 Oct 2005 04:44:56 GMT\r\n\
          Expires: 5\r\n\
          Error-Info: <sip:not-in-service-recording@atlanta.com> \r\n\
+         In-Reply-To: 70710@saturn.bell-tel.com, 17320@saturn.bell-tel.com\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 16);
+    assert_eq!(hdrs.len(), 17);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -171,5 +172,26 @@ fn parse_headers() {
 
     let expires_hdr = &hdrs.get_rfc_s(SipRFCHeader::Expires).unwrap();
     assert_eq!(expires_hdr.value.vstr, "5");
+
+    let in_reply_hdrs = &hdrs.get_rfc(SipRFCHeader::InReplyTo).unwrap();
+    assert_eq!(in_reply_hdrs[0].value.vstr, "70710@saturn.bell-tel.com");
+    assert_eq!(
+        in_reply_hdrs[0].value.tags().unwrap()[&SipHeaderTagType::ID],
+        b"70710"
+    );
+    assert_eq!(
+        in_reply_hdrs[0].value.tags().unwrap()[&SipHeaderTagType::Host],
+        b"saturn.bell-tel.com"
+    );
+    assert_eq!(in_reply_hdrs[1].value.vstr, "17320@saturn.bell-tel.com");
+    assert_eq!(
+        in_reply_hdrs[1].value.tags().unwrap()[&SipHeaderTagType::ID],
+        b"17320"
+    );
+    assert_eq!(
+        in_reply_hdrs[1].value.tags().unwrap()[&SipHeaderTagType::Host],
+        b"saturn.bell-tel.com"
+    );
+
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

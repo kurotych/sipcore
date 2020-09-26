@@ -199,6 +199,7 @@ impl SipRFCHeader {
             &SipRFCHeader::ErrorInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Expires => digit_header::take,
             &SipRFCHeader::From => From::take_value,
+            &SipRFCHeader::InReplyTo => CallID::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
