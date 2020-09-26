@@ -24,6 +24,7 @@ pub enum HeaderValueType {
     AbsoluteURI,          // tags: AbsoluteURI(R),
     QuotedValue,          // tags: PureValue(R)
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
+    Seq,                  // tags: Number(R), Method(R)
 
     // Authorization     =  "Authorization" HCOLON credentials
     // credentials       =  ("Digest" LWS digest-response)

@@ -6,8 +6,6 @@ mod accept_language;
 pub use accept_language::AcceptLanguageParser;
 mod alertinfo;
 pub use alertinfo::AlertInfoParser;
-mod allow;
-pub use allow::AllowParser;
 mod extension;
 pub use extension::ExtensionParser;
 mod authentication_info;
