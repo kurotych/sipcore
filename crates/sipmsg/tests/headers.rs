@@ -9,6 +9,7 @@ fn parse_headers() {
          Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
          CSeq: 60 OPTIONS\r\n\
          e: tar\r\n\
+         c: text/html; charset=ISO-8859-4\r\n\
          Content-Language: fr\r\n\
          CustomHeader: value;param=false\r\n\
          Authorization: Digest username=\"Alice\", realm=\"atlanta.com\" \r\n\
@@ -21,7 +22,7 @@ fn parse_headers() {
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 12);
+    assert_eq!(hdrs.len(), 13);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -130,5 +131,11 @@ fn parse_headers() {
     let content_length = &hdrs.get_rfc_s(SipRFCHeader::ContentLength).unwrap();
     assert_eq!(content_length.value.vstr, "8");
 
+    let content_type = &hdrs.get_rfc_s(SipRFCHeader::ContentType).unwrap();
+    assert_eq!(content_type.value.vstr, "text/html");
+    assert_eq!(
+        content_type.params().unwrap().get("charset").unwrap(),
+        &Some("ISO-8859-4")
+    );
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

@@ -192,6 +192,7 @@ impl SipRFCHeader {
             &SipRFCHeader::ContentEncoding => token_header::take,
             &SipRFCHeader::ContentLanguage => token_header::take,
             &SipRFCHeader::ContentLength => digit_header::take,
+            &SipRFCHeader::ContentType => AcceptParser::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

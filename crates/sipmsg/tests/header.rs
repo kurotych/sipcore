@@ -305,3 +305,15 @@ fn content_disposition_header() {
     );
     assert_eq!(input.len(), 2)
 }
+
+#[test]
+fn content_type_header() {
+    let (input, (_, hdrs)) = SipHeader::parse(
+        "Content-Type: application/sdp\r\n".as_bytes(),
+    )
+    .unwrap();
+
+    assert_eq!(hdrs[0].name, "Content-Type");
+    assert_eq!(hdrs[0].value.vstr, "application/sdp");
+    assert_eq!(input.len(), 2)
+}
