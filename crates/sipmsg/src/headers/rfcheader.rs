@@ -197,6 +197,7 @@ impl SipRFCHeader {
             &SipRFCHeader::CSeq => CSeq::take_value,
             &SipRFCHeader::Date => Date::take_value,
             &SipRFCHeader::ErrorInfo => AlertInfoParser::take_value,
+            &SipRFCHeader::Expires => digit_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

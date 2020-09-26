@@ -18,13 +18,14 @@ fn parse_headers() {
          Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n\
          l: 8\r\n\
          date: Sat, 15 Oct 2005 04:44:56 GMT\r\n\
+         Expires: 5\r\n\
          Error-Info: <sip:not-in-service-recording@atlanta.com> \r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 15);
+    assert_eq!(hdrs.len(), 16);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -148,13 +149,18 @@ fn parse_headers() {
 
     let date_hdr = &hdrs.get_rfc_s(SipRFCHeader::Date).unwrap();
     assert_eq!(date_hdr.value.vstr, "Sat, 15 Oct 2005 04:44:56 GMT");
-    assert_eq!(input, "\r\nsomebody".as_bytes());
 
     let error_info = &hdrs.get_rfc_s(SipRFCHeader::ErrorInfo).unwrap();
     assert_eq!(
         error_info.value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "sip:not-in-service-recording@atlanta.com".as_bytes()
     );
-    assert_eq!(error_info.value.vstr, "<sip:not-in-service-recording@atlanta.com>");
+    assert_eq!(
+        error_info.value.vstr,
+        "<sip:not-in-service-recording@atlanta.com>"
+    );
 
+    let expires_hdr = &hdrs.get_rfc_s(SipRFCHeader::Expires).unwrap();
+    assert_eq!(expires_hdr.value.vstr, "5");
+    assert_eq!(input, "\r\nsomebody".as_bytes());
 }
