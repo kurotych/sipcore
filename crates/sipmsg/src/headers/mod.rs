@@ -4,6 +4,7 @@ pub use headers::Headers as SipHeaders;
 mod header;
 pub use header::Header as SipHeader;
 pub use header::HeaderTagType as SipHeaderTagType;
+pub use header::HeaderValueType as SipHeaderValueType;
 
 mod rfcheader;
 pub use rfcheader::SipRFCHeader;

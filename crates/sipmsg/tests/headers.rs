@@ -53,16 +53,15 @@ fn parse_headers() {
         "example.com"
     );
 
+    let max_forwards_header = hdrs.get_rfc_s(SipRFCHeader::MaxForwards).unwrap();
+    assert_eq!(max_forwards_header.value.vstr, "70");
     assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::MaxForwards)
-            .unwrap()
-            .value
-            .vstr,
-        "70"
+        max_forwards_header.params(),
+        None
     );
     assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::MaxForwards).unwrap().params(),
-        None
+        max_forwards_header.value.vtype,
+        SipHeaderValueType::Digit
     );
 
     assert_eq!(

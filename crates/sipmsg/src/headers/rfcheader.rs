@@ -200,6 +200,7 @@ impl SipRFCHeader {
             &SipRFCHeader::Expires => digit_header::take,
             &SipRFCHeader::From => From::take_value,
             &SipRFCHeader::InReplyTo => CallID::take_value,
+            &SipRFCHeader::MaxForwards => digit_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
