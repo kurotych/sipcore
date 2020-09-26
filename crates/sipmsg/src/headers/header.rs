@@ -40,8 +40,7 @@ pub enum HeaderValueType {
     // Call-Info   =  "Call-Info" HCOLON info *(COMMA info)
     CallInfo, // tags: PureValue(R)
 
-    // Contact        =  ("Contact" / "m" ) HCOLON
-    // ( STAR / (contact-param *(COMMA contact-param)))
+    /// Contact, From, To
     Contact, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
 }
 

@@ -19,6 +19,8 @@ pub use contact::Contact;
 mod cseq;
 pub use cseq::CSeq;
 mod date;
+mod from;
+pub use from::From;
 pub use date::Date;
 pub mod token_header;
 pub mod digit_header;

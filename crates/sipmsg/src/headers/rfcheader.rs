@@ -2,7 +2,7 @@ use crate::headers::{
     parsers::{
         digit_header, token_header, AcceptEncodingParser, AcceptLanguageParser, AcceptParser,
         AlertInfoParser, AuthenticationInfoParser, Authorization, CSeq, CallID, Contact,
-        Date,
+        Date, From,
         ExtensionParser,
     },
     traits::{HeaderValueParserFn, SipHeaderParser},
@@ -198,6 +198,7 @@ impl SipRFCHeader {
             &SipRFCHeader::Date => Date::take_value,
             &SipRFCHeader::ErrorInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Expires => digit_header::take,
+            &SipRFCHeader::From => From::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
