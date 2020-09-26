@@ -1,8 +1,9 @@
 use crate::headers::{
     parsers::{
         AcceptEncodingParser, AcceptLanguageParser, AcceptParser, AlertInfoParser, AllowParser,
-        AuthenticationInfoParser, Authorization, CallID, Contact, ContentDisposition,
+        AuthenticationInfoParser, Authorization, CallID, Contact,
         ExtensionParser,
+        token_header,
     },
     traits::{HeaderValueParserFn, SipHeaderParser},
 };
@@ -188,7 +189,8 @@ impl SipRFCHeader {
             // AlertInfoParser is suitable for Callinfo
             &SipRFCHeader::CallInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Contact => Contact::take_value,
-            &SipRFCHeader::ContentDisposition => ContentDisposition::take_value,
+            &SipRFCHeader::ContentDisposition => token_header::take,
+            &SipRFCHeader::ContentLanguage => token_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
