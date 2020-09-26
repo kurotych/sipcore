@@ -156,7 +156,7 @@ fn alert_info_header() {
         "<http://www.example.com/sounds/moo.wav>"
     );
     assert_eq!(
-        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://www.example.com/sounds/moo.wav".as_bytes()
     );
     assert_eq!(input, "\r\n".as_bytes());
@@ -263,7 +263,7 @@ fn callinfo_test() {
         "<http://wwww.example.com/alice/photo.jpg>"
     );
     assert_eq!(
-        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        hdrs[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://wwww.example.com/alice/photo.jpg".as_bytes()
     );
 
@@ -277,7 +277,7 @@ fn callinfo_test() {
         "<http://www.example.com/alice/>"
     );
     assert_eq!(
-        hdrs[1].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        hdrs[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://www.example.com/alice/".as_bytes()
     );
 

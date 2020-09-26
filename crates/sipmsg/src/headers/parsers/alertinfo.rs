@@ -21,12 +21,12 @@ impl SipHeaderParser for AlertInfoParser {
 
 
         let mut tags = HeaderTags::new();
-        tags.insert(HeaderTagType::PureValue, uri);
+        tags.insert(HeaderTagType::AbsoluteURI, uri);
 
         // 1 for '>' char
         let (_, hdr_val) = HeaderValue::new(
             &source_input[..source_input.len() - input.len() - spaces_after_raquot.len()],
-            HeaderValueType::TokenValue,
+            HeaderValueType::AbsoluteURI,
             Some(tags),
             None,
         )?;
@@ -46,7 +46,7 @@ mod tests {
 
         assert_eq!(input, "\r\n".as_bytes());
         assert_eq!(
-            val.tags().unwrap()[&HeaderTagType::PureValue],
+            val.tags().unwrap()[&HeaderTagType::AbsoluteURI],
             "http://www.example.com/sounds/moo.wav".as_bytes()
         );
         assert_eq!(val.vstr, "<http://www.example.com/sounds/moo.wav>");

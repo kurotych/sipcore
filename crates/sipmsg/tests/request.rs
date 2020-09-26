@@ -142,7 +142,7 @@ fn parse_request() {
         "<http://wwww.example.com/alice/photo.jpg>"
     );
     assert_eq!(
-        callinfo_headers[0].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        callinfo_headers[0].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://wwww.example.com/alice/photo.jpg".as_bytes()
     );
 
@@ -152,7 +152,7 @@ fn parse_request() {
     );
 
     assert_eq!(
-        callinfo_headers[1].value.tags().unwrap()[&SipHeaderTagType::PureValue],
+        callinfo_headers[1].value.tags().unwrap()[&SipHeaderTagType::AbsoluteURI],
         "http://www.example.com/alice/".as_bytes()
     );
     assert_eq!(
