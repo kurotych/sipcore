@@ -15,12 +15,13 @@ fn parse_headers() {
          \t,nonce=\"84a4cc6f3082121f32b42a2187831a9e\",\r\n \
          response=\"7587245234b3434cc3412213e5f113a5432\"\r\n\
          Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n\
+         l: 8\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 11);
+    assert_eq!(hdrs.len(), 12);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -125,6 +126,9 @@ fn parse_headers() {
 
     let content_encoding = &hdrs.get_rfc_s(SipRFCHeader::ContentEncoding).unwrap();
     assert_eq!(content_encoding.value.vstr, "tar");
+
+    let content_length = &hdrs.get_rfc_s(SipRFCHeader::ContentLength).unwrap();
+    assert_eq!(content_length.value.vstr, "8");
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

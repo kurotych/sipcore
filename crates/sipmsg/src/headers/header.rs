@@ -20,6 +20,7 @@ use unicase::Ascii;
 pub enum HeaderValueType {
     EmptyValue,           // SIP header with empty value. Haven't tags
     TokenValue,           // Haven't tags. Simple value of token chars
+    Digit,                // Haven't tags, just *[0-9] in HeaderValue.vstr
     AbsoluteURI,          // tags: AbsoluteURI(R),
     QuotedValue,          // tags: PureValue(R)
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)

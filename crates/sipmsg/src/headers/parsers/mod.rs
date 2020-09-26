@@ -19,3 +19,4 @@ pub use callid::CallID;
 mod contact;
 pub use contact::Contact;
 pub mod token_header;
+pub mod digit_header;
