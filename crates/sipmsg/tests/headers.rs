@@ -8,6 +8,8 @@ fn parse_headers() {
          Max-Forwards: 70\r\n\
          Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
          CSeq: 60 OPTIONS\r\n\
+         e: tar\r\n\
+         Content-Language: fr\r\n\
          CustomHeader: value;param=false\r\n\
          Authorization: Digest username=\"Alice\", realm=\"atlanta.com\" \r\n\
          \t,nonce=\"84a4cc6f3082121f32b42a2187831a9e\",\r\n \
@@ -18,7 +20,7 @@ fn parse_headers() {
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 9);
+    assert_eq!(hdrs.len(), 11);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -117,6 +119,12 @@ fn parse_headers() {
         content_disp_hdr.params().unwrap().get("handling").unwrap(),
         &Some("required")
     );
+
+    let content_language = &hdrs.get_rfc_s(SipRFCHeader::ContentLanguage).unwrap();
+    assert_eq!(content_language.value.vstr, "fr");
+
+    let content_encoding = &hdrs.get_rfc_s(SipRFCHeader::ContentEncoding).unwrap();
+    assert_eq!(content_encoding.value.vstr, "tar");
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

@@ -190,6 +190,7 @@ impl SipRFCHeader {
             &SipRFCHeader::CallInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Contact => Contact::take_value,
             &SipRFCHeader::ContentDisposition => token_header::take,
+            &SipRFCHeader::ContentEncoding => token_header::take,
             &SipRFCHeader::ContentLanguage => token_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
