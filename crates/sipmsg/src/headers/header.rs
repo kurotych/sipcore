@@ -26,6 +26,7 @@ pub enum HeaderValueType {
     AuthentificationInfo, // tags: AinfoType(R), AinfoValue(R)
     CSeq,                 // tags: Number(R), Method(R)
     DateString,           // Haven't tags
+    Utf8Text,             // Haven't tags
 
     // Authorization     =  "Authorization" HCOLON credentials
     // credentials       =  ("Digest" LWS digest-response)

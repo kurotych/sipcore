@@ -21,12 +21,13 @@ fn parse_headers() {
          Expires: 5\r\n\
          Error-Info: <sip:not-in-service-recording@atlanta.com> \r\n\
          In-Reply-To: 70710@saturn.bell-tel.com, 17320@saturn.bell-tel.com\r\n\
+         OrganizaTion: Boxes by Bob\r\n nextline\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 17);
+    assert_eq!(hdrs.len(), 18);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -192,5 +193,7 @@ fn parse_headers() {
         b"saturn.bell-tel.com"
     );
 
+    let organization_header = &hdrs.get_rfc_s(SipRFCHeader::Organization).unwrap();
+    assert_eq!(organization_header.value.vstr, "Boxes by Bob\r\n nextline");
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
