@@ -165,24 +165,30 @@ impl<'a> SipUri<'a> {
         }
     }
 
+    // This function written not well. So, if you want, you can refactor this function
     pub fn parse_ext(
         input: &'a [u8],
         parse_with_parameters: bool,
     ) -> nom::IResult<&[u8], SipUri<'a>, SipParseError> {
         let (input, uri_scheme) = take_until(":")(input)?;
-        let (input, _) = take(1usize)(input)?; // skip ':'
+        let (input_after_scheme, _) = take(1usize)(input)?; // skip ':'
         let scheme = RequestUriScheme::from_bytes(uri_scheme)?;
-        let (right_with_ampersat, before_ampersat) = take_till(|c| c == b'@')(input)?;
-        // If right_with_apersat is empty there is no user info
-        let userinfo = if right_with_ampersat.is_empty() {
+
+        let (right_with_ampersat, before_ampersat) =
+            take_till(|c| c == b'@' || c == b'\n' || c == b',')(input_after_scheme)?;
+        let is_user_info_present = right_with_ampersat.is_empty()
+            || right_with_ampersat[0] == b'\n'
+            || right_with_ampersat[0] == b',';
+        // If right_with_apersat reach '\n' is empty there is no user info
+        let userinfo = if is_user_info_present {
             None
         } else {
             Some(UserInfo::from_bytes(before_ampersat)?)
         };
         // if: right_with_apersat is empty we take whole string to further parsing
         // else: otherwise need to skip userinfo part
-        let input = if right_with_ampersat.is_empty() {
-            before_ampersat
+        let input = if is_user_info_present {
+            input_after_scheme
         } else {
             &right_with_ampersat[1..] /* skip '@' */
         };
@@ -247,6 +253,13 @@ mod tests {
 
     #[test]
     fn test_sip_uri_parse() {
+        let (rest, sip_uri) =
+            SipUri::parse_ext("sip:192.0.2.254:5061>\r\nblablabla@somm".as_bytes(), true).unwrap();
+        assert_eq!(rest, ">\r\nblablabla@somm".as_bytes());
+        assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
+        assert_eq!(sip_uri.hostport.host, "192.0.2.254");
+        assert_eq!(sip_uri.hostport.port, Some(5061));
+        /************************************************/
         let (rest, sip_uri) = SipUri::parse_ext("sip:atlanta.com".as_bytes(), true).unwrap();
         assert_eq!(rest.len(), 0);
         assert_eq!(sip_uri.scheme, RequestUriScheme::SIP);
