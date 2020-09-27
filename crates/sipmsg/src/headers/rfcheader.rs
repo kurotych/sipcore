@@ -202,6 +202,7 @@ impl SipRFCHeader {
             &SipRFCHeader::MaxForwards => digit_header::take,
             &SipRFCHeader::Organization => utf8_trim_header::take,
             &SipRFCHeader::Priority => token_header::take,
+            &SipRFCHeader::ProxyAuthenticate => Authorization::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

@@ -1,15 +1,11 @@
-use crate::common::bnfcore::is_token_char;
-use nom::bytes::complete::take_while1;
 use crate::{
-    common::{errorparse::SipParseError, nom_wrappers::take_sws, take_sws_token},
+    common::errorparse::SipParseError,
     headers::{
-        header::{HeaderTagType, HeaderTags, HeaderValue, HeaderValueType},
+        header::{HeaderValue, HeaderValueType},
         parsers::auth_param,
         traits::SipHeaderParser,
     },
 };
-use core::str::from_utf8;
-use unicase::Ascii;
 
 // Authorization     =  "Authorization" HCOLON credentials
 // credentials       =  ("Digest" LWS digest-response) / other-response
@@ -19,32 +15,6 @@ pub struct Authorization;
 // tags: username / realm / nonce / digest-uri
 //       / dresponse / algorithm / cnonce
 //       / opaque / message-qop / nonce-count / auth-param
-
-impl Authorization {
-    fn val_to_tag(value: &[u8]) -> Option<HeaderTagType> {
-        let val = from_utf8(value).unwrap();
-
-        let aval = Ascii::new(val);
-        macro_rules! match_str {
-            ($input_str:expr, $enum_result:expr) => {
-                if aval == $input_str {
-                    return Some($enum_result);
-                }
-            };
-        }
-        match_str!("username", HeaderTagType::Username);
-        match_str!("realm", HeaderTagType::Realm);
-        match_str!("nonce", HeaderTagType::Nonce);
-        match_str!("uri", HeaderTagType::DigestUri);
-        match_str!("response", HeaderTagType::Dresponse);
-        match_str!("algorithm", HeaderTagType::Algorithm);
-        match_str!("cnonce", HeaderTagType::Cnonce);
-        match_str!("opaque", HeaderTagType::Opaque);
-        match_str!("qop", HeaderTagType::QopValue);
-        match_str!("nc", HeaderTagType::NonceCount);
-        None
-    }
-}
 
 // Authorization: Digest username="bob",
 // realm="biloxi.com",
@@ -58,53 +28,27 @@ impl Authorization {
 
 impl SipHeaderParser for Authorization {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let (input, auth_schema) = take_while1(is_token_char)(source_input)?;
-        let mut tags = HeaderTags::new();
-        tags.insert(HeaderTagType::AuthSchema, auth_schema);
-        let (input, _) = take_sws(input)?; // LWS
-        let mut input_tmp = input;
-        loop {
-            let (input, (param_name, param_value)) = auth_param::take(input_tmp)?;
-
-            let tag_type = Authorization::val_to_tag(param_name);
-            if !tag_type.is_none() {
-                let tt = tag_type.unwrap();
-                if tt == HeaderTagType::NonceCount {
-                    if param_value.len() != 8 {
-                        return sip_parse_error!(2, "Invalid nonce len");
-                    }
-                }
-                tags.insert(tt, param_value);
-            }
-            input_tmp = input;
-
-            if !input.is_empty() && input[0] == b',' {
-                let (input, _) = take_sws_token::comma(input)?;
-                input_tmp = input;
-            } else {
-                break;
-            }
-        }
-
-        let hdr_len = source_input.len() - input_tmp.len();
-        let (_, hdr_val) = HeaderValue::new(
-            &source_input[..hdr_len],
-            HeaderValueType::AuthorizationDigest,
-            Some(tags),
-            None,
-        )?;
-        Ok((input_tmp, hdr_val))
+        let (input, (vstr, tags)) = auth_param::take(source_input)?;
+        let (_, hdr_val) =
+            HeaderValue::new(vstr, HeaderValueType::AuthorizationDigest, Some(tags), None)?;
+        Ok((input, hdr_val))
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::headers::header::HeaderTagType;
     #[test]
-    fn authorization_parser_test_unknown_schema(){
-        let (input, val) = Authorization::take_value("NoOneKnowsThisScheme opaque-data=here\r\n".as_bytes()).unwrap();
+    fn authorization_parser_test_unknown_schema() {
+        let (input, val) =
+            Authorization::take_value("NoOneKnowsThisScheme opaque-data=here\r\n".as_bytes())
+                .unwrap();
         assert_eq!(val.vstr, "NoOneKnowsThisScheme opaque-data=here");
-        assert_eq!(val.tags().unwrap()[&HeaderTagType::AuthSchema], b"NoOneKnowsThisScheme");
+        assert_eq!(
+            val.tags().unwrap()[&HeaderTagType::AuthSchema],
+            b"NoOneKnowsThisScheme"
+        );
         assert_eq!(input, b"\r\n");
     }
 

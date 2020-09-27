@@ -23,12 +23,16 @@ fn parse_headers() {
          In-Reply-To: 70710@saturn.bell-tel.com, 17320@saturn.bell-tel.com\r\n\
          OrganizaTion: Boxes by Bob\r\n nextline\r\n\
          Priority: non-urgent\r\n\
+         Proxy-Authenticate: Digest realm=\"atlanta.com\",\r\n \
+         domain=\"sip:ss1.carrier.com\", qop=\"auth\", \r\n \
+         nonce=\"f84f1cec41e6cbe5aea9c8e88d359\", \r\n \
+         opaque=\"\", stale=FALSE, algorithm=MD5\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 19);
+    assert_eq!(hdrs.len(), 20);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -57,14 +61,8 @@ fn parse_headers() {
 
     let max_forwards_header = hdrs.get_rfc_s(SipRFCHeader::MaxForwards).unwrap();
     assert_eq!(max_forwards_header.value.vstr, "70");
-    assert_eq!(
-        max_forwards_header.params(),
-        None
-    );
-    assert_eq!(
-        max_forwards_header.value.vtype,
-        SipHeaderValueType::Digit
-    );
+    assert_eq!(max_forwards_header.params(), None);
+    assert_eq!(max_forwards_header.value.vtype, SipHeaderValueType::Digit);
 
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::CallID).unwrap().value.vstr,
@@ -199,6 +197,47 @@ fn parse_headers() {
 
     let priority_hdr = &hdrs.get_rfc_s(SipRFCHeader::Priority).unwrap();
     assert_eq!(priority_hdr.value.vstr, "non-urgent");
+
+    let proxy_auth = &hdrs.get_rfc_s(SipRFCHeader::ProxyAuthenticate).unwrap();
+    assert_eq!(
+        proxy_auth.value.vstr,
+        "Digest realm=\"atlanta.com\",\r\n \
+    domain=\"sip:ss1.carrier.com\", qop=\"auth\", \r\n \
+    nonce=\"f84f1cec41e6cbe5aea9c8e88d359\", \r\n \
+    opaque=\"\", stale=FALSE, algorithm=MD5"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::AuthSchema],
+        b"Digest"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Realm],
+        b"atlanta.com"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Domain],
+        b"sip:ss1.carrier.com"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::QopValue],
+        b"auth"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Nonce],
+        b"f84f1cec41e6cbe5aea9c8e88d359"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Opaque],
+        b""
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Stale],
+        b"FALSE"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Algorithm],
+        b"MD5"
+    );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

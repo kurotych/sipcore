@@ -51,9 +51,10 @@ pub enum HeaderTagType {
     AinfoType,   // nextnonce, qop, rspauth, etc.
     AinfoValue,  // value after equal without quotes
     AbsoluteURI, // absolute uri without qoutes
-    // Auth params:
+    // Auth params: (Headers: Authorization, Proxy-Authenticate)
     AuthSchema,
     Username,
+    Domain,
     Realm,
     Nonce,
     DigestUri, // digest-uri-value  =  Request-URI ; as defined in Section 25
@@ -61,6 +62,7 @@ pub enum HeaderTagType {
     Algorithm,
     Cnonce,
     Opaque,
+    Stale,
     QopValue,
     NonceCount,
     ///////////////
