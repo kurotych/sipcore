@@ -33,7 +33,7 @@ pub enum HeaderValueType {
     // other-response
     AuthorizationDigest, // tags: username / realm / nonce / digest-uri
     //       / dresponse / algorithm / cnonce
-    //       / opaque / message-qop / nonce-count / auth-param
+    //       / opaque / QopValue / nonce-count / auth-param
 
     // callid   =  word [ "@" word ]
     CallID, // tags: ID(R), Host(O)
@@ -48,14 +48,14 @@ pub enum HeaderValueType {
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
 pub enum HeaderTagType {
     PureValue,
-    AinfoType,  // nextnonce, qop, rspauth, etc.
-    AinfoValue, // value after equal without quotes
+    AinfoType,   // nextnonce, qop, rspauth, etc.
+    AinfoValue,  // value after equal without quotes
     AbsoluteURI, // absolute uri without qoutes
+    // Auth params:
+    AuthSchema,
     Username,
     Realm,
     Nonce,
-    Number,
-    Method,
     DigestUri, // digest-uri-value  =  Request-URI ; as defined in Section 25
     Dresponse,
     Algorithm,
@@ -63,7 +63,9 @@ pub enum HeaderTagType {
     Opaque,
     QopValue,
     NonceCount,
-    AuthParam,
+    ///////////////
+    Number,
+    Method,
     ID,
     Host,
     Star, // alway must be equal to *

@@ -1,17 +1,14 @@
+use crate::common::bnfcore::is_token_char;
+use nom::bytes::complete::take_while1;
 use crate::{
-    common::{
-        bnfcore::{is_alpha, is_lhex, is_token_char},
-        errorparse::SipParseError,
-        nom_wrappers::{take_qutoed_string, take_sws},
-        take_sws_token,
-    },
+    common::{errorparse::SipParseError, nom_wrappers::take_sws, take_sws_token},
     headers::{
         header::{HeaderTagType, HeaderTags, HeaderValue, HeaderValueType},
+        parsers::auth_param,
         traits::SipHeaderParser,
     },
 };
 use core::str::from_utf8;
-use nom::bytes::complete::{tag, take_while};
 use unicase::Ascii;
 
 // Authorization     =  "Authorization" HCOLON credentials
@@ -61,35 +58,26 @@ impl Authorization {
 
 impl SipHeaderParser for Authorization {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let (input, _) = tag("Digest")(source_input)?;
-        let (input, _) = take_sws(input)?; // LWS
+        let (input, auth_schema) = take_while1(is_token_char)(source_input)?;
         let mut tags = HeaderTags::new();
+        tags.insert(HeaderTagType::AuthSchema, auth_schema);
+        let (input, _) = take_sws(input)?; // LWS
         let mut input_tmp = input;
         loop {
-            let (input, value_type) = take_while(is_alpha)(input_tmp)?;
-            let (input, _) = take_sws_token::equal(input)?;
-            let tag_type = Authorization::val_to_tag(value_type);
-            if tag_type.is_none() {
-                return sip_parse_error!(1, "Authorization value name is invalid");
-            }
-            let tt = tag_type.unwrap();
-            if tt == HeaderTagType::NonceCount {
-                let (input, nc_val) = take_while(is_lhex)(input)?;
-                if nc_val.len() != 8 {
-                    return sip_parse_error!(2, "Invalid nonce len");
+            let (input, (param_name, param_value)) = auth_param::take(input_tmp)?;
+
+            let tag_type = Authorization::val_to_tag(param_name);
+            if !tag_type.is_none() {
+                let tt = tag_type.unwrap();
+                if tt == HeaderTagType::NonceCount {
+                    if param_value.len() != 8 {
+                        return sip_parse_error!(2, "Invalid nonce len");
+                    }
                 }
-                tags.insert(HeaderTagType::NonceCount, nc_val);
-                input_tmp = input;
-            } else if tt == HeaderTagType::QopValue || tt == HeaderTagType::Algorithm {
-                let (input, val) = take_while(is_token_char)(input)?;
-                tags.insert(tt, val);
-                input_tmp = input;
-            } else {
-                let (input, (_, val, _ )) = take_qutoed_string(input)?;
-                tags.insert(tt, val);
-                input_tmp = input;
+                tags.insert(tt, param_value);
             }
-            let (input, _) = take_sws(input_tmp)?;
+            input_tmp = input;
+
             if !input.is_empty() && input[0] == b',' {
                 let (input, _) = take_sws_token::comma(input)?;
                 input_tmp = input;
@@ -113,15 +101,23 @@ impl SipHeaderParser for Authorization {
 mod test {
     use super::*;
     #[test]
+    fn authorization_parser_test_unknown_schema(){
+        let (input, val) = Authorization::take_value("NoOneKnowsThisScheme opaque-data=here\r\n".as_bytes()).unwrap();
+        assert_eq!(val.vstr, "NoOneKnowsThisScheme opaque-data=here");
+        assert_eq!(val.tags().unwrap()[&HeaderTagType::AuthSchema], b"NoOneKnowsThisScheme");
+        assert_eq!(input, b"\r\n");
+    }
+
+    #[test]
     fn authorization_parser_test() {
         let val = Authorization::take_value(
-            b"Digest username=\"bob\", \r\n realm=\"biloxi.com\",  nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\" , \r\n \
-            \turi=\"sip:bob@biloxi.com\", qop=auth, nc=00000001, cnonce=\"0a4f113b\", \
+            b"Digest username=\"bob\", \r\n realm=\"biloxi.com\", unkownparam=value,  nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\" , \r\n \
+            \turi=\"sip:bob@biloxi.com\", qop=auth, nc=00000001,unkownqparam=\"value\", cnonce=\"0a4f113b\", \
             response=\"6629fae49393a05397450978507c4ef1\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"  \r\n"
         );
         let (input, val) = val.unwrap();
-        assert_eq!(val.vstr, "Digest username=\"bob\", \r\n realm=\"biloxi.com\",  nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\" , \r\n \
-        \turi=\"sip:bob@biloxi.com\", qop=auth, nc=00000001, cnonce=\"0a4f113b\", \
+        assert_eq!(val.vstr, "Digest username=\"bob\", \r\n realm=\"biloxi.com\", unkownparam=value,  nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\" , \r\n \
+        \turi=\"sip:bob@biloxi.com\", qop=auth, nc=00000001,unkownqparam=\"value\", cnonce=\"0a4f113b\", \
         response=\"6629fae49393a05397450978507c4ef1\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"  ");
         assert_eq!(input, b"\r\n");
         assert_eq!(val.tags().unwrap()[&HeaderTagType::Username], b"bob");
