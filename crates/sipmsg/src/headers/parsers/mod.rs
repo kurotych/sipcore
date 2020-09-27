@@ -22,6 +22,6 @@ mod date;
 pub use date::Date;
 mod from;
 pub use from::From;
-pub mod utf8_trim_header;
-pub mod token_header;
 pub mod digit_header;
+pub mod token_header;
+pub mod utf8_trim_header;

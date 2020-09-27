@@ -50,7 +50,7 @@ fn make_star_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipP
     let (input, _) = take_sws_token::star(source_input)?;
     let (_, hdr_val) = HeaderValue::new(
         &source_input[..1],
-        HeaderValueType::Contact,
+        HeaderValueType::NameAddr,
         Some(tags),
         None,
     )?;
@@ -69,7 +69,7 @@ impl SipHeaderParser for Contact {
         }
         let (input, (vstr_val, tags, sipuri)) = name_addr::take(source_input)?;
         let (_, hdr_val) =
-            HeaderValue::new(vstr_val, HeaderValueType::Contact, Some(tags), sipuri)?;
+            HeaderValue::new(vstr_val, HeaderValueType::NameAddr, Some(tags), sipuri)?;
         Ok((input, hdr_val))
     }
 }

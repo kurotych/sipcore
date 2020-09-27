@@ -41,8 +41,8 @@ pub enum HeaderValueType {
     // Call-Info   =  "Call-Info" HCOLON info *(COMMA info)
     CallInfo, // tags: PureValue(R)
 
-    /// Contact, From, To
-    Contact, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
+    /// Contact, From, To, Record-Route, Route headers
+    NameAddr, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]

@@ -31,12 +31,15 @@ fn parse_headers() {
          Proxy-Authorization: Digest username=\"Alice\", realm=\"atlanta.com\", \r\n \
          nonce=\"c60f3082ee1212b402a21831ae\", \r\n \
          response=\"245f23415f11432b3434341c022\" \r\n\
+         Record-Route: <sip:server10.biloxi.com;lr>,\r\n \
+                    <sip:bigbox3.site3.atlanta.com;lr>\r\n\
+         Route: <sip:alice@atlanta.com>,<sip:carol@chicago.com>\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 22);
+    assert_eq!(hdrs.len(), 24);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -269,10 +272,105 @@ fn parse_headers() {
 
     let proxy_require_hdr = &hdrs.get_rfc_s(SipRFCHeader::ProxyRequire).unwrap();
     assert_eq!(proxy_require_hdr.value.vstr, "foo");
+    assert_eq!(proxy_require_hdr.params().unwrap().get("boo"), Some(&None));
+
+    let record_route_headers = &hdrs.get_rfc(SipRFCHeader::RecordRoute).unwrap();
+
     assert_eq!(
-        proxy_require_hdr.params().unwrap().get("boo"),
+        record_route_headers[0].value.vstr,
+        "<sip:server10.biloxi.com;lr>"
+    );
+    assert_eq!(
+        record_route_headers[0].value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
+    );
+    assert_eq!(
+        record_route_headers[0]
+            .value
+            .sip_uri()
+            .unwrap()
+            .hostport
+            .host,
+        "server10.biloxi.com"
+    );
+    assert_eq!(
+        record_route_headers[1]
+            .value
+            .sip_uri()
+            .unwrap()
+            .params()
+            .unwrap()
+            .get("lr"),
+        Some(&None)
+    );
+    assert_eq!(
+        record_route_headers[1].value.vstr,
+        "<sip:bigbox3.site3.atlanta.com;lr>"
+    );
+    assert_eq!(
+        record_route_headers[1].value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
+    );
+    assert_eq!(
+        record_route_headers[1]
+            .value
+            .sip_uri()
+            .unwrap()
+            .hostport
+            .host,
+        "bigbox3.site3.atlanta.com"
+    );
+    assert_eq!(
+        record_route_headers[1]
+            .value
+            .sip_uri()
+            .unwrap()
+            .params()
+            .unwrap()
+            .get("lr"),
         Some(&None)
     );
 
+    let route_headers = &hdrs.get_rfc(SipRFCHeader::Route).unwrap();
+
+    assert_eq!(route_headers[0].value.vstr, "<sip:alice@atlanta.com>");
+    assert_eq!(
+        route_headers[0].value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
+    );
+    assert_eq!(
+        route_headers[0].value.sip_uri().unwrap().hostport.host,
+        "atlanta.com"
+    );
+    assert_eq!(
+        route_headers[0]
+            .value
+            .sip_uri()
+            .unwrap()
+            .user_info()
+            .unwrap()
+            .value,
+        "alice"
+    );
+    assert_eq!(route_headers[1].value.vstr, "<sip:carol@chicago.com>");
+    assert_eq!(
+        route_headers[1].value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
+    );
+    assert_eq!(
+        route_headers[1].value.sip_uri().unwrap().hostport.host,
+        "chicago.com"
+    );
+    assert_eq!(
+        route_headers[1]
+            .value
+            .sip_uri()
+            .unwrap()
+            .user_info()
+            .unwrap()
+            .value,
+        "carol"
+    );
+    assert_eq!(route_headers[1].value.sip_uri().unwrap().params(), None);
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
