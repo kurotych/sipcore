@@ -204,6 +204,8 @@ impl SipRFCHeader {
             &SipRFCHeader::Priority => token_header::take,
             &SipRFCHeader::ProxyAuthenticate => Authorization::take_value,
             &SipRFCHeader::ProxyAuthorization => Authorization::take_value,
+            &SipRFCHeader::ProxyRequire => token_header::take,
+
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

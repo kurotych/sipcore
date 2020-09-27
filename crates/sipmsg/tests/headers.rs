@@ -17,6 +17,7 @@ fn parse_headers() {
          response=\"7587245234b3434cc3412213e5f113a5432\"\r\n\
          Content-Disposition: attachment; filename=smime.p7s; handling=required\r\n\
          l: 8\r\n\
+         Proxy-Require: foo;boo\r\n\
          date: Sat, 15 Oct 2005 04:44:56 GMT\r\n\
          Expires: 5\r\n\
          Error-Info: <sip:not-in-service-recording@atlanta.com> \r\n\
@@ -35,7 +36,7 @@ fn parse_headers() {
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 21);
+    assert_eq!(hdrs.len(), 22);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -264,6 +265,13 @@ fn parse_headers() {
     assert_eq!(
         proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Dresponse],
         b"245f23415f11432b3434341c022"
+    );
+
+    let proxy_require_hdr = &hdrs.get_rfc_s(SipRFCHeader::ProxyRequire).unwrap();
+    assert_eq!(proxy_require_hdr.value.vstr, "foo");
+    assert_eq!(
+        proxy_require_hdr.params().unwrap().get("boo"),
+        Some(&None)
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
