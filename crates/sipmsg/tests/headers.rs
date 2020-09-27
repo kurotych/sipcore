@@ -34,12 +34,13 @@ fn parse_headers() {
          Record-Route: <sip:server10.biloxi.com;lr>,\r\n \
                     <sip:bigbox3.site3.atlanta.com;lr>\r\n\
          Route: <sip:alice@atlanta.com>,<sip:carol@chicago.com>\r\n\
+         Reply-To: Bob <sip:bob@biloxi.com>\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 24);
+    assert_eq!(hdrs.len(), 25);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -372,5 +373,32 @@ fn parse_headers() {
         "carol"
     );
     assert_eq!(route_headers[1].value.sip_uri().unwrap().params(), None);
+
+    // Reply-To: Bob <sip:bob@biloxi.com>
+    let reply_to_header = &hdrs.get_rfc_s(SipRFCHeader::ReplyTo).unwrap();
+    assert_eq!(reply_to_header.value.vstr, "Bob <sip:bob@biloxi.com>");
+    assert_eq!(
+        reply_to_header.value.tags().unwrap()[&SipHeaderTagType::DisplayName],
+        b"Bob"
+    );
+    assert_eq!(
+        reply_to_header.value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
+    );
+    assert_eq!(
+        reply_to_header
+            .value
+            .sip_uri()
+            .unwrap()
+            .user_info()
+            .unwrap()
+            .value,
+        "bob"
+    );
+    assert_eq!(
+        reply_to_header.value.sip_uri().unwrap().hostport.host,
+        "biloxi.com"
+    );
+
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
