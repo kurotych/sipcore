@@ -2,7 +2,7 @@ use crate::{
     common::errorparse::SipParseError,
     headers::{
         header::{HeaderValue, HeaderValueType},
-        parsers::auth_param,
+        auth_params,
         traits::SipHeaderParser,
     },
 };
@@ -28,7 +28,7 @@ pub struct Authorization;
 
 impl SipHeaderParser for Authorization {
     fn take_value(source_input: &[u8]) -> nom::IResult<&[u8], HeaderValue, SipParseError> {
-        let (input, (vstr, tags)) = auth_param::take(source_input)?;
+        let (input, (vstr, tags)) = auth_params::take(source_input)?;
         let (_, hdr_val) =
             HeaderValue::new(vstr, HeaderValueType::AuthorizationDigest, Some(tags), None)?;
         Ok((input, hdr_val))

@@ -19,3 +19,4 @@ pub use sipuri::SipUri;
 
 mod name_addr;
 mod parsers;
+mod auth_params;
