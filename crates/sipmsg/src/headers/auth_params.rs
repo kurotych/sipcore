@@ -36,14 +36,29 @@ pub fn param_name_to_tag(value: &[u8]) -> Option<HeaderTagType> {
 
 pub fn take<'a>(
     source_input: &'a [u8],
-) -> nom::IResult<&[u8], (&[u8]/*vstr*/, HeaderTags<'a>), SipParseError> {
+) -> nom::IResult<&[u8], (&[u8] /*vstr*/, HeaderTags<'a>), SipParseError> {
     let (input, auth_schema) = take_while1(is_token_char)(source_input)?;
     let mut tags = HeaderTags::new();
     tags.insert(HeaderTagType::AuthSchema, auth_schema);
     let (input, _) = take_sws(input)?; // LWS
     let mut input_tmp = input;
+    // I use this value in end of fucntion. But compiler throw warning:
+    // "value assigned to `count_wsps_after_last_value` is never read"
+    // So, lets name it _* do supress warning
+    let mut _count_wsps_after_last_value = 0;
     loop {
-        let (input, (param_name, param_value)) = take_param(input_tmp)?;
+        let (input, param_name) = take_while1(is_token_char)(input_tmp)?;
+        let (input, _) = take_sws_token::equal(input)?;
+
+        let (input, (param_name, param_value)) = if input[0] == b'"' {
+            let (input, (_, param_value, wsps)) = nom_wrappers::take_qutoed_string(input)?;
+            _count_wsps_after_last_value = wsps.len();
+            (input, (param_name, param_value))
+        } else {
+            let (input, param_value) = take_while1(is_token_char)(input)?;
+            _count_wsps_after_last_value = 0;
+            (input, (param_name, param_value))
+        };
 
         let tag_type = param_name_to_tag(param_name);
         if !tag_type.is_none() {
@@ -64,27 +79,27 @@ pub fn take<'a>(
             break;
         }
     }
-    let hdr_len = source_input.len() - input_tmp.len();
+    let hdr_len = source_input.len() - input_tmp.len() - _count_wsps_after_last_value;
     Ok((input_tmp, (&source_input[..hdr_len], tags)))
 }
 
-pub fn take_param(
-    input: &[u8],
-) -> nom::IResult<
-    &[u8],
-    (
-        &[u8], /* param name */
-        &[u8], /* param_value without qoutes */
-    ),
-    SipParseError,
-> {
-    let (input, param_name) = take_while1(is_token_char)(input)?;
-    let (input, _) = take_sws_token::equal(input)?;
-    if input[0] == b'"' {
-        let (input, (_, param_value, _)) = nom_wrappers::take_qutoed_string(input)?;
-        return Ok((input, (param_name, param_value)));
-    } else {
-        let (input, param_value) = take_while1(is_token_char)(input)?;
-        return Ok((input, (param_name, param_value)));
-    }
-}
+// fn take_param(
+//     input: &[u8],
+// ) -> nom::IResult<
+//     &[u8],
+//     (
+//         &[u8], /* param name */
+//         &[u8], /* param_value without qoutes */
+//     ),
+//     SipParseError,
+// > {
+//     let (input, param_name) = take_while1(is_token_char)(input)?;
+//     let (input, _) = take_sws_token::equal(input)?;
+//     if input[0] == b'"' {
+//         let (input, (_, param_value, _)) = nom_wrappers::take_qutoed_string(input)?;
+//         return Ok((input, (param_name, param_value)));
+//     } else {
+//         let (input, param_value) = take_while1(is_token_char)(input)?;
+//         return Ok((input, (param_name, param_value)));
+//     }
+// }

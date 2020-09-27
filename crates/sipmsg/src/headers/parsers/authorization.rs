@@ -62,7 +62,7 @@ mod test {
         let (input, val) = val.unwrap();
         assert_eq!(val.vstr, "Digest username=\"bob\", \r\n realm=\"biloxi.com\", unkownparam=value,  nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\" , \r\n \
         \turi=\"sip:bob@biloxi.com\", qop=auth, nc=00000001,unkownqparam=\"value\", cnonce=\"0a4f113b\", \
-        response=\"6629fae49393a05397450978507c4ef1\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"  ");
+        response=\"6629fae49393a05397450978507c4ef1\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"");
         assert_eq!(input, b"\r\n");
         assert_eq!(val.tags().unwrap()[&HeaderTagType::Username], b"bob");
         assert_eq!(val.tags().unwrap()[&HeaderTagType::Realm], b"biloxi.com");

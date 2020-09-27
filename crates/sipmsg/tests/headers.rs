@@ -27,12 +27,15 @@ fn parse_headers() {
          domain=\"sip:ss1.carrier.com\", qop=\"auth\", \r\n \
          nonce=\"f84f1cec41e6cbe5aea9c8e88d359\", \r\n \
          opaque=\"\", stale=FALSE, algorithm=MD5\r\n\
+         Proxy-Authorization: Digest username=\"Alice\", realm=\"atlanta.com\", \r\n \
+         nonce=\"c60f3082ee1212b402a21831ae\", \r\n \
+         response=\"245f23415f11432b3434341c022\" \r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 20);
+    assert_eq!(hdrs.len(), 21);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -237,6 +240,30 @@ fn parse_headers() {
     assert_eq!(
         proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Algorithm],
         b"MD5"
+    );
+
+    let proxy_auth = &hdrs.get_rfc_s(SipRFCHeader::ProxyAuthorization).unwrap();
+    assert_eq!(
+        proxy_auth.value.vstr,
+        "Digest username=\"Alice\", realm=\"atlanta.com\", \r\n \
+         nonce=\"c60f3082ee1212b402a21831ae\", \r\n \
+         response=\"245f23415f11432b3434341c022\""
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::AuthSchema],
+        b"Digest"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Username],
+        b"Alice"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Nonce],
+        b"c60f3082ee1212b402a21831ae"
+    );
+    assert_eq!(
+        proxy_auth.value.tags().unwrap()[&SipHeaderTagType::Dresponse],
+        b"245f23415f11432b3434341c022"
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
