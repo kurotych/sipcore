@@ -208,6 +208,7 @@ impl SipRFCHeader {
             &SipRFCHeader::RecordRoute => From::take_value,
             &SipRFCHeader::Route => From::take_value,
             &SipRFCHeader::ReplyTo => From::take_value,
+            &SipRFCHeader::Require => token_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

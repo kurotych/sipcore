@@ -35,12 +35,13 @@ fn parse_headers() {
                     <sip:bigbox3.site3.atlanta.com;lr>\r\n\
          Route: <sip:alice@atlanta.com>,<sip:carol@chicago.com>\r\n\
          Reply-To: Bob <sip:bob@biloxi.com>\r\n\
+         Require: 100rel\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 25);
+    assert_eq!(hdrs.len(), 26);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -374,7 +375,6 @@ fn parse_headers() {
     );
     assert_eq!(route_headers[1].value.sip_uri().unwrap().params(), None);
 
-    // Reply-To: Bob <sip:bob@biloxi.com>
     let reply_to_header = &hdrs.get_rfc_s(SipRFCHeader::ReplyTo).unwrap();
     assert_eq!(reply_to_header.value.vstr, "Bob <sip:bob@biloxi.com>");
     assert_eq!(
@@ -400,5 +400,7 @@ fn parse_headers() {
         "biloxi.com"
     );
 
+    let require_header = &hdrs.get_rfc_s(SipRFCHeader::Require).unwrap();
+    assert_eq!(require_header.value.vstr, "100rel");
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
