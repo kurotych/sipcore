@@ -43,6 +43,8 @@ pub enum HeaderValueType {
 
     /// Contact, From, To, Record-Route, Route headers
     NameAddr, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
+
+    RetryAfter // tags: Seconds(R), Comment(O)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -72,6 +74,8 @@ pub enum HeaderTagType {
     Host,
     Star, // alway must be equal to *
     DisplayName,
+    Seconds,
+    Comment,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

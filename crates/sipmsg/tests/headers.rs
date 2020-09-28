@@ -36,12 +36,13 @@ fn parse_headers() {
          Route: <sip:alice@atlanta.com>,<sip:carol@chicago.com>\r\n\
          Reply-To: Bob <sip:bob@biloxi.com>\r\n\
          Require: 100rel\r\n\
+         Retry-After: 18000 (I'm in a meeting) ;duration=3600\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 26);
+    assert_eq!(hdrs.len(), 27);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -402,5 +403,21 @@ fn parse_headers() {
 
     let require_header = &hdrs.get_rfc_s(SipRFCHeader::Require).unwrap();
     assert_eq!(require_header.value.vstr, "100rel");
+
+    let retry_after_hdr = &hdrs.get_rfc_s(SipRFCHeader::RetryAfter).unwrap();
+    assert_eq!(retry_after_hdr.value.vstr, "18000 (I'm in a meeting)");
+    assert_eq!(
+        retry_after_hdr.value.tags().unwrap()[&SipHeaderTagType::Comment],
+        "I'm in a meeting".as_bytes()
+    );
+    assert_eq!(
+        retry_after_hdr.value.tags().unwrap()[&SipHeaderTagType::Seconds],
+        "18000".as_bytes()
+    );
+
+    assert_eq!(
+        retry_after_hdr.params().unwrap().get(&"duration"),
+        Some(&Some("3600"))
+    );
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

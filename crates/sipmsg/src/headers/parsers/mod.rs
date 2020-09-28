@@ -22,6 +22,8 @@ mod date;
 pub use date::Date;
 mod from;
 pub use from::From;
+mod retry_after;
+pub use retry_after::RetryAfter;
 pub mod digit_header;
 pub mod token_header;
 pub mod utf8_trim_header;
