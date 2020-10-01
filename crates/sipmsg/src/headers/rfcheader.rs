@@ -212,6 +212,7 @@ impl SipRFCHeader {
             &SipRFCHeader::RetryAfter => RetryAfter::take_value,
             &SipRFCHeader::Server => UserAgent::take_value,
             &SipRFCHeader::UserAgent => UserAgent::take_value,
+            &SipRFCHeader::Subject => utf8_trim_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }

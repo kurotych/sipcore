@@ -38,13 +38,14 @@ fn parse_headers() {
          Require: 100rel\r\n\
          Retry-After: 18000 (I'm in a meeting) ;duration=3600\r\n\
          Server: FPBX-2.11.0(11.6.0)\r\n\
+         Subject: I know you're there, pick up the phone and talk to me!\r\n\
          User-Agent: MxSipApp/4.4.11.69 MxSF/v3.2.7.30\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 29);
+    assert_eq!(hdrs.len(), 30);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -429,6 +430,12 @@ fn parse_headers() {
     assert_eq!(
         user_agent_hdr.value.vstr,
         "MxSipApp/4.4.11.69 MxSF/v3.2.7.30"
+    );
+
+    let subject_hdr = &hdrs.get_rfc_s(SipRFCHeader::Subject).unwrap();
+    assert_eq!(
+        subject_hdr.value.vstr,
+        "I know you're there, pick up the phone and talk to me!"
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
