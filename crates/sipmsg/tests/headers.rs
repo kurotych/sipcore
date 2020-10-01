@@ -41,12 +41,13 @@ fn parse_headers() {
          S: I know you're there, pick up the phone and talk to me!\r\n\
          User-Agent: MxSipApp/4.4.11.69 MxSF/v3.2.7.30\r\n\
          k: 100rel\r\n\
+         MIME-Version: 1.0\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 31);
+    assert_eq!(hdrs.len(), 32);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -440,9 +441,18 @@ fn parse_headers() {
     );
 
     let supported_hdr = &hdrs.get_rfc_s(SipRFCHeader::Supported).unwrap();
+    assert_eq!(supported_hdr.value.vstr, "100rel");
+
+    let supported_hdr = &hdrs.get_rfc_s(SipRFCHeader::MimeVersion).unwrap();
+    assert_eq!(supported_hdr.value.vstr, "1.0");
+
     assert_eq!(
-        supported_hdr.value.vstr,
-        "100rel"
+        supported_hdr.value.tags().unwrap()[&SipHeaderTagType::Major],
+        b"1"
+    );
+    assert_eq!(
+        supported_hdr.value.tags().unwrap()[&SipHeaderTagType::Minor],
+        b"0"
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());

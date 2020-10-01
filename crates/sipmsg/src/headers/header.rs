@@ -27,6 +27,7 @@ pub enum HeaderValueType {
     CSeq,                 // tags: Number(R), Method(R)
     DateString,           // Haven't tags
     Utf8Text,             // Haven't tags
+    Version,              // tags: Major(R) Minor(O)
 
     // Authorization     =  "Authorization" HCOLON credentials
     // credentials       =  ("Digest" LWS digest-response)
@@ -77,6 +78,8 @@ pub enum HeaderTagType {
     DisplayName,
     Seconds,
     Comment,
+    Major,
+    Minor,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;
