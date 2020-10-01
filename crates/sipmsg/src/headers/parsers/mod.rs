@@ -23,6 +23,8 @@ pub use date::Date;
 mod from;
 pub use from::From;
 mod retry_after;
+mod user_agent;
+pub use user_agent::UserAgent;
 pub use retry_after::RetryAfter;
 pub mod digit_header;
 pub mod token_header;

@@ -44,7 +44,8 @@ pub enum HeaderValueType {
     /// Contact, From, To, Record-Route, Route headers
     NameAddr, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
 
-    RetryAfter // tags: Seconds(R), Comment(O)
+    RetryAfter, // tags: Seconds(R), Comment(O)
+    UserAgent, // haven't tags
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
