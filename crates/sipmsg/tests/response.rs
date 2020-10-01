@@ -180,24 +180,9 @@ fn parse_response() {
             assert_eq!(allow_headers[8].value.vstr, "INFO");
             assert_eq!(allow_headers[9].value.vstr, "PUBLISH");
 
-            assert_eq!(
-                response
-                    .headers
-                    .get_rfc_s(SipRFCHeader::Supported)
-                    .unwrap()
-                    .value
-                    .vstr,
-                "replaces, timer"
-            );
-            assert_eq!(
-                response
-                    .headers
-                    .get_rfc_s(SipRFCHeader::ContentLength)
-                    .unwrap()
-                    .value
-                    .vstr,
-                "0"
-            );
+            let supported_headers = response.headers.get_rfc(SipRFCHeader::Supported).unwrap();
+            assert_eq!(supported_headers[0].value.vstr, "replaces");
+            assert_eq!(supported_headers[1].value.vstr, "timer");
         }
         Err(_e) => panic!(),
     }
