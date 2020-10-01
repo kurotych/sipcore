@@ -42,12 +42,13 @@ fn parse_headers() {
          User-Agent: MxSipApp/4.4.11.69 MxSF/v3.2.7.30\r\n\
          k: 100rel\r\n\
          MIME-Version: 1.0\r\n\
+         Min-Expires: 60\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 32);
+    assert_eq!(hdrs.len(), 33);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -454,6 +455,9 @@ fn parse_headers() {
         supported_hdr.value.tags().unwrap()[&SipHeaderTagType::Minor],
         b"0"
     );
+
+    let min_exp_hdr = &hdrs.get_rfc_s(SipRFCHeader::MinExpires).unwrap();
+    assert_eq!(min_exp_hdr.value.vstr, "60");
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }
