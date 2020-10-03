@@ -101,15 +101,7 @@
 //! // Extention Header
 //! let extention_header = request.headers.get_ext_s("extention-header").unwrap();
 //! assert_eq!(extention_header.name, "extention-header");
-//! assert_eq!(extention_header.value.vstr, "extention header value");
-//! assert_eq!(
-//!     extention_header.params().unwrap().get(&"param"),
-//!     Some(&Some("123"))
-//! );
-//! assert_eq!(
-//!     extention_header.params().unwrap().get(&"without_value"),
-//!     Some(&None)
-//! );
+//! assert_eq!(extention_header.value.vstr, "extention header value;param=123;without_value");
 //!
 //! // Body
 //! assert_eq!(request.body.unwrap(), b"body_stuff");

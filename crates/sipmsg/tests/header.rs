@@ -8,17 +8,10 @@ fn parse_header() {
     assert_eq!(input.len(), 2);
 
     let (input, (_, hdrs)) =
-        SipHeader::parse("Name: Value;parameter=false;param2\r\n".as_bytes()).unwrap();
-    assert_eq!(hdrs[0].name, "Name");
-    assert_eq!(hdrs[0].value.vstr, "Value");
-    assert_eq!(
-        hdrs[0].params().unwrap().get("parameter"),
-        Some(&Some("false"))
-    );
-    assert_eq!(
-        hdrs[0].params().unwrap().get(&"param2"),
-        Some(&None)
-    );
+        SipHeader::parse("Extension_Header: Value;parameter=false;param2\r\n".as_bytes()).unwrap();
+    assert_eq!(hdrs[0].name, "Extension_Header");
+    assert_eq!(hdrs[0].value.vstr, "Value;parameter=false;param2");
+    
     assert_eq!(input.len(), 2);
 
     let (input, (_, hdrs)) = SipHeader::parse("Max-Forwards: 70\r\n".as_bytes()).unwrap();

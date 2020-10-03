@@ -11,7 +11,7 @@ fn parse_headers() {
          e: tar\r\n\
          c: text/html; charset=ISO-8859-4\r\n\
          Content-Language: fr\r\n\
-         CustomHeader: value;param=false\r\n\
+         ExtensionHeader: value;param=false\r\n\
          Authorization: Digest username=\"Alice\", realm=\"atlanta.com\" \r\n\
          \t,nonce=\"84a4cc6f3082121f32b42a2187831a9e\",\r\n \
          response=\"7587245234b3434cc3412213e5f113a5432\"\r\n\
@@ -115,15 +115,7 @@ fn parse_headers() {
         b"OPTIONS"
     );
 
-    assert_eq!(hdrs.get_ext_s("customheader").unwrap().value.vstr, "value");
-    assert_eq!(
-        hdrs.get_ext_s("customheader")
-            .unwrap()
-            .params()
-            .unwrap()
-            .get(&"param"),
-        Some(&Some("false"))
-    );
+    assert_eq!(hdrs.get_ext_s("ExtensionHeader").unwrap().value.vstr, "value;param=false");
 
     let via_hdr = hdrs.get_rfc_s(SipRFCHeader::Via).unwrap();
     assert_eq!(via_hdr.value.vstr, "SIP/2.0/UDP funky.example.com");

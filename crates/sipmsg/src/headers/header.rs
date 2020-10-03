@@ -52,6 +52,7 @@ pub enum HeaderValueType {
 
     Via, // tags: ProtocolName(R),ProtocolVersion(R),ProtocolTransport(R), Host(R), Port(O)
     Warning, // tags: WarnCode(R), WarnAgent(R), WarnText(R)
+    ExtensionHeader // No tags
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
