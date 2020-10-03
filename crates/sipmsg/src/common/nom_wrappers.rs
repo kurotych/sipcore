@@ -1,8 +1,11 @@
-use crate::common::{
-    bnfcore::{is_crlf, is_escaped, is_wsp},
-    take_sws_token,
+use crate::{
+    common::{
+        bnfcore::{is_cr, is_crlf, is_escaped, is_wsp},
+        take_sws_token,
+    },
+    errorparse::SipParseError,
 };
-use crate::errorparse::SipParseError;
+
 use core::str::from_utf8;
 use nom::{
     bytes::complete::{tag, take_while1},
@@ -47,7 +50,9 @@ fn take_until_nonescaped_quote(
     sip_parse_error!(1, "take_until_nonescaped_quote error!")
 }
 
-pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
+pub fn take_qutoed_string(
+    source_input: &[u8],
+) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     let (input, ldqout_wsps) = take_sws_token::ldquot(source_input)?;
     let (input, result) = take_until_nonescaped_quote(input)?;
     let (input, rdqout_wsps) = take_sws_token::rdquot(input)?;
@@ -55,6 +60,13 @@ pub fn take_qutoed_string(source_input: &[u8]) -> nom::IResult<&[u8], (&[u8], &[
 }
 
 /// LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
+pub fn take_lws(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    if source_input.is_empty() || (!is_wsp(source_input[0]) && !is_cr(source_input[0])) {
+        return sip_parse_error!(1, "take_lws failed");
+    }
+    take_sws(source_input)
+}
+
 /// SWS  =  [LWS] ; sep whitespace
 pub fn take_sws(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
     let mut taken_chars = 0;
@@ -84,7 +96,7 @@ pub fn take_sws(source_input: &[u8]) -> nom::IResult<&[u8], &[u8], SipParseError
 pub fn take_while_trim_sws(
     input: &[u8],
     cond_fun: fn(c: u8) -> bool,
-) -> nom::IResult<&[u8], (&[u8],&[u8],&[u8]), SipParseError> {
+) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     let (input, (sws1, result, sws2)) = tuple((take_sws, take_while1(cond_fun), take_sws))(input)?;
     Ok((input, (sws1, result, sws2)))
 }
@@ -125,7 +137,7 @@ mod tests {
         take_quoted_string_case("\"\"", "", "");
 
         let res = take_qutoed_string(" \r\n \"value\" \r\nnext_value".as_bytes());
-        let (input, (leftwsps, result, rightwsps) ) = res.unwrap();
+        let (input, (leftwsps, result, rightwsps)) = res.unwrap();
         assert_eq!(result, "value".as_bytes());
         assert_eq!(leftwsps, " \r\n ".as_bytes());
         assert_eq!(input, "\r\nnext_value".as_bytes());
