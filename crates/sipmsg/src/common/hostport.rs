@@ -26,6 +26,25 @@ impl<'a> HostPort<'a> {
         let (input, _) = take(1usize)(input)?; // skip ']'
         Ok((input, ipv6_host))
     }
+
+    pub fn take_hostport(
+        input: &'a [u8],
+    ) -> nom::IResult<&[u8], (&[u8], Option<&[u8]>), SipParseError> {
+        let (input, host) = if input[0] != b'[' {
+            take_while1(host_char_allowed)(input)?
+        } else {
+            HostPort::take_ipv6_host(input)?
+        };
+
+        let (input, port) = if input.len() > 3 && input[0] == b':' {
+            let (input, port) = take_while1(is_digit)(&input[1..])?;
+            (input, Some(port))
+        } else {
+            (input, None)
+        };
+
+        Ok((input, (host, port)))
+    }
 }
 
 impl<'a> NomParser<'a> for HostPort<'a> {
@@ -36,12 +55,9 @@ impl<'a> NomParser<'a> for HostPort<'a> {
             return sip_parse_error!(1);
         }
 
-        let (rest, host) = if input[0] != b'[' {
-            take_while1(host_char_allowed)(input)?
-        } else {
-            HostPort::take_ipv6_host(input)?
-        };
-        if rest.len() <= 1 || rest[0] != b':' {
+        let (rest, (host, port)) = HostPort::take_hostport(input)?;
+
+        if port == None {
             let (_, host_str) = from_utf8_nom(host)?;
             return Ok((
                 rest,
@@ -52,8 +68,7 @@ impl<'a> NomParser<'a> for HostPort<'a> {
             ));
         }
 
-        let (rest, port_str) = take_while1(is_digit)(&rest[1..])?;
-        match str::from_utf8(port_str) {
+        match str::from_utf8(port.unwrap()) {
             Ok(port_str) => match u16::from_str_radix(port_str, 10) {
                 Ok(port) => {
                     let (_, host_str) = from_utf8_nom(host)?;
