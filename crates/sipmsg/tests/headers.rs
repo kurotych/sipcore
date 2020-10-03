@@ -45,13 +45,17 @@ fn parse_headers() {
          MIME-Version: 1.0\r\n\
          Min-Expires: 60\r\n\
          Timestamp: 54\r\n\
+         WWW-Authenticate: Digest realm=\"atlanta.com\",\r\n \
+            domain=\"sip:boxesbybob.com\", qop=\"auth\",\r\n \
+            nonce=\"f84f1cec41e6cbe5aea9c8e88d359\",\r\n \
+            opaque=\"\", stale=FALSE, algorithm=MD5\r\n\
          Warning: 301 isi.edu \"Incompatible network address type 'E.164'\"\r\n\
          V: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 36);
+    assert_eq!(hdrs.len(), 37);
 
     let to_hdr = hdrs.get_rfc_s(SipRFCHeader::To).unwrap();
     assert_eq!(to_hdr.value.vstr, "David <sip:davidko@biloxi.com>");
@@ -514,6 +518,47 @@ fn parse_headers() {
     assert_eq!(
         warn_hdr.value.tags().unwrap()[&SipHeaderTagType::WarnText],
         "Incompatible network address type 'E.164'".as_bytes()
+    );
+
+    let www_auth = &hdrs.get_rfc_s(SipRFCHeader::WWWAuthenticate).unwrap();
+    assert_eq!(
+        www_auth.value.vstr,
+        "Digest realm=\"atlanta.com\",\r\n \
+        domain=\"sip:boxesbybob.com\", qop=\"auth\",\r\n \
+        nonce=\"f84f1cec41e6cbe5aea9c8e88d359\",\r\n \
+        opaque=\"\", stale=FALSE, algorithm=MD5"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::AuthSchema],
+        b"Digest"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Realm],
+        b"atlanta.com"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Domain],
+        b"sip:boxesbybob.com"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::QopValue],
+        b"auth"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Nonce],
+        b"f84f1cec41e6cbe5aea9c8e88d359"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Opaque],
+        b""
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Stale],
+        b"FALSE"
+    );
+    assert_eq!(
+        www_auth.value.tags().unwrap()[&SipHeaderTagType::Algorithm],
+        b"MD5"
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());

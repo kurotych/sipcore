@@ -2,8 +2,7 @@ use crate::headers::{
     parsers::{
         digit_header, token_header, utf8_trim_header, AcceptEncodingParser, AcceptLanguageParser,
         AcceptParser, AlertInfoParser, AuthenticationInfoParser, Authorization, CSeq, CallID,
-        Contact, Date, ExtensionParser, From, MimeVersion, RetryAfter, Timestamp, UserAgent,
-        Via, Warning
+        Contact, Date, From, MimeVersion, RetryAfter, Timestamp, UserAgent, Via, Warning,
     },
     traits::{HeaderValueParserFn, SipHeaderParser},
 };
@@ -186,7 +185,6 @@ impl SipRFCHeader {
             &SipRFCHeader::AuthenticationInfo => AuthenticationInfoParser::take_value,
             &SipRFCHeader::Authorization => Authorization::take_value,
             &SipRFCHeader::CallID => CallID::take_value,
-            // AlertInfoParser is suitable for Callinfo
             &SipRFCHeader::CallInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Contact => Contact::take_value,
             &SipRFCHeader::ContentDisposition => token_header::take,
@@ -222,8 +220,7 @@ impl SipRFCHeader {
             &SipRFCHeader::Unsupported => token_header::take,
             &SipRFCHeader::Via => Via::take_value,
             &SipRFCHeader::Warning => Warning::take_value,
-            // TODO remove after implementation all parsers
-            _ => ExtensionParser::take_value,
+            &SipRFCHeader::WWWAuthenticate => Authorization::take_value,
         }
     }
 }
