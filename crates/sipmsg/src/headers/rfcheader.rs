@@ -218,6 +218,7 @@ impl SipRFCHeader {
             &SipRFCHeader::MimeVersion => MimeVersion::take_value,
             &SipRFCHeader::MinExpires => digit_header::take,
             &SipRFCHeader::Timestamp => Timestamp::take_value,
+            &SipRFCHeader::Unsupported => token_header::take,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
