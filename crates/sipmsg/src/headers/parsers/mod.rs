@@ -32,7 +32,8 @@ pub mod timestamp;
 pub use timestamp::Timestamp;
 pub mod via;
 pub use via::Via;
-
+pub mod warning;
+pub use warning::Warning;
 pub mod digit_header;
 pub mod token_header;
 pub mod utf8_trim_header;

@@ -50,7 +50,7 @@ fn take_until_nonescaped_quote(
     sip_parse_error!(1, "take_until_nonescaped_quote error!")
 }
 
-pub fn take_qutoed_string(
+pub fn take_quoted_string(
     source_input: &[u8],
 ) -> nom::IResult<&[u8], (&[u8], &[u8], &[u8]), SipParseError> {
     let (input, ldqout_wsps) = take_sws_token::ldquot(source_input)?;
@@ -114,13 +114,13 @@ mod tests {
     use crate::common::bnfcore::*;
 
     fn take_quoted_string_case(input: &str, expected_result: &str, expected_input_rest: &str) {
-        let res = take_qutoed_string(input.as_bytes());
+        let res = take_quoted_string(input.as_bytes());
         let (input, (_, result, _)) = res.unwrap();
         assert_eq!(result, expected_result.as_bytes());
         assert_eq!(input, expected_input_rest.as_bytes())
     }
     #[test]
-    fn take_qutoed_string_test() {
+    fn take_quoted_string_test() {
         take_quoted_string_case(
             "  \t\"dcd98b7102dd2f0e8b11d0f600bfb0c093\"  \r\n",
             "dcd98b7102dd2f0e8b11d0f600bfb0c093",
@@ -136,7 +136,7 @@ mod tests {
 
         take_quoted_string_case("\"\"", "", "");
 
-        let res = take_qutoed_string(" \r\n \"value\" \r\nnext_value".as_bytes());
+        let res = take_quoted_string(" \r\n \"value\" \r\nnext_value".as_bytes());
         let (input, (leftwsps, result, rightwsps)) = res.unwrap();
         assert_eq!(result, "value".as_bytes());
         assert_eq!(leftwsps, " \r\n ".as_bytes());

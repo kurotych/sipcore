@@ -51,7 +51,7 @@ pub fn take<'a>(
         let (input, _) = take_sws_token::equal(input)?;
 
         let (input, (param_name, param_value)) = if input[0] == b'"' {
-            let (input, (_, param_value, wsps)) = nom_wrappers::take_qutoed_string(input)?;
+            let (input, (_, param_value, wsps)) = nom_wrappers::take_quoted_string(input)?;
             _count_wsps_after_last_value = wsps.len();
             (input, (param_name, param_value))
         } else {
@@ -96,7 +96,7 @@ pub fn take<'a>(
 //     let (input, param_name) = take_while1(is_token_char)(input)?;
 //     let (input, _) = take_sws_token::equal(input)?;
 //     if input[0] == b'"' {
-//         let (input, (_, param_value, _)) = nom_wrappers::take_qutoed_string(input)?;
+//         let (input, (_, param_value, _)) = nom_wrappers::take_quoted_string(input)?;
 //         return Ok((input, (param_name, param_value)));
 //     } else {
 //         let (input, param_value) = take_while1(is_token_char)(input)?;

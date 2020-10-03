@@ -45,12 +45,13 @@ fn parse_headers() {
          MIME-Version: 1.0\r\n\
          Min-Expires: 60\r\n\
          Timestamp: 54\r\n\
+         Warning: 301 isi.edu \"Incompatible network address type 'E.164'\"\r\n\
          V: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 35);
+    assert_eq!(hdrs.len(), 36);
 
     let to_hdr = hdrs.get_rfc_s(SipRFCHeader::To).unwrap();
     assert_eq!(to_hdr.value.vstr, "David <sip:davidko@biloxi.com>");
@@ -490,6 +491,29 @@ fn parse_headers() {
     assert_eq!(
         timestamp_hdr.value.tags().unwrap()[&SipHeaderTagType::TimveVal],
         b"54"
+    );
+
+    let warn_hdr = &hdrs.get_rfc_s(SipRFCHeader::Warning).unwrap();
+    assert_eq!(
+        warn_hdr.value.vstr,
+        "301 isi.edu \"Incompatible network address type 'E.164'\""
+    );
+
+    assert_eq!(
+        warn_hdr.value.vstr,
+        "301 isi.edu \"Incompatible network address type 'E.164'\""
+    );
+    assert_eq!(
+        warn_hdr.value.tags().unwrap()[&SipHeaderTagType::WarnCode],
+        b"301"
+    );
+    assert_eq!(
+        warn_hdr.value.tags().unwrap()[&SipHeaderTagType::WarnAgent],
+        b"isi.edu"
+    );
+    assert_eq!(
+        warn_hdr.value.tags().unwrap()[&SipHeaderTagType::WarnText],
+        "Incompatible network address type 'E.164'".as_bytes()
     );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());

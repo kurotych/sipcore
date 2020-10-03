@@ -51,6 +51,7 @@ pub enum HeaderValueType {
     UserAgent,  // haven't tags,
 
     Via, // tags: ProtocolName(R),ProtocolVersion(R),ProtocolTransport(R), Host(R), Port(O)
+    Warning, // tags: WarnCode(R), WarnAgent(R), WarnText(R)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -91,6 +92,10 @@ pub enum HeaderTagType {
     ProtocolName,
     ProtocolVersion,
     ProtocolTransport,
+
+    WarnCode,
+    WarnAgent,
+    WarnText
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

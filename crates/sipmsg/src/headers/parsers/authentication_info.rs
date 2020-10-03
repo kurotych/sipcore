@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        bnfcore::is_alpha, errorparse::SipParseError, nom_wrappers::take_qutoed_string,
+        bnfcore::is_alpha, errorparse::SipParseError, nom_wrappers::take_quoted_string,
         take_sws_token,
     },
     headers::{
@@ -32,7 +32,7 @@ impl SipHeaderParser for AuthenticationInfoParser {
             return sip_parse_error!(1, "AuthentificatiionInfo value name is invalid");
         }
         let (input, (_, _, _)) = take_sws_token::equal(input)?;
-        let (input, (_, value, spaces_after_rdquot)) = take_qutoed_string(input).unwrap();
+        let (input, (_, value, spaces_after_rdquot)) = take_quoted_string(input).unwrap();
 
         let mut tags = HeaderTags::new();
         tags.insert(HeaderTagType::AinfoType, info_name);
