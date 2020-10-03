@@ -52,6 +52,22 @@
 //!     via_headers[0].params().unwrap().get(&"branch"),
 //!     Some(&Some("z9hG4bKkjshdyff"))
 //! );
+//! assert_eq!(
+//!     via_headers[0].value.tags().unwrap()[&SipHeaderTagType::ProtocolName],
+//!     b"SIP"
+//! );
+//! assert_eq!(
+//!     via_headers[0].value.tags().unwrap()[&SipHeaderTagType::ProtocolVersion],
+//!     b"2.0"
+//! );
+//! assert_eq!(
+//!     via_headers[0].value.tags().unwrap()[&SipHeaderTagType::ProtocolTransport],
+//!     b"UDP"
+//! );
+//! assert_eq!(
+//!     via_headers[0].value.tags().unwrap()[&SipHeaderTagType::Host],
+//!     b"pc33.atlanta.com"
+//! );
 //! assert_eq!(via_headers[1].value.vstr, "SIP/2.0/UDP 192.168.1.111");
 //! assert_eq!(
 //!     via_headers[1].params(),
@@ -96,7 +112,7 @@
 //! );
 //!
 //! // Body
-//! assert_eq!(request.body.unwrap(), "body_stuff".as_bytes());
+//! assert_eq!(request.body.unwrap(), b"body_stuff");
 //! ```
 //!
 extern crate alloc;

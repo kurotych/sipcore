@@ -30,6 +30,9 @@ pub mod mime_version;
 pub use mime_version::MimeVersion;
 pub mod timestamp;
 pub use timestamp::Timestamp;
+pub mod via;
+pub use via::Via;
+
 pub mod digit_header;
 pub mod token_header;
 pub mod utf8_trim_header;

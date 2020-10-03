@@ -48,7 +48,9 @@ pub enum HeaderValueType {
     Timestamp, // tags: TimeVal, Delay
 
     RetryAfter, // tags: Seconds(R), Comment(O)
-    UserAgent,  // haven't tags
+    UserAgent,  // haven't tags,
+
+    Via, // tags: ProtocolName(R),ProtocolVersion(R),ProtocolTransport(R), Host(R), Port(O)
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -76,6 +78,7 @@ pub enum HeaderTagType {
     Method,
     ID,
     Host,
+    Port,
     Star, // alway must be equal to *
     DisplayName,
     Seconds,
@@ -84,6 +87,10 @@ pub enum HeaderTagType {
     Minor,
     TimveVal,
     Delay,
+
+    ProtocolName,
+    ProtocolVersion,
+    ProtocolTransport,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

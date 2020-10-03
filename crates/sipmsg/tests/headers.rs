@@ -45,7 +45,7 @@ fn parse_headers() {
          MIME-Version: 1.0\r\n\
          Min-Expires: 60\r\n\
          Timestamp: 54\r\n\
-         Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
+         V: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
@@ -120,17 +120,28 @@ fn parse_headers() {
         Some(&Some("false"))
     );
 
+    let via_hdr = hdrs.get_rfc_s(SipRFCHeader::Via).unwrap();
+    assert_eq!(via_hdr.value.vstr, "SIP/2.0/UDP funky.example.com");
     assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::Via).unwrap().value.vstr,
-        "SIP/2.0/UDP funky.example.com"
+        via_hdr.params().unwrap().get(&"branch"),
+        Some(&Some("z9hG4bKkdjuw"))
+    );
+
+    assert_eq!(
+        via_hdr.value.tags().unwrap()[&SipHeaderTagType::ProtocolName],
+        b"SIP"
     );
     assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::Via)
-            .unwrap()
-            .params()
-            .unwrap()
-            .get(&"branch"),
-        Some(&Some("z9hG4bKkdjuw"))
+        via_hdr.value.tags().unwrap()[&SipHeaderTagType::ProtocolVersion],
+        b"2.0"
+    );
+    assert_eq!(
+        via_hdr.value.tags().unwrap()[&SipHeaderTagType::ProtocolTransport],
+        b"UDP"
+    );
+    assert_eq!(
+        via_hdr.value.tags().unwrap()[&SipHeaderTagType::Host],
+        b"funky.example.com"
     );
     let auth_val = &hdrs.get_rfc_s(SipRFCHeader::Authorization).unwrap().value;
     assert_eq!(
