@@ -198,6 +198,7 @@ impl SipRFCHeader {
             &SipRFCHeader::ErrorInfo => AlertInfoParser::take_value,
             &SipRFCHeader::Expires => digit_header::take,
             &SipRFCHeader::From => From::take_value,
+            &SipRFCHeader::To => From::take_value,
             &SipRFCHeader::InReplyTo => CallID::take_value,
             &SipRFCHeader::MaxForwards => digit_header::take,
             &SipRFCHeader::Organization => utf8_trim_header::take,

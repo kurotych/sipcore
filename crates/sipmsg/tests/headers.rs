@@ -3,7 +3,7 @@ use sipmsg::*;
 #[test]
 fn parse_headers() {
     let parse_headers_result = SipHeaders::parse(
-        "To: sip:user@example.com\r\n\
+        "t: David <sip:davidko@biloxi.com>;tag=99sa0xk\r\n\
          From: caller <sip:caller2@example.com>;tag=323\r\n\
          Max-Forwards: 70\r\n\
          Call-ID: lwsdisp.1234abcd@funky.example.com\r\n\
@@ -50,10 +50,20 @@ fn parse_headers() {
 
     let (input, hdrs) = parse_headers_result.unwrap();
     assert_eq!(hdrs.len(), 34);
+
+    let to_hdr = hdrs.get_rfc_s(SipRFCHeader::To).unwrap();
+    assert_eq!(to_hdr.value.vstr, "David <sip:davidko@biloxi.com>");
+    assert_eq!(to_hdr.params().unwrap().get(&"tag"), Some(&Some("99sa0xk")));
     assert_eq!(
-        hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
-        "sip:user@example.com"
+        to_hdr.value.sip_uri().unwrap().scheme,
+        sipuri::RequestUriScheme::SIP
     );
+    assert_eq!(
+        to_hdr.value.sip_uri().unwrap().user_info().unwrap().value,
+        "davidko"
+    );
+
+    assert_eq!(to_hdr.value.sip_uri().unwrap().hostport.host, "biloxi.com");
 
     let from_hdr = hdrs.get_rfc_s(SipRFCHeader::From).unwrap();
     assert_eq!(from_hdr.value.vstr, "caller <sip:caller2@example.com>");
