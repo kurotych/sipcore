@@ -45,8 +45,10 @@ pub enum HeaderValueType {
     /// Contact, From, To, Record-Route, Route headers
     NameAddr, // tags: Star(O), DisplayName(O), AbsoluteURI(O)
 
+    Timestamp, // tags: TimeVal, Delay
+
     RetryAfter, // tags: Seconds(R), Comment(O)
-    UserAgent, // haven't tags
+    UserAgent,  // haven't tags
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -80,6 +82,8 @@ pub enum HeaderTagType {
     Comment,
     Major,
     Minor,
+    TimveVal,
+    Delay,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;

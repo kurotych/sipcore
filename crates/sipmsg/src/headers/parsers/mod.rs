@@ -28,6 +28,8 @@ mod user_agent;
 pub use user_agent::UserAgent;
 pub mod mime_version;
 pub use mime_version::MimeVersion;
+pub mod timestamp;
+pub use timestamp::Timestamp;
 pub mod digit_header;
 pub mod token_header;
 pub mod utf8_trim_header;

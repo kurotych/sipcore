@@ -43,12 +43,13 @@ fn parse_headers() {
          k: 100rel\r\n\
          MIME-Version: 1.0\r\n\
          Min-Expires: 60\r\n\
+         Timestamp: 54\r\n\
          Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw\r\n\r\nsomebody"
             .as_bytes(),
     );
 
     let (input, hdrs) = parse_headers_result.unwrap();
-    assert_eq!(hdrs.len(), 33);
+    assert_eq!(hdrs.len(), 34);
     assert_eq!(
         hdrs.get_rfc_s(SipRFCHeader::To).unwrap().value.vstr,
         "sip:user@example.com"
@@ -458,6 +459,13 @@ fn parse_headers() {
 
     let min_exp_hdr = &hdrs.get_rfc_s(SipRFCHeader::MinExpires).unwrap();
     assert_eq!(min_exp_hdr.value.vstr, "60");
+
+    let timestamp_hdr = &hdrs.get_rfc_s(SipRFCHeader::Timestamp).unwrap();
+    assert_eq!(timestamp_hdr.value.vstr, "54");
+    assert_eq!(
+        timestamp_hdr.value.tags().unwrap()[&SipHeaderTagType::TimveVal],
+        b"54"
+    );
 
     assert_eq!(input, "\r\nsomebody".as_bytes());
 }

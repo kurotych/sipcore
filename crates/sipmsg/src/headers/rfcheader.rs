@@ -2,7 +2,7 @@ use crate::headers::{
     parsers::{
         digit_header, token_header, utf8_trim_header, AcceptEncodingParser, AcceptLanguageParser,
         AcceptParser, AlertInfoParser, AuthenticationInfoParser, Authorization, CSeq, CallID,
-        Contact, Date, ExtensionParser, From, RetryAfter, UserAgent, MimeVersion
+        Contact, Date, ExtensionParser, From, MimeVersion, RetryAfter, Timestamp, UserAgent,
     },
     traits::{HeaderValueParserFn, SipHeaderParser},
 };
@@ -216,6 +216,7 @@ impl SipRFCHeader {
             &SipRFCHeader::Supported => token_header::take,
             &SipRFCHeader::MimeVersion => MimeVersion::take_value,
             &SipRFCHeader::MinExpires => digit_header::take,
+            &SipRFCHeader::Timestamp => Timestamp::take_value,
             // TODO remove after implementation all parsers
             _ => ExtensionParser::take_value,
         }
