@@ -1,6 +1,9 @@
 use crate::{
     common::{
-        bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token,
+        bnfcore::*,
+        errorparse::SipParseError,
+        nom_wrappers::{from_utf8_nom, take_sws},
+        take_sws_token,
         traits::NomParser,
     },
     headers::{
@@ -50,9 +53,9 @@ pub enum HeaderValueType {
     RetryAfter, // tags: Seconds(R), Comment(O)
     UserAgent,  // haven't tags,
 
-    Via, // tags: ProtocolName(R),ProtocolVersion(R),ProtocolTransport(R), Host(R), Port(O)
+    Via,     // tags: ProtocolName(R),ProtocolVersion(R),ProtocolTransport(R), Host(R), Port(O)
     Warning, // tags: WarnCode(R), WarnAgent(R), WarnText(R)
-    ExtensionHeader // No tags
+    ExtensionHeader, // No tags
 }
 
 #[derive(PartialEq, Debug, Eq, PartialOrd, Ord)]
@@ -96,7 +99,7 @@ pub enum HeaderTagType {
 
     WarnCode,
     WarnAgent,
-    WarnText
+    WarnText,
 }
 
 pub type HeaderTags<'a> = BTreeMap<HeaderTagType, &'a [u8]>;
@@ -202,7 +205,7 @@ impl<'a> Header<'a> {
     ) -> nom::IResult<&'a [u8], (HeaderValue<'a>, Option<GenericParams<'a>>), SipParseError<'a>>
     {
         // skip whitespaces before take value
-        let (input, _) = complete::space0(input)?;
+        let (input, _) = take_sws(input)?;
         if is_crlf(input) {
             return Ok((input, (HeaderValue::create_empty_value(), None))); // This is header with empty value
         }

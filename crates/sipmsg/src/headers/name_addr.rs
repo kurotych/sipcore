@@ -1,12 +1,12 @@
 use crate::{
-    common::{bnfcore::is_token_char, errorparse::SipParseError, take_sws_token},
+    common::{bnfcore::is_token_char, errorparse::SipParseError, take_sws_token, nom_wrappers},
     headers::{
         header::{HeaderTagType, HeaderTags},
     },
 };
 
 use nom::{
-    bytes::complete::{take_while, take_while1},
+    bytes::complete::{take_while1},
     character::complete,
     sequence::tuple,
 };
@@ -46,9 +46,7 @@ fn take_display_name(
     display_name_type: NameAddrValueType,
 ) -> nom::IResult<&[u8], &[u8], SipParseError> {
     if display_name_type == NameAddrValueType::QuotedDisplayName {
-        let (input, _) = take_sws_token::ldquot(source_input)?;
-        let (input, display_name) = take_while(|c: u8| c != b'"')(input)?;
-        let (input, _) = take_sws_token::rdquot(input)?;
+        let (input, (_, display_name, _)) = nom_wrappers::take_quoted_string(source_input)?;
         return Ok((input, display_name));
     } else if display_name_type == NameAddrValueType::TokenDisplayName {
         let (input, display_name) = take_while1(is_token_char)(source_input)?;

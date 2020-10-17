@@ -134,6 +134,12 @@ mod tests {
             "\r\nNextHeader: nextvalue\r\n\r\n",
         );
 
+        take_quoted_string_case(
+            "\"Quoted string \\\"\\\"\" <sip:jdrosen@example.com>",
+            "Quoted string \\\"\\\"",
+            "<sip:jdrosen@example.com>",
+        );
+
         take_quoted_string_case("\"\"", "", "");
 
         let res = take_quoted_string(" \r\n \"value\" \r\nnext_value".as_bytes());
