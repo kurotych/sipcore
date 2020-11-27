@@ -1,4 +1,4 @@
-use crate::common::{errorparse::SipParseError, sip_method::*, traits::NomParser};
+use crate::common::{errorparse::SipParseError, sip_method::*};
 use crate::{headers::*, message::*};
 use nom::{
     bytes::complete::{tag, take_while1},
@@ -26,12 +26,8 @@ impl<'a> Request<'a> {
             body: body,
         }
     }
-}
 
-impl<'a> NomParser<'a> for Request<'a> {
-    type ParseResult = Request<'a>;
-
-    fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Request, SipParseError> {
+    pub fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Request, SipParseError> {
         let (input, rl) = RequestLine::parse(buf_input)?;
 
         let (input, headers) = SipHeaders::parse(input)?;
@@ -49,10 +45,14 @@ pub struct RequestLine<'a> {
     pub sip_version: SipVersion,
 }
 
-impl<'a> NomParser<'a> for RequestLine<'a> {
-    type ParseResult = RequestLine<'a>;
-
-    fn parse(rl: &[u8]) -> nom::IResult<&[u8], RequestLine, SipParseError> {
+impl<'a> RequestLine<'a> {
+    fn parse_method(method: &[u8]) -> Option<SipMethod> {
+        match str::from_utf8(method) {
+            Ok(s) => SipMethod::from_str(s),
+            Err(_) => None,
+        }
+    }
+    pub fn parse(rl: &[u8]) -> nom::IResult<&[u8], RequestLine, SipParseError> {
         let method = take_while1(is_alphabetic);
         let uri = take_while1(|c| c != b' ' as u8);
         let (input, (method, _, uri, _, _, major_version, _, minor_version, _)) = tuple((
@@ -84,15 +84,6 @@ impl<'a> NomParser<'a> for RequestLine<'a> {
                 },
             )),
             None => return sip_parse_error!(1, "Error cast from_utf8"),
-        }
-    }
-}
-
-impl<'a> RequestLine<'a> {
-    fn parse_method(method: &[u8]) -> Option<SipMethod> {
-        match str::from_utf8(method) {
-            Ok(s) => SipMethod::from_str(s),
-            Err(_) => None,
         }
     }
 }

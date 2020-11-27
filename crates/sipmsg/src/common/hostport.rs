@@ -1,6 +1,4 @@
-use crate::common::{
-    bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, traits::NomParser,
-};
+use crate::common::{bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom};
 use core::str;
 use nom::bytes::complete::{take, take_until, take_while1};
 
@@ -45,12 +43,8 @@ impl<'a> HostPort<'a> {
 
         Ok((input, (host, port)))
     }
-}
 
-impl<'a> NomParser<'a> for HostPort<'a> {
-    type ParseResult = HostPort<'a>;
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], HostPort, SipParseError> {
+    pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], HostPort<'a>, SipParseError> {
         if input.is_empty() {
             return sip_parse_error!(1);
         }

@@ -2,7 +2,6 @@ use crate::common::{
     bnfcore::is_token_char,
     errorparse::SipParseError,
     nom_wrappers::{from_utf8_nom, take_while_trim_sws},
-    traits::NomParser,
 };
 use alloc::collections::btree_map::BTreeMap;
 use nom::multi::many0;
@@ -16,9 +15,10 @@ pub struct GenericParam<'a> {
     pub value: Option<&'a str>,
 }
 
-impl<'a> NomParser<'a> for GenericParam<'a> {
-    type ParseResult = (Ascii<&'a str>, Option<&'a str>);
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+impl<'a> GenericParam<'a> {
+    fn parse(
+        input: &'a [u8],
+    ) -> nom::IResult<&[u8], (Ascii<&'a str>, Option<&'a str>), SipParseError> {
         let (input, (_, parameter_name, _)) = take_while_trim_sws(input, is_token_char)?;
 
         let (_, param_name) = from_utf8_nom(parameter_name)?;
@@ -55,21 +55,8 @@ impl<'a> GenericParams<'a> {
         let key = Ascii::new(key);
         self.params.contains_key(&key)
     }
-}
 
-fn many_params_parser(
-    input: &[u8],
-) -> nom::IResult<&[u8], (Ascii<&str>, Option<&str>), SipParseError> {
-    if input.len() < 2 || input[0] != b';' {
-        return sip_parse_error!(1, "GenericParamsParser parse error");
-    }
-    GenericParam::parse(&input[1..])
-}
-
-impl<'a> NomParser<'a> for GenericParams<'a> {
-    type ParseResult = GenericParams<'a>;
-    // input should start from ';'
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], GenericParams<'a>, SipParseError> {
         let (input, vec_res) = many0(many_params_parser)(input)?;
         Ok((
             input,
@@ -80,6 +67,14 @@ impl<'a> NomParser<'a> for GenericParams<'a> {
     }
 }
 
+fn many_params_parser(
+    input: &[u8],
+) -> nom::IResult<&[u8], (Ascii<&str>, Option<&str>), SipParseError> {
+    if input.len() < 2 || input[0] != b';' {
+        return sip_parse_error!(1, "GenericParamsParser parse error");
+    }
+    GenericParam::parse(&input[1..])
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,8 +1,7 @@
 use crate::{
     common::bnfcore::is_unreserved, common::hostport::HostPort,
     common::nom_wrappers::from_utf8_nom, common::nom_wrappers::take_while_with_escaped,
-    common::traits::NomParser, errorparse::SipParseError, headers::GenericParams,
-    userinfo::UserInfo,
+    errorparse::SipParseError, headers::GenericParams, userinfo::UserInfo,
 };
 use alloc::collections::btree_map::BTreeMap;
 use nom::bytes::complete::{take, take_till, take_until};
@@ -72,13 +71,8 @@ impl<'a> SipUriHeader<'a> {
             },
         ))
     }
-}
 
-impl<'a> NomParser<'a> for SipUriHeader<'a> {
-    type ParseResult = BTreeMap<&'a str, &'a str>;
-
-    // Returns: headers =  "?" header *( "&" header )
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], BTreeMap<&'a str, &'a str>, SipParseError> {
         let (input, c) = take(1usize)(input)?;
         if c[0] != b'?' {
             return sip_parse_error!(1, "The first character of headers must be '?'");
@@ -99,6 +93,7 @@ impl<'a> NomParser<'a> for SipUriHeader<'a> {
 
         Ok((inp2, result))
     }
+    
 }
 
 // URI  =  SIP-URI / SIPS-URI
@@ -237,12 +232,8 @@ impl<'a> SipUri<'a> {
             },
         ))
     }
-}
 
-impl<'a> NomParser<'a> for SipUri<'a> {
-    type ParseResult = SipUri<'a>;
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], SipUri<'a>, SipParseError> {
         SipUri::parse_ext(input, true)
     }
 }

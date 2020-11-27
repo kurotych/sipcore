@@ -3,8 +3,7 @@ use crate::{
         bnfcore::*,
         errorparse::SipParseError,
         nom_wrappers::{from_utf8_nom, take_sws},
-        take_sws_token,
-        traits::NomParser,
+        take_sws_token
     },
     headers::{
         parsers::ExtensionParser,
@@ -238,11 +237,10 @@ impl<'a> Header<'a> {
         let (input, parameters) = GenericParams::parse(input)?;
         Ok((input, Some(parameters)))
     }
-}
 
-impl<'a> NomParser<'a> for Header<'a> {
-    type ParseResult = (Option<SipRFCHeader>, VecDeque<Header<'a>>);
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    pub fn parse(
+        input: &'a [u8],
+    ) -> nom::IResult<&[u8], (Option<SipRFCHeader>, VecDeque<Header<'a>>), SipParseError> {
         let mut headers = VecDeque::new();
         let (input, header_name) = Header::take_name(input)?;
         let (rfc_type, value_parser) = Header::find_parser(header_name);

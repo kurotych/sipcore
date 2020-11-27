@@ -1,4 +1,4 @@
-use crate::common::{errorparse::SipParseError, nom_wrappers::from_utf8_nom, traits::NomParser};
+use crate::common::{errorparse::SipParseError, nom_wrappers::from_utf8_nom};
 use crate::headers::*;
 use crate::message::SipVersion;
 
@@ -26,10 +26,8 @@ pub struct StatusLine<'a> {
     pub reason_phrase: &'a str,
 }
 
-impl<'a> NomParser<'a> for StatusLine<'a> {
-    type ParseResult = StatusLine<'a>;
-
-    fn parse(sl: &[u8]) -> nom::IResult<&[u8], StatusLine, SipParseError> {
+impl<'a> StatusLine<'a> {
+    pub fn parse(sl: &'a [u8]) -> nom::IResult<&[u8], StatusLine<'a>, SipParseError> {
         let (input, (_, major_version, _, minor_version, _, status_code, _, reason_phrase, _)) =
             tuple((
                 tag("SIP/"),
@@ -70,12 +68,8 @@ impl<'a> Response<'a> {
             body: body,
         }
     }
-}
 
-impl<'a> NomParser<'a> for Response<'a> {
-    type ParseResult = Response<'a>;
-
-    fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response, SipParseError> {
+    pub fn parse(buf_input: &'a [u8]) -> nom::IResult<&[u8], Response<'a>, SipParseError> {
         let (input, rl) = StatusLine::parse(buf_input)?;
 
         let (input, headers) = SipHeaders::parse(input)?;

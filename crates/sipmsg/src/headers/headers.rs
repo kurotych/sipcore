@@ -1,5 +1,5 @@
 use crate::{
-    common::{bnfcore::is_crlf, errorparse::SipParseError, traits::NomParser},
+    common::{bnfcore::is_crlf, errorparse::SipParseError},
     headers::{SipHeader, SipRFCHeader},
 };
 use alloc::collections::{btree_map::BTreeMap, VecDeque};
@@ -112,12 +112,8 @@ impl<'a> Headers<'a> {
                 .insert(vec_headers[0].name, vec_headers);
         }
     }
-}
 
-impl<'a> NomParser<'a> for Headers<'a> {
-    type ParseResult = Headers<'a>;
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Self::ParseResult, SipParseError> {
+    pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Headers<'a>, SipParseError> {
         let mut headers_result = Headers::new();
         let mut inp2 = input;
         loop {

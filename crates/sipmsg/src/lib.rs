@@ -9,7 +9,8 @@
 //! ## Example
 //! ```rust
 //!
-//! use sipmsg::*;
+//! use sipmsg::{SipRequest, SipMethod, SipRequestUriScheme,
+//!              SipRFCHeader, SipHeaderTagType, SipVersion};
 //! use unicase::Ascii;
 //!
 //! let invite_msg_buf = "\
@@ -114,7 +115,6 @@ extern crate nom;
 pub mod common;
 pub use common::errorparse;
 pub use common::sip_method::SipMethod;
-pub use common::traits::NomParser;
 
 mod message;
 pub use message::get_message_type as get_sip_message_type;
