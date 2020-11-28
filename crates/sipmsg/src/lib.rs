@@ -9,7 +9,7 @@
 //! ## Example
 //! ```rust
 //!
-//! use sipmsg::{SipRequest, SipMethod, SipRequestUriScheme,
+//! use sipmsg::{SipMessage, SipMethod, SipRequestUriScheme,
 //!              SipRFCHeader, SipHeaderTagType, SipVersion};
 //! use unicase::Ascii;
 //!
@@ -28,7 +28,8 @@
 //!
 //! // First parameter not realized yet.
 //! // It should consist be residue if Content-Length is less then actual body length.
-//! let (_, request) = SipRequest::parse(invite_msg_buf).unwrap();
+//! let (_, sip_msg) = SipMessage::parse(invite_msg_buf).unwrap();
+//! let request = sip_msg.request().unwrap();
 //! assert_eq!(request.rl.method, SipMethod::INVITE);
 //! assert_eq!(request.rl.sip_version, SipVersion(2, 0));
 //!
@@ -120,6 +121,7 @@ mod message;
 pub use message::get_message_type as get_sip_message_type;
 pub use message::MessageType as SipMessageType;
 pub use message::SipVersion;
+pub use message::SipMessage;
 
 mod userinfo;
 

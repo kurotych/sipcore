@@ -1,7 +1,48 @@
+use crate::common::errorparse::SipParseError;
+use crate::{SipRequest, SipResponse};
+use nom;
+
 /// SIP-Version
 /// ex. `SIP/2.0 -> SipVersion(2, 0)`
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct SipVersion(pub u8, pub u8);
+
+pub enum SipMessage<'a> {
+    Request(SipRequest<'a>),
+    Response(SipResponse<'a>),
+}
+
+impl<'a> SipMessage<'a> {
+    pub fn request(self) -> Option<SipRequest<'a>> {
+        if let SipMessage::Request(c) = self {
+            Some(c)
+        } else {
+            None
+        }
+    }
+
+    pub fn response(self) -> Option<SipResponse<'a>> {
+        if let SipMessage::Response(c) = self {
+            Some(c)
+        } else {
+            None
+        }
+    }
+
+    pub fn parse(raw_message: &'a [u8]) -> nom::IResult<&[u8], SipMessage<'a>, SipParseError> {
+        match get_message_type(raw_message) {
+            Request => {
+                let (inp, request) = SipRequest::parse(raw_message)?;
+                return Ok((inp, SipMessage::Request(request)));
+            }
+            Response => {
+                let (inp, response) = SipResponse::parse(raw_message)?;
+                return Ok((inp, SipMessage::Response(response)));
+            }
+            Unknown => sip_parse_error!(1, "Message is invalid. Can't predict type of message"),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub enum MessageType {
