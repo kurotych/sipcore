@@ -20,7 +20,7 @@ fn host_char_allowed(c: u8) -> bool {
 }
 
 impl<'a> HostPort<'a> {
-    fn take_ipv6_host(input: &'a [u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
+    pub fn take_ipv6_host(input: &'a [u8]) -> nom::IResult<&[u8], &[u8], SipParseError> {
         let (input, _) = take(1usize)(input)?; // skip '['
         let (input, ipv6_host) = take_until("]")(input)?;
         let (input, _) = take(1usize)(input)?; // skip ']'

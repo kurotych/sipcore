@@ -1,11 +1,13 @@
 use crate::common::{
     bnfcore::is_token_char,
     errorparse::SipParseError,
-    nom_wrappers::{from_utf8_nom, take_while_trim_sws},
+    hostport::HostPort,
+    nom_wrappers::{from_utf8_nom, take_quoted_string, take_sws, take_while_trim_sws},
+    take_sws_token,
     traits::NomParser,
 };
 use alloc::collections::btree_map::BTreeMap;
-use nom::multi::many0;
+use nom::{bytes::complete::take_while, multi::many0};
 use unicase::Ascii;
 
 // generic-param  =  token [ EQUAL gen-value ]
@@ -22,18 +24,25 @@ impl<'a> NomParser<'a> for GenericParam<'a> {
         let (input, (_, parameter_name, _)) = take_while_trim_sws(input, is_token_char)?;
 
         let (_, param_name) = from_utf8_nom(parameter_name)?;
-
         if input.is_empty() || input[0] != b'=' {
             return Ok((input, (Ascii::new(param_name), None)));
         }
+        let (input, _) = take_sws_token::equal(input)?;
 
-        if input.len() == 1 {
+        if input.is_empty() {
             return sip_parse_error!(2, "generic-param parse error");
         }
 
-        let (input, (_, parameter_value, _)) =
-            take_while_trim_sws(&input[1..] /* skip '=' */, is_token_char)?;
+        let (input, parameter_value) = if input[0] == b'"' {
+            let (input, (_, param_val, _)) = take_quoted_string(input).unwrap();
+            (input, param_val)
+        } else if input[0] == b'[' {
+            HostPort::take_ipv6_host(input)?
+        } else {
+            take_while(is_token_char)(input)?
+        };
 
+        let (input, _) = take_sws(input)?;
         let (_, parameter_value) = from_utf8_nom(parameter_value)?;
 
         Ok((input, (Ascii::new(param_name), Some(parameter_value))))
@@ -175,6 +184,5 @@ mod tests {
     fn parameter_incorrect_parse_test() {
         fail_parameter_test("");
         fail_parameter_test("a=");
-        fail_parameter_test("a=/");
     }
 }
