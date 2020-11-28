@@ -1,6 +1,6 @@
 [package]
 name = "sipmsg"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Anatolii Kurotych <akurotych@gmail.com>"]
 edition = "2018"
 description = "SIP message parser"
@@ -10,7 +10,7 @@ repository = "https://github.com/armatusmiles/sipcore"
 categories = ["no-std"]
 
 [dependencies]
-nom = "6.0.0-alpha2"
+nom = "6.0.1"
 
 [dependencies.unicase]
 version ="^2.6"
