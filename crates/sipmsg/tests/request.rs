@@ -18,6 +18,7 @@ fn parse_request() {
     let res = SipRequest::parse(invite_msg_buf);
     let (_, parsed_req) = res.unwrap();
 
+    assert_eq!(parsed_req.rl.raw, "INVITE sip:bob@biloxi.com SIP/2.0\r\n".as_bytes());
     assert_eq!(parsed_req.rl.method, SipMethod::INVITE);
     assert_eq!(parsed_req.rl.uri.scheme, SipRequestUriScheme::SIP);
     assert_eq!(parsed_req.rl.uri.user_info().unwrap().value, "bob");

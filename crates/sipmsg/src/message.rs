@@ -13,17 +13,17 @@ pub enum SipMessage<'a> {
 }
 
 impl<'a> SipMessage<'a> {
-    pub fn request(self) -> Option<SipRequest<'a>> {
+    pub fn request(&self) -> Option<&SipRequest<'a>> {
         if let SipMessage::Request(c) = self {
-            Some(c)
+            Some(&c)
         } else {
             None
         }
     }
 
-    pub fn response(self) -> Option<SipResponse<'a>> {
+    pub fn response(&self) -> Option<&SipResponse<'a>> {
         if let SipMessage::Response(c) = self {
-            Some(c)
+            Some(&c)
         } else {
             None
         }
@@ -31,15 +31,15 @@ impl<'a> SipMessage<'a> {
 
     pub fn parse(raw_message: &'a [u8]) -> nom::IResult<&[u8], SipMessage<'a>, SipParseError> {
         match get_message_type(raw_message) {
-            Request => {
+            MessageType::Request => {
                 let (inp, request) = SipRequest::parse(raw_message)?;
                 return Ok((inp, SipMessage::Request(request)));
             }
-            Response => {
+            MessageType::Response => {
                 let (inp, response) = SipResponse::parse(raw_message)?;
                 return Ok((inp, SipMessage::Response(response)));
             }
-            Unknown => sip_parse_error!(1, "Message is invalid. Can't predict type of message"),
+            MessageType::Unknown => sip_parse_error!(1, "Message is invalid. Can't predict type of message"),
         }
     }
 }

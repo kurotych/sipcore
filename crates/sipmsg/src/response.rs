@@ -24,10 +24,12 @@ pub struct StatusLine<'a> {
     pub sip_version: SipVersion,
     pub status_code: StatusCode,
     pub reason_phrase: &'a str,
+    // Byte representation of request line that includes \r\n
+    pub raw: &'a [u8],
 }
 
 impl<'a> StatusLine<'a> {
-    pub fn parse(sl: &'a [u8]) -> nom::IResult<&[u8], StatusLine<'a>, SipParseError> {
+    pub fn parse(source_input: &'a [u8]) -> nom::IResult<&[u8], StatusLine<'a>, SipParseError> {
         let (input, (_, major_version, _, minor_version, _, status_code, _, reason_phrase, _)) =
             tuple((
                 tag("SIP/"),
@@ -39,7 +41,7 @@ impl<'a> StatusLine<'a> {
                 complete::space1,
                 take_until("\r\n"),
                 take(2usize), // skip /r/n
-            ))(sl)?;
+            ))(source_input)?;
 
         let sip_version = SipVersion(
             u8::from_str_radix(str::from_utf8(major_version).unwrap(), 10).unwrap(),
@@ -54,6 +56,7 @@ impl<'a> StatusLine<'a> {
                 sip_version: sip_version,
                 status_code: status_code,
                 reason_phrase: reason_phrase_str,
+                raw: &source_input[..source_input.len() - input.len()],
             },
         ))
     }

@@ -2,14 +2,17 @@ use crate::{
     common::{bnfcore::is_crlf, errorparse::SipParseError},
     headers::{SipHeader, SipRFCHeader},
 };
-use alloc::collections::{btree_map::BTreeMap, VecDeque};
+use alloc::collections::{
+    btree_map::{BTreeMap, Keys},
+    VecDeque,
+};
 use core::str;
 use nom::bytes::complete::tag;
 use unicase::Ascii;
 
 pub struct Headers<'a> {
-    ext_headers: Option<BTreeMap<Ascii<&'a str>, VecDeque<SipHeader<'a>>>>,
     rfc_headers: BTreeMap<SipRFCHeader, VecDeque<SipHeader<'a>>>,
+    ext_headers: Option<BTreeMap<Ascii<&'a str>, VecDeque<SipHeader<'a>>>>,
 }
 
 impl<'a> Headers<'a> {
@@ -19,7 +22,6 @@ impl<'a> Headers<'a> {
             None => None,
         }
     }
-
     /// Get headers that defined in rfc
     pub fn get_rfc(&self, hdr: SipRFCHeader) -> Option<&VecDeque<SipHeader<'a>>> {
         self.rfc_headers.get(&hdr)
@@ -111,6 +113,19 @@ impl<'a> Headers<'a> {
                 .unwrap()
                 .insert(vec_headers[0].name, vec_headers);
         }
+    }
+
+    pub fn get_rfc_headers_keys(&self) -> Keys<'_, SipRFCHeader, VecDeque<SipHeader<'a>>> {
+        self.rfc_headers.keys()
+    }
+
+    pub fn get_ext_headers_keys(
+        &self,
+    ) -> Option<Keys<'_, Ascii<&'a str>, VecDeque<SipHeader<'a>>>> {
+        if self.ext_headers == None {
+            return None;
+        }
+        Some(self.ext_headers.as_ref().unwrap().keys())
     }
 
     pub fn parse(input: &'a [u8]) -> nom::IResult<&[u8], Headers<'a>, SipParseError> {

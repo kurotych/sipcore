@@ -1,10 +1,5 @@
 use crate::{
-    common::{
-        bnfcore::*,
-        errorparse::SipParseError,
-        nom_wrappers::{from_utf8_nom, take_sws},
-        take_sws_token
-    },
+    common::{bnfcore::*, errorparse::SipParseError, nom_wrappers::from_utf8_nom, take_sws_token},
     headers::{
         parsers::ExtensionParser,
         traits::{HeaderValueParserFn, SipHeaderParser},
@@ -13,7 +8,7 @@ use crate::{
 };
 use alloc::collections::{BTreeMap, VecDeque};
 use core::str;
-use nom::{bytes::complete::take_while1, character::complete, sequence::tuple};
+use nom::{bytes::complete::take_while1, character::complete};
 use unicase::Ascii;
 
 // All possible types of value
@@ -158,6 +153,8 @@ pub struct Header<'a> {
     pub value: HeaderValue<'a>,
     /// SIP parameters
     parameters: Option<GenericParams<'a>>,
+    /// Raw representation part of string that contain value and params
+    pub raw_value_param: &'a[u8]
 }
 
 impl<'a> Header<'a> {
@@ -165,11 +162,13 @@ impl<'a> Header<'a> {
         name: &'a str,
         value: HeaderValue<'a>,
         parameters: Option<GenericParams<'a>>,
+        raw_value_param: &'a[u8],
     ) -> Header<'a> {
         Header {
             name: { Ascii::new(name) },
             value: value,
             parameters: parameters,
+            raw_value_param: raw_value_param
         }
     }
 
@@ -184,15 +183,11 @@ impl<'a> Header<'a> {
         }
     }
 
-    pub fn take_name(input: &'a [u8]) -> nom::IResult<&[u8], &'a str, SipParseError> {
-        let (input_rest, (header_name, _, _, _)) = tuple((
-            take_while1(is_token_char),
-            complete::space0,
-            complete::char(':'),
-            complete::space0,
-        ))(input)?;
+    pub fn take_name(source_input: &'a [u8]) -> nom::IResult<&[u8], &'a str, SipParseError> {
+        let (input, header_name) = take_while1(is_token_char)(source_input)?;
+        let (input, _) = take_sws_token::colon(input)?;
         match str::from_utf8(header_name) {
-            Ok(hdr_str) => Ok((input_rest, hdr_str)),
+            Ok(hdr_str) => Ok((input, hdr_str)),
             Err(_) => sip_parse_error!(1, "Bad header name"),
         }
     }
@@ -203,8 +198,6 @@ impl<'a> Header<'a> {
         parser: HeaderValueParserFn,
     ) -> nom::IResult<&'a [u8], (HeaderValue<'a>, Option<GenericParams<'a>>), SipParseError<'a>>
     {
-        // skip whitespaces before take value
-        let (input, _) = take_sws(input)?;
         if is_crlf(input) {
             return Ok((input, (HeaderValue::create_empty_value(), None))); // This is header with empty value
         }
@@ -247,7 +240,7 @@ impl<'a> Header<'a> {
         let mut inp = input;
         loop {
             let (input, (value, params)) = Header::take_value(inp, value_parser)?;
-            headers.push_back(Header::new(header_name, value, params));
+            headers.push_back(Header::new(header_name, value, params, &inp[..inp.len() - input.len()]));
             if input[0] == b',' {
                 let (input, _) = take_sws_token::comma(input)?;
                 inp = input;
