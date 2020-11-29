@@ -5,7 +5,7 @@ use crate::common::{
     nom_wrappers::{from_utf8_nom, take_quoted_string, take_sws, take_while_trim_sws},
     take_sws_token,
 };
-use alloc::collections::btree_map::BTreeMap;
+use alloc::collections::btree_map::{BTreeMap, Keys};
 use nom::{bytes::complete::take_while, multi::many0};
 use unicase::Ascii;
 
@@ -59,6 +59,10 @@ impl<'a> GenericParams<'a> {
     pub fn get(&self, key: &'a str) -> Option<&Option<&'a str>> {
         let key = Ascii::new(key);
         self.params.get(&key)
+    }
+
+    pub fn keys(&self) -> Keys<'_, Ascii<&'a str>, Option<&'a str>> {
+        self.params.keys()
     }
 
     pub fn contains(&self, key: &'a str) -> bool {

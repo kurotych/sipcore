@@ -43,6 +43,8 @@ pub struct RequestLine<'a> {
     pub method: SipMethod,
     pub uri: SipUri<'a>,
     pub sip_version: SipVersion,
+    // Byte representation of request line that includes \r\n
+    pub raw: &'a [u8],
 }
 
 impl<'a> RequestLine<'a> {
@@ -52,20 +54,21 @@ impl<'a> RequestLine<'a> {
             Err(_) => None,
         }
     }
-    pub fn parse(rl: &[u8]) -> nom::IResult<&[u8], RequestLine, SipParseError> {
+    pub fn parse(source_input: &[u8]) -> nom::IResult<&[u8], RequestLine, SipParseError> {
         let method = take_while1(is_alphabetic);
         let uri = take_while1(|c| c != b' ' as u8);
-        let (input, (method, _, uri, _, _, major_version, _, minor_version, _)) = tuple((
-            method,
-            complete::space1,
-            uri,
-            complete::space1,
-            tag("SIP/"),
-            complete::digit1,
-            complete::char('.'),
-            complete::digit1,
-            complete::crlf,
-        ))(rl)?;
+        let (input, (method, _, uri, _, _, major_version, _, minor_version, _)) =
+            tuple((
+                method,
+                complete::space1,
+                uri,
+                complete::space1,
+                tag("SIP/"),
+                complete::digit1,
+                complete::char('.'),
+                complete::digit1,
+                complete::crlf,
+            ))(source_input)?;
 
         let (_, sip_uri) = SipUri::parse(uri)?;
 
@@ -81,6 +84,7 @@ impl<'a> RequestLine<'a> {
                     method: m,
                     uri: sip_uri,
                     sip_version: sip_version,
+                    raw: &source_input[..source_input.len() - input.len()],
                 },
             )),
             None => return sip_parse_error!(1, "Error cast from_utf8"),
