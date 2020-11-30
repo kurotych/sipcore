@@ -138,4 +138,6 @@ mod headers;
 pub use headers::sipuri::RequestUriScheme as SipRequestUriScheme;
 pub use headers::*;
 
+mod serializer;
+
 pub use unicase::Ascii as SipAscii;
