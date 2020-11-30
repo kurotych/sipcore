@@ -48,6 +48,7 @@ fn parse_response() {
     Content-Length: 0\r\n\r\n";
     match SipResponse::parse(response_msg.as_bytes()) {
         Ok((_, response)) => {
+            assert_eq!(response.sl.raw, b"SIP/2.0 401 Unauthorized\r\n");
             assert_eq!(response.sl.sip_version, SipVersion(2, 0));
             assert_eq!(response.sl.status_code, SipResponseStatusCode::Unauthorized);
             assert_eq!(response.sl.reason_phrase, "Unauthorized");

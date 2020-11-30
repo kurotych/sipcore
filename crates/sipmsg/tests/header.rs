@@ -11,6 +11,7 @@ fn parse_header() {
         SipHeader::parse("Extension_Header: Value;parameter=false;param2\r\n".as_bytes()).unwrap();
     assert_eq!(hdrs[0].name, "Extension_Header");
     assert_eq!(hdrs[0].value.vstr, "Value;parameter=false;param2");
+    assert_eq!(hdrs[0].raw_value_param, "Value;parameter=false;param2".as_bytes());
     
     assert_eq!(input.len(), 2);
 
@@ -90,11 +91,13 @@ fn accept_encoding_header() {
             .unwrap();
     assert_eq!(hdrs[0].name, "Accept-Encoding");
     assert_eq!(hdrs[0].value.vstr, "gzip");
+    assert_eq!(hdrs[0].raw_value_param, "gzip;q=1.0".as_bytes());
     assert_eq!(
         hdrs[0].params().unwrap().get("q").unwrap(),
         &Some("1.0")
     );
     assert_eq!(hdrs[1].name, "Accept-Encoding");
+    assert_eq!(hdrs[1].raw_value_param, "identity; q=0.5".as_bytes());
     assert_eq!(hdrs[1].value.vstr, "identity");
     assert_eq!(
         hdrs[1].params().unwrap().get("q").unwrap(),
@@ -288,6 +291,7 @@ fn content_disposition_header() {
 
     assert_eq!(hdrs[0].name, "Content-Disposition");
     assert_eq!(hdrs[0].value.vstr, "attachment");
+    assert_eq!(hdrs[0].raw_value_param, "attachment; filename=smime.p7s; handling=required".as_bytes());
     assert_eq!(
         hdrs[0].params().unwrap().get("filename").unwrap(),
         &Some("smime.p7s")
