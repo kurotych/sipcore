@@ -35,7 +35,7 @@ impl<'a> GenericParam<'a> {
         }
 
         let (input, parameter_value) = if input[0] == b'"' {
-            let (input, (_, param_val, _)) = take_quoted_string(input).unwrap();
+            let (input, (_, param_val, _)) = take_quoted_string(input)?;
             (input, param_val)
         } else if input[0] == b'[' {
             HostPort::take_ipv6_host(input)?
