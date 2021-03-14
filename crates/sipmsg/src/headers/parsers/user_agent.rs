@@ -42,6 +42,14 @@ impl SipHeaderParser for UserAgent {
                 continue;
             }
 
+            if tmp_input[0] == b'<' {
+                let (input, _) = take_sws_token::laquot(tmp_input)?;
+                let (input, _) = take_until(">")(input)?;
+                let (input, _) = take_sws_token::raquot(input)?;
+                tmp_input = input;
+                continue;
+            }
+
             let (input, _) = take_while1(is_token_char)(tmp_input)?;
             let (input, _) = take_sws(input)?;
             tmp_input = input;
@@ -60,11 +68,18 @@ impl SipHeaderParser for UserAgent {
 #[cfg(test)]
 mod test {
     use super::*;
-
     #[test]
     fn test_server_value() {
         let (input, val) = UserAgent::take_value("HomeServer v2\r\n".as_bytes()).unwrap();
         assert_eq!(val.vstr, "HomeServer v2");
+        assert_eq!(input, b"\r\n");
+    }
+    #[test]
+    fn test_user_agent_val() {
+        let user_agent = "<Motorola VT1000 mac: 000CE5C74EF8 sw:VT20_02.03.00_A ln:0 cfg:1253778536520/1002173358>";
+        let ua_with_end_line = [user_agent, "\r\n"].join("");
+        let (input, val) = UserAgent::take_value(ua_with_end_line.as_bytes()).unwrap();
+        assert_eq!(val.vstr, user_agent);
         assert_eq!(input, b"\r\n");
     }
 }
